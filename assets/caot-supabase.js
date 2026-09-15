@@ -90,6 +90,7 @@
       saved_to_drive: o.savedToDrive || "",
       held: o.held || "FALSE",
       notes: o.notes || "",
+      proofs: o.proofs || [],
       created_at: o.createdAt || new Date().toISOString(),
       updated_at: o.updatedAt || new Date().toISOString()
     };
@@ -117,6 +118,7 @@
       savedToDrive: r.saved_to_drive || "X",
       held: r.held || "FALSE",
       notes: r.notes || "",
+      proofs: Array.isArray(r.proofs) ? r.proofs : [],
       createdAt: r.created_at || "",
       updatedAt: r.updated_at || ""
     };
@@ -198,6 +200,48 @@
         .then(function (rows) {
           return rows && rows[0] ? rows[0].avatar : "";
         }).catch(function () { return ""; });
+    },
+    uploadProof: function (userId, orderId, fileId, file) {
+      var path = userId + "/" + orderId + "/" + fileId + ".pdf";
+      return fetch(origin + "/storage/v1/object/proofs/" + path, {
+        method: "POST",
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: "Bearer " + token(),
+          "Content-Type": file.type || "application/pdf",
+          "x-upsert": "true"
+        },
+        body: file
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          if (!res.ok) {
+            var data = {};
+            try { data = text ? JSON.parse(text) : {}; } catch (e) {}
+            throw new Error(parseErr(data, res.status));
+          }
+          return path;
+        });
+      });
+    },
+    signProof: function (path) {
+      return req("/storage/v1/object/sign/proofs/" + path, {
+        method: "POST",
+        body: { expiresIn: 3600 }
+      }).then(function (data) {
+        var signed = data && (data.signedURL || data.signedUrl);
+        if (!signed) throw new Error("Could not open that PDF.");
+        if (signed.indexOf("http") === 0) return signed;
+        return origin + "/storage/v1" + (signed.charAt(0) === "/" ? signed : "/" + signed);
+      });
+    },
+    deleteProofFile: function (path) {
+      return fetch(origin + "/storage/v1/object/proofs/" + path, {
+        method: "DELETE",
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: "Bearer " + token()
+        }
+      }).then(function () {});
     },
     saveAvatar: function (dataUrl) {
       var s = readSession();
