@@ -191,8 +191,8 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 /* Open state scrolls inside itself and can be dragged shorter, so the entry
    fields and the ledger are both usable at once instead of one pushing the
    other off the screen. */
-.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;max-height:42vh;resize:vertical}
-.entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden;resize:none}
+.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;max-height:42vh;overscroll-behavior:contain}
+.entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden}
 .entrybar::-webkit-scrollbar{width:10px}
 .entrybar::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
 .entrybar::-webkit-scrollbar-thumb:hover{background:var(--muted)}
@@ -203,18 +203,24 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 .entryhead h3{font-size:16px;font-weight:700;letter-spacing:-.01em}
 .entryhead .eyebrow{font-size:12.5px;color:var(--text-2)}
 .entryhead .spacer{flex:1}
-.entrygrid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px 12px;align-items:end}
-.ecell{min-width:0;display:flex;flex-direction:column;gap:6px;padding:0;grid-column:span 2}
-.ecell.s3{grid-column:span 3}
-.ecell.s4{grid-column:span 4}
-.ecell.s5{grid-column:span 5}
-.ecell.s6{grid-column:span 6}
+.entrygrid{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:14px 12px;align-items:start}
+.ecell{min-width:0;display:flex;flex-direction:column;gap:5px;padding:0;grid-column:span var(--span-l,4)}
+/* Group rules: a hairline above each new row of related fields. */
+.ecell.grp-start{position:relative}
+.egroup{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:.04em;
+  text-transform:uppercase;padding-top:10px;margin-bottom:-6px;border-top:1px solid var(--line)}
+.egroup:first-child{border-top:none;padding-top:0}
 /* Labels were 10.5px in --muted, which is the main dark-mode legibility
    problem in here. Bigger, heavier, and a full contrast step brighter. */
 .ecell label{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.04em;
   text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ecell .hint{font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:0;
-  text-transform:none;line-height:1.3;margin-top:-2px}
+  text-transform:none;line-height:1.3;margin-top:-2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Every control sits at the same height under its label + hint, so a row lines up. */
+.ecell>input,.ecell>textarea,.ecell>.datefield input,.ecell .timefield input{height:40px}
+.ecell>textarea{height:auto;min-height:40px}
+.ecell .datefield input[type="date"]{min-height:40px;height:40px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface-2);font-size:14px}
+.slog-list:empty{display:none}
 .ecell input,.ecell textarea,.ecell select{padding:9px 11px;font-size:14px;border-radius:8px;min-height:40px;
   border:1.5px solid var(--line);background:var(--surface-2);color:var(--text)}
 .ecell input:focus,.ecell textarea:focus,.ecell select:focus{outline:2px solid var(--crown);outline-offset:1px;border-color:var(--crown)}
@@ -281,10 +287,13 @@ html[data-theme="dark"] .quad button[aria-pressed="true"]{background:var(--code)
   color:var(--code);border-radius:7px;padding:6px 12px;font-size:12.5px;font-weight:600;animation:fadeIn .2s var(--ease)}
 
 /* Mid-width screens: two fields per line rather than six squeezed ones. */
-@media (max-width:1240px){
-  .entrygrid{grid-template-columns:repeat(6,1fr)}
-  .ecell{grid-column:span 2}
-  .ecell.s3,.ecell.s4,.ecell.s5,.ecell.s6{grid-column:span 3}
+@media (max-width:1280px){
+  .entrygrid{grid-template-columns:repeat(12,minmax(0,1fr))}
+  .ecell{grid-column:span var(--span-m,4)}
+}
+@media (max-width:900px){
+  .entrygrid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .ecell{grid-column:span var(--span-s,3)}
 }
 
 /* ---------------- page scrolling with the entry row open ----------------
@@ -435,8 +444,9 @@ td.cust{white-space:pre-line}
 tr:hover .nowbtn{opacity:1}
 .nowbtn:hover{color:var(--code);border-color:var(--code);border-style:solid}
 .running{color:var(--code);font-weight:600}
-.rowacts{text-align:right;white-space:nowrap;overflow:visible;padding:6px 8px 6px 4px!important}
-.rowacts button{opacity:1;padding:2px 5px!important;font-size:11px!important}
+.rowacts{text-align:right;white-space:nowrap;min-width:148px;padding-right:12px!important}
+.rowacts button{opacity:1;transition:opacity .12s var(--ease)}
+tr:hover .rowacts button,tr.editing .rowacts button{opacity:1}
 .cellinput{width:100%;padding:5px 6px;font-size:12.5px;border-radius:5px;border:1px solid var(--line);
   background:var(--surface);color:var(--text);font-family:var(--sans)}
 .cellinput.mono{font-family:var(--mono);font-size:12px}
@@ -507,16 +517,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
 .menu .head span{font-size:12.5px;color:var(--muted);word-break:break-all}
 
 @media (max-width:1280px){
-  .entrygrid{grid-template-columns:repeat(4,1fr)!important}
-  .ecell{grid-column:span 1}
-  .ecell.wide{grid-column:span 2}
   .tablewrap{overflow-x:hidden;overflow-y:auto}
   table{table-layout:fixed;min-width:0}
 }
 @media (max-width:900px){
   .auth{grid-template-columns:1fr}
   .auth-brand{padding:34px 26px}
-  .entrygrid{grid-template-columns:repeat(2,1fr)!important}
   .sum-grid{grid-template-columns:repeat(2,1fr)}
 }
 
@@ -705,6 +711,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     padding:0!important;
   }
   .ecell label{white-space:normal!important;font-size:11px}
+  .egroup{width:100%;margin-bottom:-4px}
   .ecell input,.ecell textarea,.ecell select,.ecell .calcbox,.ecell .tri,.ecell .timefield{
     width:100%!important;max-width:100%!important;
   }
@@ -2287,8 +2294,8 @@ var COLUMNS = [
   { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.8,  wd: 3.6,  entry: "calc", field: "calcTurn" },
   { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segFin" },
   { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
-  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 4.4,  wd: 4.2,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
-  { key: "acts",   label: "",         entryLabel: "Save", w: 10.5, wd: 10,   entry: "acts" }
+  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 5.2,  wd: 5,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 8.2,  wd: 8,    entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
@@ -2332,12 +2339,27 @@ function buildChrome() {
 /* How many of the 12 grid columns each field gets. Mirroring the table's own
    widths here squeezed several fields to ~4.5% of the screen, so the entry row
    keeps the table's field ORDER but sizes each one to be readable. */
+/* Entry form layout. The table keeps its own column order; the form groups
+   fields into rows that each fill the grid exactly, so every row lines up.
+   Spans: [desktop of 24, mid of 12, small of 6]. */
+var ENTRY_GROUPS = [
+  { title: "Order",         keys: ["seq", "date", "orderId", "customer"] },
+  { title: "Dates & price", keys: ["placedDate", "reqShipDate", "eventDate", "otype", "qty", "amount"] },
+  { title: "Timing",        keys: ["startTime", "completionTime", "taken", "proofRcvdTime", "turn"] },
+  { title: "Checks",        keys: ["proof", "marking", "fin", "savedToDrive"] },
+  { title: "Status & notes", keys: ["status", "notes", "acts"] }
+];
 var ENTRY_SPAN = {
-  seq: "", date: "", orderId: "s3", customer: "s3", reqShipDate: "", eventDate: "", otype: "", qty: "", amount: "",
-  proof: "", marking: "s4", status: "s6",
-  startTime: "", completionTime: "", taken: "", proofRcvdTime: "", turn: "",
-  fin: "", savedToDrive: "", notes: "s4", acts: ""
+  seq: [3, 2, 3],  date: [4, 3, 3],  orderId: [7, 3, 6],  customer: [10, 4, 6],
+  placedDate: [4, 2, 2], reqShipDate: [4, 2, 2], eventDate: [4, 2, 2],
+  otype: [4, 2, 2], qty: [3, 2, 2], amount: [5, 2, 2],
+  startTime: [6, 3, 3], completionTime: [6, 3, 3], taken: [3, 2, 2], proofRcvdTime: [6, 2, 2], turn: [3, 2, 2],
+  proof: [6, 3, 3], marking: [8, 5, 3], fin: [5, 2, 3], savedToDrive: [5, 2, 3],
+  status: [11, 6, 6], notes: [8, 4, 6], acts: [5, 2, 6]
 };
+/* When the Date column is hidden (single-day scope), give its space to the
+   neighbours so the first row still fills the grid. */
+var ENTRY_SPAN_NODATE = { seq: [3, 2, 2], orderId: [9, 4, 4], customer: [12, 6, 6] };
 /* Every text-ish field in the entry row, in one place, so caching, clearing
    and draft-saving can never drift out of sync with the fields on screen. */
 var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fPlacedDate", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
@@ -2347,11 +2369,35 @@ function buildEntryRow(cols) {
   var grid = $("entrygrid");
   grid.textContent = "";
   grid.style.gridTemplateColumns = "";        /* the stylesheet owns the grid now */
-  cols.forEach(function (c) {
-    var cell = el("div", "ecell" + (ENTRY_SPAN[c.key] ? " " + ENTRY_SPAN[c.key] : ""));
+  var byKey = {};
+  cols.forEach(function (c) { byKey[c.key] = c; });
+  var hasDate = !!byKey.date;
+  var ordered = [], placed = {};
+  ENTRY_GROUPS.forEach(function (g) {
+    var inGroup = g.keys.filter(function (k) { return byKey[k]; });
+    if (!inGroup.length) return;
+    ordered.push({ group: g.title });
+    inGroup.forEach(function (k) { ordered.push(byKey[k]); placed[k] = true; });
+  });
+  /* Anything not in the layout map still shows up, at the end. */
+  cols.forEach(function (c) { if (!placed[c.key]) ordered.push(c); });
+  ordered.forEach(function (c) {
+    if (c.group) {
+      grid.appendChild(el("div", "egroup", c.group));
+      return;
+    }
+    var cell = el("div", "ecell");
+    var sp = (!hasDate && ENTRY_SPAN_NODATE[c.key]) || ENTRY_SPAN[c.key];
+    if (sp) {
+      cell.style.setProperty("--span-l", sp[0]);
+      cell.style.setProperty("--span-m", sp[1]);
+      cell.style.setProperty("--span-s", sp[2]);
+    }
     if (c.entry !== "new" && c.entry !== "date" && c.entry !== "acts") {
-      cell.appendChild(el("label", null, c.entryLabel || c.label || " "));
-      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+      var lb = el("label", null, c.entryLabel || c.label || " ");
+      if (c.field) lb.htmlFor = c.field;
+      cell.appendChild(lb);
+      if (c.hint) { var hn = el("div", "hint", c.hint); hn.title = c.hint; cell.appendChild(hn); }
     }
     if (c.entry === "new") {
       cell.appendChild(el("label", null, c.entryLabel || "#"));
@@ -2441,7 +2487,7 @@ function buildEntryRow(cols) {
       cell.appendChild(quad);
     } else if (c.entry === "area") {
       var ta = document.createElement("textarea");
-      ta.id = c.field; ta.rows = 2; ta.placeholder = c.ph || "";
+      ta.id = c.field; ta.rows = c.key === "customer" ? 1 : 2; ta.placeholder = c.ph || "";
       cell.appendChild(ta);
     } else if (c.entry === "tri") {
       var tri = el("div", "tri" + (c.key === "fin" || c.key === "savedToDrive" ? " go" : "") +
@@ -2462,6 +2508,8 @@ function buildEntryRow(cols) {
       box.id = c.field;
       cell.appendChild(box);
     } else if (c.entry === "acts") {
+      cell.appendChild(el("label", null, "\u00a0"));
+      cell.appendChild(el("div", "hint", "\u00a0"));
       var acts = el("div", "entry-actions");
       var save = el("button", "btn", "Add");
       save.type = "submit"; save.id = "btnSaveOrder";
@@ -2868,7 +2916,7 @@ function readRow(o, cols) {
         td = el("td", "rowacts");
         var edit = el("button", "btn quiet xs", "Edit");
         edit.type = "button"; edit.setAttribute("data-inline", o.id); edit.title = "Edit every field in place";
-        var del = el("button", "btn quiet xs", "Del");
+        var del = el("button", "btn quiet xs", "Delete");
         del.type = "button"; del.setAttribute("data-del", o.id);
         del.title = "Delete this order";
         del.setAttribute("aria-label", "Delete order");
@@ -4463,7 +4511,8 @@ function toggleHold(id) {
 function applyEntryHeight(px) {
   var bar = $("entrybar");
   if (!bar || bar.classList.contains("collapsed")) return;
-  var min = 120, max = Math.max(160, Math.floor(window.innerHeight * 0.42));
+  /* Up to ~65% of the window, so the log always keeps a usable strip. */
+  var min = 120, max = Math.max(160, Math.floor(window.innerHeight * 0.65));
   var h = Math.max(min, Math.min(max, px));
   bar.style.height = h + "px";
   bar.style.maxHeight = h + "px";
@@ -4505,6 +4554,69 @@ function bindSplitter() {
   };
   split.addEventListener("mousedown", down);
   split.addEventListener("touchstart", down, { passive: false });
+  /* Double-click the bar to go back to the default height. */
+  split.addEventListener("dblclick", function () {
+    var prefs = readJson(KEY_PREFS, {});
+    delete prefs.entryHeight;
+    writeJson(KEY_PREFS, prefs);
+    bar.style.height = "";
+    bar.style.maxHeight = "";
+  });
+  /* A stored height can be taller than a smaller window allows; re-clamp. */
+  var rz = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(rz);
+    rz = setTimeout(function () {
+      var prefs = readJson(KEY_PREFS, {});
+      if (prefs.entryHeight && !bar.classList.contains("collapsed")) applyEntryHeight(prefs.entryHeight);
+    }, 120);
+  });
+  bindScrollHandoff(bar, $("tablewrap"));
+}
+/* The entry panel and the log are separate scroll areas side by side in a
+   one-screen shell, so the browser never passes scrolling from one to the
+   other. This does it by hand: once the panel hits its bottom, the wheel keeps
+   going into the log; once the log is back at its top, scrolling up carries
+   on into the panel. Inner scrollers (status list, notes) still get first go. */
+function bindScrollHandoff(bar, log) {
+  if (!bar || !log || bar._handoff) return;
+  bar._handoff = true;
+  var desktop = function () { return window.matchMedia("(min-width:761px)").matches; };
+  var lineH = 16;
+  var dy = function (e) {
+    if (e.deltaMode === 1) return e.deltaY * lineH;
+    if (e.deltaMode === 2) return e.deltaY * window.innerHeight;
+    return e.deltaY;
+  };
+  var canScroll = function (node, d) {
+    if (d > 0) return node.scrollTop + node.clientHeight < node.scrollHeight - 1;
+    return node.scrollTop > 0;
+  };
+  /* Is there a scrollable box between the pointer and `root` that can still move? */
+  var innerCanScroll = function (target, root, d) {
+    for (var n = target; n && n !== root; n = n.parentElement) {
+      if (n.scrollHeight > n.clientHeight + 1) {
+        var oy = getComputedStyle(n).overflowY;
+        if ((oy === "auto" || oy === "scroll") && canScroll(n, d)) return true;
+      }
+    }
+    return false;
+  };
+  bar.addEventListener("wheel", function (e) {
+    if (!desktop() || e.ctrlKey || bar.classList.contains("collapsed")) return;
+    var d = dy(e);
+    if (d <= 0 || innerCanScroll(e.target, bar, d) || canScroll(bar, d)) return;
+    e.preventDefault();
+    log.scrollTop += d;
+  }, { passive: false });
+  log.addEventListener("wheel", function (e) {
+    if (!desktop() || e.ctrlKey || bar.classList.contains("collapsed")) return;
+    var d = dy(e);
+    if (d >= 0 || innerCanScroll(e.target, log, d) || log.scrollTop > 0) return;
+    if (!canScroll(bar, d)) return;
+    e.preventDefault();
+    bar.scrollTop += d;
+  }, { passive: false });
 }
 function setPanel(collapsed, animate) {
   var bar = $("entrybar");
@@ -4520,23 +4632,32 @@ function setPanel(collapsed, animate) {
     void bar.offsetWidth;
     bar.style.transition = prev;
   } else if (collapsed) {
-    var from = bar.scrollHeight;
+    var from = bar.getBoundingClientRect().height;
     bar.style.maxHeight = from + "px";
     bar.classList.remove("collapsed");
     void bar.offsetHeight;
     bar.classList.add("collapsed");
     bar.style.maxHeight = "0px";
   } else {
+    var openPrefs = readJson(KEY_PREFS, {});
+    var capPx = Math.floor(window.innerHeight * (openPrefs.entryHeight ? 0.65 : 0.42));
+    var target = openPrefs.entryHeight ? Math.min(openPrefs.entryHeight, capPx) : null;
     bar.classList.remove("collapsed");
     bar.style.maxHeight = "0px";
     void bar.offsetHeight;
-    bar.style.maxHeight = Math.max(bar.scrollHeight, 120) + "px";
+    bar.style.maxHeight = (target || Math.max(Math.min(bar.scrollHeight, capPx), 120)) + "px";
     var done = function (e) {
       if (e && e.propertyName && e.propertyName !== "max-height") return;
       bar.removeEventListener("transitionend", done);
-      if (!bar.classList.contains("collapsed")) bar.style.maxHeight = "";
+      clearTimeout(bar._openFallback);
+      if (bar.classList.contains("collapsed")) return;
+      if (target) applyEntryHeight(target);
+      else bar.style.maxHeight = "";
     };
     bar.addEventListener("transitionend", done);
+    /* reduced-motion / hidden tab: transitionend may never fire */
+    clearTimeout(bar._openFallback);
+    bar._openFallback = setTimeout(done, 700);
   }
   document.documentElement.classList.toggle("page-flow", !collapsed);
   document.documentElement.classList.remove("page-scroll");
@@ -4549,7 +4670,7 @@ function setPanel(collapsed, animate) {
   if (collapsed) {
     bar.style.height = "";
     bar.style.maxHeight = "0px";
-  } else {
+  } else if (!animate) {
     var prefs = readJson(KEY_PREFS, {});
     if (prefs.entryHeight) applyEntryHeight(prefs.entryHeight);
     else bar.style.maxHeight = "";
