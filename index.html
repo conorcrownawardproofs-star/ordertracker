@@ -133,9 +133,9 @@ html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
    even when the add-an-order fields do not overflow. */
 html.page-flow,html.page-flow body{height:auto;overflow-y:auto;overflow-x:hidden}
 html.page-flow .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
-html.page-flow .tablewrap{overflow:visible;min-height:42vh}
+html.page-flow .tablewrap{overflow-y:auto;min-height:36vh}
 html.page-flow .console{position:sticky;top:0;z-index:30}
-html.page-flow thead,html.page-flow thead th{top:68px}
+html.page-flow thead,html.page-flow thead th{top:0}
 .console{background:linear-gradient(180deg,var(--crown-2) 0%,var(--crown) 100%);
   color:var(--crown-ink);padding:0 22px;display:flex;align-items:center;gap:16px;height:68px;flex:0 0 auto;
   box-shadow:0 1px 0 rgba(0,0,0,.25)}
@@ -198,7 +198,8 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 /* Open state scrolls inside itself and can be dragged shorter, so the entry
    fields and the ledger are both usable at once instead of one pushing the
    other off the screen. */
-.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;resize:vertical}
+.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;overscroll-behavior:auto;resize:vertical}
+.entrybar.page-pass{overflow:visible!important}
 .entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden;resize:none}
 .entrybar::-webkit-scrollbar{width:10px}
 .entrybar::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
@@ -401,7 +402,15 @@ html[data-theme="dark"] .otype.t-int{color:var(--brass-lit)}
 .splitter[hidden]{display:none}
 td.oid{font-family:var(--mono);font-weight:600}
 td.cust{font-weight:600;line-height:1.35}
-td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:22px}
+td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:12px}
+.note-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:6px;
+  font:600 11px var(--sans);padding:3px 8px;cursor:pointer}
+.note-btn.has{color:var(--text);border-color:var(--muted)}
+.note-pop{position:fixed;z-index:80;max-width:280px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;white-space:pre-wrap;font-size:12.5px;line-height:1.45}
+.slog-mini{display:flex;gap:4px;margin-top:6px}
+.slog-mini input{flex:1;min-width:0;padding:4px 6px;font-size:11.5px;border-radius:5px;border:1px solid var(--line);background:var(--surface-2);color:var(--text)}
+.muted-cell{color:var(--muted)}
 td.cust{white-space:pre-line}
 .tags{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
 .tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;line-height:1.45;max-width:100%;overflow-wrap:anywhere}
@@ -2138,7 +2147,11 @@ function inScope(o) {
 }
 function isLive(o) { return isClock(o.startTime) && !isClock(o.completionTime); }
 function awaitingProof(o) { return o.proof === "TRUE" && !isClock(o.proofRcvdTime); }
-function isCode(o, code) { return new RegExp("\\b" + code + "\\b", "i").test(o.status || ""); }
+function isCode(o, code) {
+  var blob = (o.status || "") + " " + statusTextFromLog(o.statusLog);
+  return new RegExp("\\b" + code + "\\b", "i").test(blob);
+}
+function noProofNeeded(o) { return !!(o && (isCode(o, "CLC") || isCode(o, "LEC"))); }
 function isHeld(o) {
   if (isHoldFlag(o)) return true;
   var lines = String(o.status || "").split("\n").concat(String(o.notes || "").split("\n"));
@@ -2725,6 +2738,12 @@ function renderTable() {
 }
 function timeCell(o, field) {
   var td = el("td", "tm");
+  if ((field === "proofRcvdTime") && noProofNeeded(o)) {
+    td.textContent = "—";
+    td.className = "tm muted-cell";
+    td.title = "CLC / LEC — no proof required";
+    return td;
+  }
   if (isClock(o[field]) || o[field]) {
     td.textContent = prettyTime(o[field]);
     if (field === "startTime" && isLive(o)) td.className = "tm running";
@@ -2779,7 +2798,7 @@ function readRow(o, cols) {
         td.appendChild(mb);
         break;
       case "status":
-        td = el("td");
+        td = el("td", "slog-cell");
         var tags = el("div", "tags");
         parseStatusLog(o.statusLog, o.status).forEach(function (e) {
           var label = (e.t ? e.t + " · " : "") + e.code;
@@ -2787,7 +2806,13 @@ function readRow(o, cols) {
           tag.title = label;
           tags.appendChild(tag);
         });
-        td.appendChild(tags);
+        var mini = el("div", "slog-mini");
+        var inp = document.createElement("input");
+        inp.type = "text"; inp.placeholder = "CLC"; inp.setAttribute("data-slog-in", o.id);
+        var logb = el("button", "stamp", "Log");
+        logb.type = "button"; logb.setAttribute("data-slog-add", o.id);
+        mini.appendChild(inp); mini.appendChild(logb);
+        td.appendChild(tags); td.appendChild(mini);
         break;
       case "startTime": td = timeCell(o, "startTime"); break;
       case "completionTime": td = timeCell(o, "completionTime"); break;
@@ -2795,14 +2820,27 @@ function readRow(o, cols) {
       case "taken":
         var taken = timeTaken(o);
         td = el("td", "dur" + (taken !== null && taken >= 45 ? " slow" : ""),
-                taken === null && isLive(o) ? "running" : durationText(taken));
-        if (taken === null && isLive(o)) td.className = "dur running";
+                taken === null && isLive(o) ? "R" : durationText(taken));
+        if (taken === null && isLive(o)) { td.className = "dur running"; td.title = "Running"; }
         break;
       case "turn":
+        if (noProofNeeded(o)) {
+          td = el("td", "dur muted-cell", "—");
+          td.title = "CLC / LEC — no proof required";
+          break;
+        }
         var turn = turnaround(o);
         td = el("td", "dur" + (turn !== null && turn >= 60 ? " slow" : ""), durationText(turn));
         break;
-      case "notes": td = el("td", "notes", o.notes); break;
+      case "notes":
+        td = el("td", "notes");
+        var nb = el("button", "note-btn" + (o.notes && String(o.notes).trim() ? " has" : ""), o.notes && String(o.notes).trim() ? "Note" : "—");
+        nb.type = "button";
+        nb.setAttribute("data-note", o.id);
+        nb.disabled = !(o.notes && String(o.notes).trim());
+        if (o.notes) nb.title = "Open note";
+        td.appendChild(nb);
+        break;
       default:
         td = el("td", "rowacts");
         var edit = el("button", "btn quiet xs", "Edit");
@@ -2900,6 +2938,11 @@ function inlineRow(o, cols) {
         break;
       case "notes": fields.notes = mk("textarea", "", o.notes, "Notes"); td.appendChild(fields.notes); break;
       case "startTime": case "completionTime": case "proofRcvdTime":
+        if (c.key === "proofRcvdTime" && noProofNeeded(o)) {
+          td.textContent = "—";
+          td.className = "tm muted-cell";
+          break;
+        }
         fields[c.key] = mk("input", "mono", isClock(o[c.key]) ? prettyTime(o[c.key]) : o[c.key], "h:mm");
         td.appendChild(fields[c.key]);
         break;
@@ -2971,10 +3014,11 @@ function cancelInline() {
 function saveInline(id) {
   var o = byId(id), f = state.inlineFields;
   if (!o || !f) { cancelInline(); return; }
-  var start = parseTime(f.startTime.value), done = parseTime(f.completionTime.value), back = parseTime(f.proofRcvdTime.value);
+  var start = parseTime(f.startTime.value), done = parseTime(f.completionTime.value);
+  var back = f.proofRcvdTime ? parseTime(f.proofRcvdTime.value) : { ok: true, value: o.proofRcvdTime || "" };
   if (!start.ok) { toast("Start time should look like 9:20, 1:14 PM, or N/A."); f.startTime.focus(); return; }
   if (!done.ok) { toast("End time should look like 9:35, 1:14 PM, or N/A."); f.completionTime.focus(); return; }
-  if (!back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); f.proofRcvdTime.focus(); return; }
+  if (f.proofRcvdTime && !back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); f.proofRcvdTime.focus(); return; }
   var seq = parseInt(f.seq.value, 10);
   var before = JSON.parse(JSON.stringify(o));
   o.seq = seq > 0 ? seq : o.seq;
@@ -3023,6 +3067,10 @@ function saveInline(id) {
 function stampNow(id, field) {
   var o = byId(id);
   if (!o) return;
+  if (field === "proofRcvdTime" && noProofNeeded(o)) {
+    toast("CLC / LEC orders do not take a proof time.");
+    return;
+  }
   var prev = o[field];
   o[field] = nowClock();
   o.updatedAt = nowIso();
@@ -3033,6 +3081,41 @@ function stampNow(id, field) {
     label: "Undo",
     run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
   }, 5000);
+}
+function addLogStamp(id, code) {
+  var o = byId(id);
+  if (!o) return;
+  code = String(code || "").trim();
+  if (!code) return;
+  var log = parseStatusLog(o.statusLog, o.status);
+  log.push({ t: prettyTime(nowClock()), code: code });
+  o.statusLog = log;
+  o.status = statusTextFromLog(log);
+  o.updatedAt = nowIso();
+  if (noProofNeeded(o)) {
+    o.proofRcvdTime = o.proofRcvdTime && o.proofRcvdTime !== "N/A" ? o.proofRcvdTime : "";
+  }
+  if (!persistOrders()) { saveFailedModal("status log"); return; }
+  scheduleRender();
+}
+function closeNotePop() {
+  var pop = $("notePop");
+  if (pop && pop.parentNode) pop.parentNode.removeChild(pop);
+}
+function openNotePop(id, anchor) {
+  closeNotePop();
+  var o = byId(id);
+  if (!o || !o.notes) return;
+  var pop = el("div", "note-pop");
+  pop.id = "notePop";
+  pop.textContent = o.notes;
+  document.body.appendChild(pop);
+  var r = anchor.getBoundingClientRect();
+  var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(8, r.right - pop.offsetWidth));
+  var top = r.bottom + 6;
+  if (top + pop.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - pop.offsetHeight - 6);
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
 }
 /* --------------------------------------------------------- entry panel */
 function segValue(id) {
@@ -4092,10 +4175,12 @@ function toggleHold(id) {
 function applyEntryHeight(px) {
   var bar = $("entrybar");
   if (!bar || bar.classList.contains("collapsed")) return;
-  var min = 120, max = Math.max(180, Math.floor(window.innerHeight * 0.72));
+  var min = 120, max = Math.max(220, Math.floor(window.innerHeight * 0.88));
   var h = Math.max(min, Math.min(max, px));
   bar.style.height = h + "px";
   bar.style.maxHeight = h + "px";
+  if (bar.scrollHeight <= h + 4) bar.classList.add("page-pass");
+  else bar.classList.remove("page-pass");
   var prefs = readJson(KEY_PREFS, {});
   prefs.entryHeight = h;
   writeJson(KEY_PREFS, prefs);
@@ -4331,6 +4416,15 @@ function wire() {
     if (cyc) { cyclePill(cyc.getAttribute("data-id"), cyc.getAttribute("data-cycle")); return; }
     var mk = e.target.closest("[data-cycle-mark]");
     if (mk) { cycleMarking(mk.getAttribute("data-cycle-mark")); return; }
+    var note = e.target.closest("[data-note]");
+    if (note) { openNotePop(note.getAttribute("data-note"), note); return; }
+    var slogAdd = e.target.closest("[data-slog-add]");
+    if (slogAdd) {
+      var sid = slogAdd.getAttribute("data-slog-add");
+      var box = slogAdd.parentNode && slogAdd.parentNode.querySelector("[data-slog-in]");
+      addLogStamp(sid, box ? box.value : "");
+      return;
+    }
     var inl = e.target.closest("[data-inline]");
     if (inl) { startInline(inl.getAttribute("data-inline")); return; }
 
@@ -4345,6 +4439,16 @@ function wire() {
         "You can undo this from the toast for a few seconds.", "Delete",
         function () { deleteOrder(id); });
     }
+  });
+  $("tbody").addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var box = e.target.closest("[data-slog-in]");
+    if (!box) return;
+    e.preventDefault();
+    addLogStamp(box.getAttribute("data-slog-in"), box.value);
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".note-pop") && !e.target.closest("[data-note]")) closeNotePop();
   });
   $("tbody").addEventListener("dblclick", function (e) {
     if (state.inlineId) return;
