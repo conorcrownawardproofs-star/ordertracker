@@ -1,17 +1,71 @@
-/* Cloud layer for Award Order Tracker. No-ops until supabase-config.js is filled. */
+/* Cloud layer — plain fetch only. Does not use supabase-js. */
 (function (w) {
   "use strict";
   var cfg = w.CAOT_SUPABASE || {};
-  var enabled = !!(w.supabase && cfg.url && cfg.anonKey &&
-    cfg.url.indexOf("YOUR-PROJECT") === -1 &&
-    cfg.anonKey.indexOf("YOUR-ANON") === -1);
-  var client = null;
-  if (enabled) {
-    client = w.supabase.createClient(cfg.url, cfg.anonKey, {
-      auth: { persistSession: true, autoRefreshToken: true }
+  var origin = String(cfg.url || "").replace(/\/+$/, "").replace(/\/rest\/v1$/i, "");
+  var enabled = !!(origin && cfg.anonKey &&
+    origin.indexOf("YOUR-PROJECT") === -1 &&
+    String(cfg.anonKey).indexOf("YOUR-ANON") === -1);
+  var SESSION_KEY = "caot_cloud_session_v1";
+
+  function saveSession(data) {
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      user: data.user,
+      savedAt: Date.now()
+    })); } catch (e) {}
+  }
+  function readSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); }
+    catch (e) { return null; }
+  }
+  function clearSession() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  }
+  function asUser(u, username) {
+    if (!u) return null;
+    return {
+      key: u.id,
+      username: username || (u.user_metadata && u.user_metadata.username) || (u.email || "").split("@")[0],
+      email: u.email || "",
+      cloud: true,
+      tokenVersion: 1
+    };
+  }
+  function token() {
+    var s = readSession();
+    return (s && s.access_token) || cfg.anonKey;
+  }
+  function jsonHeaders(useUserToken) {
+    var t = useUserToken ? token() : cfg.anonKey;
+    return {
+      apikey: cfg.anonKey,
+      Authorization: "Bearer " + t,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    };
+  }
+  function parseErr(data, status) {
+    if (!data) return "Request failed (" + status + ")";
+    return data.error_description || data.msg || data.message || data.error ||
+      data.hint || ("Request failed (" + status + ")");
+  }
+  function req(path, opts) {
+    opts = opts || {};
+    return fetch(origin + path, {
+      method: opts.method || "GET",
+      headers: jsonHeaders(opts.auth !== false),
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { message: text }; }
+        if (!res.ok) throw new Error(parseErr(data, res.status));
+        return data;
+      });
     });
   }
-
   function toRow(userId, o) {
     return {
       id: o.id,
@@ -67,105 +121,74 @@
       updatedAt: r.updated_at || ""
     };
   }
-  function asUser(session, username) {
-    var u = session.user;
-    return {
-      key: u.id,
-      username: username || (u.user_metadata && u.user_metadata.username) || (u.email || "").split("@")[0],
-      email: u.email || "",
-      cloud: true,
-      tokenVersion: 1
-    };
-  }
-
-  function authUrl(path) {
-    return String(cfg.url).replace(/\/+$/, "") + path;
-  }
-  function authHeaders() {
-    return {
-      apikey: cfg.anonKey,
-      Authorization: "Bearer " + cfg.anonKey,
-      "Content-Type": "application/json"
-    };
-  }
-  function parseAuthError(data, status) {
-    if (!data) return "Auth failed (" + status + ")";
-    return data.error_description || data.msg || data.error || data.message || ("Auth failed (" + status + ")");
-  }
-  function applySession(data, username) {
-    if (!data || !data.access_token) {
-      throw new Error("Check your email to confirm the account, then sign in.");
-    }
-    var session = {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token
-    };
-    return client.auth.setSession(session).then(function (res) {
-      if (res.error) throw new Error(res.error.message);
-      var packed = { data: { session: res.data.session || { user: data.user, access_token: data.access_token } } };
-      return asUser(packed.data.session, username);
-    }).catch(function () {
-      return asUser({ user: data.user }, username);
-    });
-  }
-  function postAuth(path, body) {
-    return fetch(authUrl(path), {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(body)
-    }).then(function (res) {
-      return res.text().then(function (text) {
-        var data = {};
-        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { message: text }; }
-        if (!res.ok) throw new Error(parseAuthError(data, res.status));
-        return data;
-      });
-    });
-  }
 
   w.CAOTCloud = {
     enabled: function () { return enabled; },
-    client: function () { return client; },
     signIn: function (email, password) {
-      return postAuth("/auth/v1/token?grant_type=password", { email: email, password: password })
-        .then(function (data) { return applySession(data); });
-    },
-    signUp: function (email, password, username) {
-      return postAuth("/auth/v1/signup", {
-        email: email,
-        password: password,
-        data: { username: username }
-      }).then(function (data) { return applySession(data, username); });
-    },
-    sessionUser: function () {
-      return client.auth.getSession().then(function (res) {
-        var s = res.data && res.data.session;
-        return s ? asUser(s) : null;
+      return req("/auth/v1/token?grant_type=password", {
+        method: "POST",
+        auth: false,
+        body: { email: email, password: password }
+      }).then(function (data) {
+        if (!data.access_token) throw new Error("Sign in did not return a session.");
+        saveSession(data);
+        return asUser(data.user);
       });
     },
-    signOut: function () {
-      return client.auth.signOut();
+    signUp: function (email, password, username) {
+      return req("/auth/v1/signup", {
+        method: "POST",
+        auth: false,
+        body: { email: email, password: password, data: { username: username || "" } }
+      }).then(function (data) {
+        if (!data.access_token) {
+          throw new Error("Account created. Confirm the email, then sign in.");
+        }
+        saveSession(data);
+        return asUser(data.user, username);
+      });
     },
+    sessionUser: function () {
+      var s = readSession();
+      if (!s || !s.user) return Promise.resolve(null);
+      return Promise.resolve(asUser(s.user));
+    },
+    signOut: function () { clearSession(); return Promise.resolve(); },
     pull: function () {
-      return client.from("orders").select("*").then(function (res) {
-        if (res.error) throw new Error(res.error.message);
-        return (res.data || []).map(fromRow);
+      return req("/rest/v1/orders?select=*", { method: "GET" }).then(function (rows) {
+        return (Array.isArray(rows) ? rows : []).map(fromRow);
       });
     },
     pushAll: function (userId, orders, deleted) {
       var upserts = (orders || []).map(function (o) { return toRow(userId, o); });
       var chain = Promise.resolve();
       if (upserts.length) {
-        chain = client.from("orders").upsert(upserts, { onConflict: "id" }).then(function (res) {
-          if (res.error) throw new Error(res.error.message);
+        chain = req("/rest/v1/orders?on_conflict=id", {
+          method: "POST",
+          body: upserts
+        }).catch(function (err) {
+          /* Prefer header-based upsert */
+          return fetch(origin + "/rest/v1/orders", {
+            method: "POST",
+            headers: Object.assign(jsonHeaders(true), {
+              Prefer: "resolution=merge-duplicates,return=minimal"
+            }),
+            body: JSON.stringify(upserts)
+          }).then(function (res) {
+            return res.text().then(function (text) {
+              if (!res.ok) {
+                var data = {};
+                try { data = text ? JSON.parse(text) : {}; } catch (e) {}
+                throw new Error(parseErr(data, res.status) || err.message);
+              }
+            });
+          });
         });
       }
       var gone = Object.keys(deleted || {});
       if (gone.length) {
         chain = chain.then(function () {
-          return client.from("orders").delete().in("id", gone);
-        }).then(function (res) {
-          if (res.error) throw new Error(res.error.message);
+          return req("/rest/v1/orders?id=in.(" + gone.join(",") + ")", { method: "DELETE" });
         });
       }
       return chain;
