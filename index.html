@@ -406,6 +406,15 @@ td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:1
 .note-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:6px;
   font:600 11px var(--sans);padding:3px 8px;cursor:pointer}
 .note-btn.has{color:var(--text);border-color:var(--muted)}
+.pdf-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:6px;
+  font:600 11px var(--sans);padding:3px 8px;cursor:pointer}
+.pdf-btn.has{color:var(--code);border-color:var(--code)}
+.proof-pop{position:fixed;z-index:81;width:280px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px}
+.proof-pop h4{margin:0 0 8px;font-size:13px}
+.proof-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.proof-item:last-of-type{border-bottom:none}
+.proof-item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .note-pop{position:fixed;z-index:80;max-width:280px;background:var(--surface);border:1px solid var(--line);
   border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;white-space:pre-wrap;font-size:12.5px;line-height:1.45}
 .slog-mini{display:flex;gap:4px;margin-top:6px}
@@ -476,6 +485,12 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 .toast .link{color:var(--brass-lit)}
 .scrim{position:fixed;inset:0;background:rgba(6,14,28,.55);z-index:70;display:grid;place-items:center;padding:20px;animation:fadeIn .16s var(--ease);overflow:auto}
 .modal{background:var(--surface);border-radius:11px;box-shadow:var(--shadow);width:100%;max-width:440px;padding:24px;border:1px solid var(--line);animation:modalIn .22s var(--ease)}
+.modal.photo-modal{max-width:420px}
+.crop-stage{width:280px;height:280px;margin:12px auto;border-radius:50%;overflow:hidden;position:relative;background:#111;cursor:grab;touch-action:none;box-shadow:inset 0 0 0 2px var(--line)}
+.crop-stage:active{cursor:grabbing}
+.crop-stage img{position:absolute;user-select:none;-webkit-user-drag:none;max-width:none}
+.crop-zoom{width:100%;margin:8px 0 4px}
+.photo-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .modal.lg{max-width:620px}
 @keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 .modal h3{font-size:19px;font-weight:700;margin-bottom:5px}
@@ -956,6 +971,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
     <div class="who">
       <button class="avatar" id="avatar" type="button" title="Change photo">--</button>
       <input id="avatarFile" type="file" accept="image/*" hidden>
+      <input id="proofFile" type="file" accept="application/pdf,.pdf" hidden>
       <button class="icon-btn" id="btnMenu" aria-haspopup="true" aria-expanded="false">Account ▾</button>
     </div>
   </div>
@@ -985,6 +1001,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
       <span class="eyebrow" id="entryEyebrow"></span>
       <span class="edit-banner" id="editBanner" hidden></span>
       <div class="spacer"></div>
+      <button type="button" class="btn ghost sm" id="btnEntryPdf" title="Attach a proof PDF after the order is saved">Proof PDF</button>
       <span class="eyebrow">Leave anything blank and fill it in later.</span>
     </div>
     <form id="formOrder" novalidate>
@@ -2116,6 +2133,7 @@ function normalizeOrder(o) {
     savedToDrive: tri(o.savedToDrive),
     held: o.held === "TRUE" || o.held === true ? "TRUE" : "FALSE",
     notes: txt(o.notes),
+    proofs: Array.isArray(o.proofs) ? o.proofs : [],
     createdAt: o.createdAt || nowIso(),
     updatedAt: o.updatedAt || nowIso()
   };
@@ -2249,27 +2267,27 @@ function scheduleTable() {
 /* One definition drives the colgroup, the header, and the entry row above
    the table, so the fields you type into sit over the columns they fill. */
 var COLUMNS = [
-  { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 3,    wd: 3,    sort: "seq",  entry: "new" },
-  { key: "date",   label: "Date",     entryLabel: "Date", hint: "Uses the selected day", w: 0,    wd: 4,    sort: "date", entry: "date", dateOnly: true },
-  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 9,    wd: 8.5,  sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
-  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 13,   wd: 12,  sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
-  { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 4.5, wd: 4.2, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
-  { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 4.5, wd: 4.2, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
-  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 3.5,  wd: 3.2,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
-  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 3,    wd: 2.8,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
-  { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 5,    wd: 4.6,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
-  { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 5,    wd: 4.8,  entry: "tri", field: "segProof" },
-  { key: "marking",label: "Mark",     entryLabel: "Etch / logo", hint: "Nothing, etch, logo, or both", w: 6.5, wd: 6, entry: "mark", field: "segMark" },
-  { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 8,    wd: 7.5,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
-  { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 4.6,  wd: 4.3,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
-  { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 4.6, wd: 4.3,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
-  { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 3.6,  wd: 3.4,  sort: "taken", entry: "calc", field: "calcTaken" },
-  { key: "proofRcvdTime", label: "Back", entryLabel: "Proof back", hint: "When the proof returned", w: 4.6, wd: 4.3,  entry: "time", field: "fBack", ph: "9:39" },
-  { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.6,  wd: 3.4,  entry: "calc", field: "calcTurn" },
-  { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.2,  wd: 4,    entry: "tri", field: "segFin" },
-  { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segDrive" },
-  { key: "notes",  label: "Notes",    entryLabel: "Notes", hint: "Anything worth remembering", w: 9.5,  wd: 9,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
-  { key: "acts",   label: "",         entryLabel: "Save", w: 8,    wd: 8,    entry: "acts" }
+  { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 2.8,  wd: 2.6,  sort: "seq",  entry: "new" },
+  { key: "date",   label: "Date",     entryLabel: "Date", hint: "Uses the selected day", w: 0,    wd: 4.2,  sort: "date", entry: "date", dateOnly: true },
+  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 9.4,  wd: 8.8,  sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
+  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 14.5,  wd: 13.2, sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
+  { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 5.2, wd: 4.8, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
+  { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 5.2, wd: 4.8, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
+  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 4.2,  wd: 3.8,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
+  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 3.4,  wd: 3.2,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
+  { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 5.4,  wd: 5,    sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
+  { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 5.4,  wd: 5,    entry: "tri", field: "segProof" },
+  { key: "marking",label: "Mark",     entryLabel: "Etch / logo", hint: "Nothing, etch, logo, or both", w: 6.4, wd: 6, entry: "mark", field: "segMark" },
+  { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 9.2,  wd: 8.4,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
+  { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 5,    wd: 4.6,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
+  { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 5, wd: 4.6,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
+  { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 3.8,  wd: 3.6,  sort: "taken", entry: "calc", field: "calcTaken" },
+  { key: "proofRcvdTime", label: "Back", entryLabel: "Proof back", hint: "When the proof returned", w: 5, wd: 4.6,  entry: "time", field: "fBack", ph: "9:39" },
+  { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.8,  wd: 3.6,  entry: "calc", field: "calcTurn" },
+  { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segFin" },
+  { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
+  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 3.6,  wd: 3.4,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 7.6,  wd: 7.4,  entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
@@ -2855,7 +2873,12 @@ function readRow(o, cols) {
         hold.setAttribute("data-hold", o.id);
         hold.title = isHoldFlag(o) ? "Release this hold" : "Hold this order (red)";
         if (isHoldFlag(o)) hold.style.color = "var(--stop)";
-        td.appendChild(edit); td.appendChild(hold); td.appendChild(del);
+        var pdf = el("button", "btn quiet xs pdf-btn" + ((o.proofs && o.proofs.length) ? " has" : ""),
+                     (o.proofs && o.proofs.length ? "PDF (" + o.proofs.length + ")" : "PDF"));
+        pdf.type = "button";
+        pdf.setAttribute("data-pdfs", o.id);
+        pdf.title = "Proof PDFs";
+        td.appendChild(edit); td.appendChild(hold); td.appendChild(pdf); td.appendChild(del);
     }
     /* Feeds the mobile card layout's ::before label — unused, and harmless,
        on the desktop table where the header row already labels the column. */
@@ -3116,6 +3139,154 @@ function openNotePop(id, anchor) {
   if (top + pop.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - pop.offsetHeight - 6);
   pop.style.left = left + "px";
   pop.style.top = top + "px";
+}
+function proofDb() {
+  return new Promise(function (resolve, reject) {
+    var req = indexedDB.open("caot_proofs_v1", 1);
+    req.onupgradeneeded = function () { req.result.createObjectStore("files"); };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error); };
+  });
+}
+function idbPutProof(key, blob) {
+  return proofDb().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction("files", "readwrite");
+      tx.objectStore("files").put(blob, key);
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  });
+}
+function idbGetProof(key) {
+  return proofDb().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction("files", "readonly");
+      var q = tx.objectStore("files").get(key);
+      q.onsuccess = function () { resolve(q.result || null); };
+      q.onerror = function () { reject(q.error); };
+    });
+  });
+}
+function idbDelProof(key) {
+  return proofDb().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction("files", "readwrite");
+      tx.objectStore("files").delete(key);
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  });
+}
+function closeProofPop() {
+  var pop = $("proofPop");
+  if (pop && pop.parentNode) pop.parentNode.removeChild(pop);
+}
+function openProofPop(id, anchor) {
+  closeProofPop();
+  var o = byId(id);
+  if (!o) return;
+  var pop = el("div", "proof-pop");
+  pop.id = "proofPop";
+  pop.appendChild(el("h4", null, "Proof PDFs · #" + o.seq));
+  (o.proofs || []).forEach(function (p) {
+    var row = el("div", "proof-item");
+    var open = el("button", "btn quiet xs nm", p.name || "proof.pdf");
+    open.type = "button";
+    open.title = "Open PDF";
+    open.addEventListener("click", function () { openProofFile(p); });
+    var rm = el("button", "btn quiet xs", "Remove");
+    rm.type = "button";
+    rm.style.color = "var(--stop)";
+    rm.addEventListener("click", function () { removeProofFile(id, p.id); });
+    row.appendChild(open); row.appendChild(rm);
+    pop.appendChild(row);
+  });
+  if (!(o.proofs && o.proofs.length)) pop.appendChild(el("p", "sub", "No PDFs yet."));
+  var add = el("button", "btn sm", "Upload PDF");
+  add.type = "button";
+  add.style.marginTop = "8px";
+  add.addEventListener("click", function () {
+    var inp = $("proofFile");
+    inp.setAttribute("data-order", id);
+    inp.click();
+  });
+  pop.appendChild(add);
+  document.body.appendChild(pop);
+  var r = anchor.getBoundingClientRect();
+  var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(8, r.right - pop.offsetWidth));
+  var top = r.bottom + 6;
+  if (top + pop.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - pop.offsetHeight - 6);
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+}
+function openProofFile(meta) {
+  if (!meta) return;
+  if (meta.path && window.CAOTCloud && CAOTCloud.enabled() && CAOTCloud.signProof) {
+    CAOTCloud.signProof(meta.path).then(function (url) { window.open(url, "_blank"); })
+      .catch(function (err) { toast(err.message || "Could not open that PDF."); });
+    return;
+  }
+  idbGetProof(meta.idbKey || meta.id).then(function (blob) {
+    if (!blob) { toast("That file is not on this device."); return; }
+    var url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }).catch(function () { toast("Could not open that PDF."); });
+}
+function removeProofFile(orderId, fileId) {
+  var o = byId(orderId);
+  if (!o) return;
+  var hit = (o.proofs || []).filter(function (p) { return p.id === fileId; })[0];
+  o.proofs = (o.proofs || []).filter(function (p) { return p.id !== fileId; });
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { saveFailedModal("proof remove"); return; }
+  if (hit && hit.path && window.CAOTCloud && CAOTCloud.deleteProofFile) {
+    CAOTCloud.deleteProofFile(hit.path).catch(function () {});
+  }
+  if (hit && (hit.idbKey || hit.id)) idbDelProof(hit.idbKey || hit.id).catch(function () {});
+  closeProofPop();
+  scheduleRender();
+  toast("Removed proof PDF.");
+}
+function attachProofPdf(orderId, file) {
+  var o = byId(orderId);
+  if (!o) { toast("Save the order first, then attach the PDF."); return; }
+  if (!file || (file.type && file.type !== "application/pdf" && !/\.pdf$/i.test(file.name || ""))) {
+    toast("Only PDF files can be attached as proofs.");
+    return;
+  }
+  if (file.size > 15 * 1024 * 1024) { toast("Keep proof PDFs under 15 MB."); return; }
+  var rec = {
+    id: uid(),
+    name: file.name || "proof.pdf",
+    size: file.size,
+    uploadedAt: nowIso()
+  };
+  toast("Uploading " + rec.name + "…");
+  var done = function () {
+    o.proofs = (o.proofs || []).concat([rec]);
+    o.updatedAt = nowIso();
+    if (!persistOrders()) { saveFailedModal("proof upload"); return; }
+    scheduleRender();
+    toast("Attached " + rec.name + ".");
+  };
+  if (window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud && CAOTCloud.uploadProof) {
+    CAOTCloud.uploadProof(state.user.key, o.id, rec.id, file).then(function (path) {
+      rec.path = path;
+      rec.stored = "cloud";
+      done();
+    }).catch(function (err) {
+      toast((err && err.message) || "Cloud upload failed — saving on this device.");
+      rec.idbKey = rec.id;
+      rec.stored = "local";
+      idbPutProof(rec.id, file).then(done).catch(function () { toast("Could not save that PDF."); });
+    });
+    return;
+  }
+  rec.idbKey = rec.id;
+  rec.stored = "local";
+  idbPutProof(rec.id, file).then(done).catch(function () { toast("Could not save that PDF."); });
 }
 /* --------------------------------------------------------- entry panel */
 function segValue(id) {
@@ -4021,7 +4192,7 @@ function openMenu() {
   }
   item("Day summary", "Ctrl+D", openSummary);
   item("Change password", null, changePasswordModal);
-  item("Profile photo", null, function () { $("avatarFile").click(); });
+  item("Profile photo", null, openPhotoModal);
   item("Renumber this date", null, function () {
     confirmModal("Renumber " + prettyDate(state.scopeDate),
       "Orders on this date will be numbered 1 upward in their current order.",
@@ -4076,25 +4247,108 @@ function paintAvatar() {
     el.textContent = initials;
   }
 }
-function compressPhoto(file, done) {
-  var reader = new FileReader();
-  reader.onload = function () {
-    var img = new Image();
+function openPhotoModal() {
+  if (!state.user) return;
+  var host = $("modalHost");
+  host.innerHTML = "";
+  var overlay = el("div", "overlay");
+  var box = el("div", "modal photo-modal");
+  box.appendChild(el("h3", null, "Profile photo"));
+  box.appendChild(el("p", "sub", "Pick a file, drag to frame it, then save. This stays on your account."));
+  var pick = el("button", "btn ghost sm", "Choose photo");
+  pick.type = "button";
+  var fileIn = document.createElement("input");
+  fileIn.type = "file"; fileIn.accept = "image/*"; fileIn.hidden = true;
+  var stage = el("div", "crop-stage");
+  var img = document.createElement("img");
+  img.alt = "Crop preview";
+  stage.appendChild(img);
+  var zoom = document.createElement("input");
+  zoom.type = "range"; zoom.min = "1"; zoom.max = "3"; zoom.step = "0.02"; zoom.value = "1"; zoom.className = "crop-zoom";
+  zoom.disabled = true;
+  var crop = { img: null, x: 0, y: 0, scale: 1, min: 1, drag: false, sx: 0, sy: 0, ox: 0, oy: 0 };
+  function layout() {
+    if (!crop.img) return;
+    var boxW = stage.clientWidth, boxH = stage.clientHeight;
+    var w = crop.img.naturalWidth * crop.scale;
+    var h = crop.img.naturalHeight * crop.scale;
+    crop.x = Math.min(0, Math.max(boxW - w, crop.x));
+    crop.y = Math.min(0, Math.max(boxH - h, crop.y));
+    img.style.width = w + "px";
+    img.style.height = h + "px";
+    img.style.left = crop.x + "px";
+    img.style.top = crop.y + "px";
+  }
+  function loadFile(file) {
+    if (!file || !file.type || file.type.indexOf("image/") !== 0) { toast("Choose an image file."); return; }
+    var url = URL.createObjectURL(file);
     img.onload = function () {
-      var size = 256;
-      var canvas = document.createElement("canvas");
-      canvas.width = size; canvas.height = size;
-      var ctx = canvas.getContext("2d");
-      var s = Math.min(img.width, img.height);
-      var sx = (img.width - s) / 2, sy = (img.height - s) / 2;
-      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-      done(canvas.toDataURL("image/jpeg", 0.72));
+      var boxW = stage.clientWidth || 280, boxH = stage.clientHeight || 280;
+      crop.min = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight);
+      crop.scale = crop.min;
+      zoom.min = String(crop.min);
+      zoom.max = String(crop.min * 3);
+      zoom.value = String(crop.min);
+      zoom.disabled = false;
+      crop.x = (boxW - img.naturalWidth * crop.scale) / 2;
+      crop.y = (boxH - img.naturalHeight * crop.scale) / 2;
+      crop.img = img;
+      layout();
     };
-    img.onerror = function () { toast("That image could not be read."); };
-    img.src = reader.result;
-  };
-  reader.onerror = function () { toast("That file could not be read."); };
-  reader.readAsDataURL(file);
+    img.src = url;
+  }
+  pick.addEventListener("click", function () { fileIn.click(); });
+  fileIn.addEventListener("change", function () {
+    var f = this.files && this.files[0];
+    this.value = "";
+    if (f) loadFile(f);
+  });
+  zoom.addEventListener("input", function () {
+    if (!crop.img) return;
+    var next = Number(zoom.value);
+    var cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+    var px = (cx - crop.x) / crop.scale, py = (cy - crop.y) / crop.scale;
+    crop.scale = next;
+    crop.x = cx - px * crop.scale;
+    crop.y = cy - py * crop.scale;
+    layout();
+  });
+  stage.addEventListener("pointerdown", function (e) {
+    if (!crop.img) return;
+    crop.drag = true; crop.sx = e.clientX; crop.sy = e.clientY; crop.ox = crop.x; crop.oy = crop.y;
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", function (e) {
+    if (!crop.drag) return;
+    crop.x = crop.ox + (e.clientX - crop.sx);
+    crop.y = crop.oy + (e.clientY - crop.sy);
+    layout();
+  });
+  stage.addEventListener("pointerup", function () { crop.drag = false; });
+  var actions = el("div", "photo-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  var save = el("button", "btn", "Save");
+  cancel.type = "button"; save.type = "button"; save.disabled = true;
+  img.addEventListener("load", function () { save.disabled = false; });
+  cancel.addEventListener("click", function () { host.innerHTML = ""; });
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) host.innerHTML = ""; });
+  save.addEventListener("click", function () {
+    if (!crop.img) return;
+    var out = 256;
+    var canvas = document.createElement("canvas");
+    canvas.width = out; canvas.height = out;
+    var ctx = canvas.getContext("2d");
+    var factor = out / stage.clientWidth;
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, out, out);
+    ctx.drawImage(crop.img, crop.x * factor, crop.y * factor, crop.img.naturalWidth * crop.scale * factor, crop.img.naturalHeight * crop.scale * factor);
+    setProfilePhoto(canvas.toDataURL("image/jpeg", 0.84));
+    host.innerHTML = "";
+  });
+  actions.appendChild(cancel); actions.appendChild(save);
+  box.appendChild(pick); box.appendChild(fileIn); box.appendChild(stage); box.appendChild(zoom); box.appendChild(actions);
+  overlay.appendChild(box);
+  host.appendChild(overlay);
 }
 function setProfilePhoto(dataUrl) {
   var k = avatarKey();
@@ -4381,15 +4635,18 @@ function wire() {
   bindSplitter();
   $("btnSummary").addEventListener("click", openSummary);
   $("btnMenu").addEventListener("click", function (e) { e.stopPropagation(); openMenu(); });
-  $("avatar").addEventListener("click", function () { $("avatarFile").click(); });
-  $("avatarFile").addEventListener("change", function () {
-    var file = this.files && this.files[0];
-    this.value = "";
-    if (!file) return;
-    if (file.size > 8 * 1024 * 1024) { toast("Use a photo under 8 MB."); return; }
-    compressPhoto(file, setProfilePhoto);
+  $("avatar").addEventListener("click", openPhotoModal);
+  $("btnEntryPdf").addEventListener("click", function () {
+    if (state.inlineId) { $("proofFile").setAttribute("data-order", state.inlineId); $("proofFile").click(); return; }
+    toast("Add the order first, then attach the PDF from the row’s PDF button.");
   });
-
+  $("proofFile").addEventListener("change", function () {
+    var file = this.files && this.files[0];
+    var id = this.getAttribute("data-order");
+    this.value = "";
+    this.removeAttribute("data-order");
+    if (file && id) attachProofPdf(id, file);
+  });
   $("formOrder").addEventListener("submit", submitOrder);
 
   $("chips").addEventListener("click", function (e) {
@@ -4418,6 +4675,8 @@ function wire() {
     if (mk) { cycleMarking(mk.getAttribute("data-cycle-mark")); return; }
     var note = e.target.closest("[data-note]");
     if (note) { openNotePop(note.getAttribute("data-note"), note); return; }
+    var pdfs = e.target.closest("[data-pdfs]");
+    if (pdfs) { openProofPop(pdfs.getAttribute("data-pdfs"), pdfs); return; }
     var slogAdd = e.target.closest("[data-slog-add]");
     if (slogAdd) {
       var sid = slogAdd.getAttribute("data-slog-add");
@@ -4449,6 +4708,7 @@ function wire() {
   });
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".note-pop") && !e.target.closest("[data-note]")) closeNotePop();
+    if (!e.target.closest(".proof-pop") && !e.target.closest("[data-pdfs]") && !e.target.closest("#btnEntryPdf")) closeProofPop();
   });
   $("tbody").addEventListener("dblclick", function (e) {
     if (state.inlineId) return;
