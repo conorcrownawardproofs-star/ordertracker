@@ -3,8 +3,8 @@
   "use strict";
   var cfg = w.CAOT_SUPABASE || {};
   var enabled = !!(w.supabase && cfg.url && cfg.anonKey &&
-    cfg.url.indexOf("https://gytzjasacoixnyilcyeq.supabase.co") === -1 &&
-    cfg.anonKey.indexOf("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5dHpqYXNhY29peG55aWxjeWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MDE2NjcsImV4cCI6MjEwNTA3NzY2N30.TLfdXOjv4uZNyy3lJIzEIdilo4IU6MfR2hqxEZH6200") === -1);
+    cfg.url.indexOf("YOUR-PROJECT") === -1 &&
+    cfg.anonKey.indexOf("YOUR-ANON") === -1);
   var client = null;
   if (enabled) {
     client = w.supabase.createClient(cfg.url, cfg.anonKey, {
