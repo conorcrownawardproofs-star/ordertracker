@@ -353,6 +353,21 @@ td.num.zero{color:var(--muted)}
 .otype.t-int{background:var(--brass-soft);color:var(--brass)}
 html[data-theme="dark"] .otype.t-int{color:var(--brass-lit)}
 .otype.t-sam{background:var(--go-bg);color:var(--go)}
+.otype.t-cor{background:var(--go-bg);color:var(--go)}
+.otype.t-hold{background:var(--stop-bg);color:var(--stop)}
+.splitter{
+  flex:0 0 10px;cursor:row-resize;background:var(--line);position:relative;z-index:6;
+  touch-action:none;
+}
+.splitter::after{
+  content:"";position:absolute;left:50%;top:3px;width:44px;height:4px;margin-left:-22px;
+  border-radius:4px;background:var(--muted);
+}
+.splitter:hover,.splitter.dragging{background:var(--crown-line)}
+.splitter.dragging::after{background:var(--brass-lit)}
+.entrybar.dragging{transition:none!important}
+.shell.dragging{user-select:none}
+.splitter[hidden]{display:none}
 td.notes{font-size:12px;color:var(--text-2);white-space:pre-line}
 td.cust{white-space:pre-line}
 .tags{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
@@ -472,6 +487,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 @media (max-width:760px){
   html,body{height:auto;overflow-y:auto;overflow-x:hidden}
   .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+  .splitter{display:none!important}
   .auth{height:auto;min-height:100vh;min-height:100dvh}
 
   /* ---- header: wrap instead of clipping, search drops to its own row */
@@ -578,7 +594,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 }
 
 @media print{
-  .console,.weekbar,.entrybar,.ribbon,.ledger-bar,.rowacts,.toasts,.appfoot,.tablefoot-buffer{display:none!important}
+  .console,.weekbar,.entrybar,.splitter,.ribbon,.ledger-bar,.rowacts,.toasts,.appfoot,.tablefoot-buffer{display:none!important}
   body,.shell{height:auto;overflow:visible}
   .tablewrap{overflow:visible}
   thead th{background:#fff;border-bottom:2px solid #000}
@@ -818,6 +834,8 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
       <div class="entrygrid" id="entrygrid"></div>
     </form>
   </div>
+
+  <div class="splitter" id="splitbar" title="Drag to resize the entry row vs the log"></div>
 
   <div class="ribbon" id="ribbon"></div>
 
@@ -1619,9 +1637,9 @@ function snapToWeekday(key, forward) {
 }
 
 /* ------------------------------------------------------- status colouring */
-var RX_CODE = /\b(CLC|LEC|WEE|ILS|LOF|COR|CDL|OE|ORDER ?EDIT)\b/;
+var RX_CODE = /\b(CLC|LEC)\b/;
 var RX_GO   = /\b(APPROVED|APPROVAL|SENT|COMPLETE[D]?|DONE|CONFIRMED|OK(?:'D|AYED)?|SHIPPED|CLOSED)\b|SENT!/;
-var RX_HOT  = /\b(HELD ?UP|HOLD|WAITING|WAIT|RUSH|URGENT|ISSUE|PROBLEM|REJECTED|CANCELL?ED|REDO|ERROR|MISSING|CLARIFICATION)\b/;
+var RX_HOT  = /\b(HELD ?UP|\bHOLD\b|WAITING|WAIT|RUSH|URGENT|ISSUE|PROBLEM|REJECTED|CANCELL?ED|REDO|ERROR|MISSING|CLARIFICATION)\b/;
 var RX_WARN = /\b(PROOF|REQUIRED|REQUESTED|24 ?HR|PENDING|REVIEW|JUDGE?MENT|LOGO|STANDARD)\b/;
 function classifyStatus(line) {
   var s = String(line || "").trim();
@@ -1639,15 +1657,27 @@ function statusParts(status) {
     .filter(Boolean)
     .map(function (l) { return { text: l, cls: classifyStatus(l) }; });
 }
-var ACCENT_ORDER = ["t-hot", "t-code", "t-go", "t-warn", "t-plain"];
+function isCompletedOrder(o) {
+  return !!(o && (o.fin === "TRUE" || isClock(o.completionTime)));
+}
+function isCorOrder(o) {
+  if (!o) return false;
+  if (normType(o.otype) === "COR") return true;
+  return /^\s*COR\b/i.test(o.orderId || "");
+}
+function isHoldFlag(o) {
+  return !!(o && (o.held === "TRUE" || o.held === true));
+}
 function rowAccent(order) {
-  var parts = statusParts(order.status);
-  if (!parts.length) return "";
-  for (var i = 0; i < ACCENT_ORDER.length; i++) {
-    for (var j = 0; j < parts.length; j++) {
-      if (parts[j].cls === ACCENT_ORDER[i]) return "k-" + ACCENT_ORDER[i].slice(2);
-    }
-  }
+  /* Priority: HOLD (red) > COR type (green) > completed CLC/LEC (blue)
+     > gold note/status > plain grey. CLC/LEC on an open job no longer
+     paints the whole row blue. */
+  if (isHoldFlag(order) || isHeld(order)) return "k-hot";
+  if (isCorOrder(order)) return "k-go";
+  if ((isCode(order, "CLC") || isCode(order, "LEC")) && isCompletedOrder(order)) return "k-code";
+  var parts = statusParts(order.status).concat(statusParts(order.notes));
+  var i;
+  for (i = 0; i < parts.length; i++) if (parts[i].cls === "t-warn") return "k-warn";
   return "";
 }
 
@@ -1744,7 +1774,7 @@ function saveFailedModal(what) {
     "Back up now", backupJson, "Ignore", function () {});
 }
 /* ------------------------------------------------- order type / qty / money */
-var ORDER_TYPES = ["RTR", "INT", "SAM"];
+var ORDER_TYPES = ["RTR", "INT", "SAM", "COR"];
 function normType(v) {
   var t = String(v == null ? "" : v).trim().toUpperCase().replace(/\s+/g, " ");
   return t.slice(0, 14);
@@ -1807,6 +1837,7 @@ function normalizeOrder(o) {
     proofRcvdTime: txt(o.proofRcvdTime),
     fin: tri(o.fin),
     savedToDrive: tri(o.savedToDrive),
+    held: o.held === "TRUE" || o.held === true ? "TRUE" : "FALSE",
     notes: txt(o.notes),
     createdAt: o.createdAt || nowIso(),
     updatedAt: o.updatedAt || nowIso()
@@ -1841,7 +1872,7 @@ function isLive(o) { return isClock(o.startTime) && !isClock(o.completionTime); 
 function awaitingProof(o) { return o.proof === "TRUE" && !isClock(o.proofRcvdTime); }
 function isCode(o, code) { return new RegExp("\\b" + code + "\\b", "i").test(o.status || ""); }
 function isHeld(o) {
-  /* Hold-ups get written in either column, so scan both. */
+  if (isHoldFlag(o)) return true;
   var lines = String(o.status || "").split("\n").concat(String(o.notes || "").split("\n"));
   return lines.some(function (l) { return classifyStatus(l) === "t-hot"; });
 }
@@ -1943,7 +1974,7 @@ var COLUMNS = [
   { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 8.5,   wd: 8,  sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
   { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 6.5, wd: 6, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
   { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 6.5, wd: 6, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
-  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, or type your own", w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM" },
+  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
   { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
   { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
   { key: "proof",  label: "Proof",    entryLabel: "Proof sent?", hint: "Yes / No / N/A", w: 4,    wd: 4,    entry: "tri", field: "segProof" },
@@ -2462,7 +2493,12 @@ function readRow(o, cols) {
         del.title = "Delete this order";
         del.setAttribute("aria-label", "Delete order");
         del.style.color = "var(--stop)";
-        td.appendChild(edit); td.appendChild(del);
+        var hold = el("button", "btn quiet xs", isHoldFlag(o) ? "Held" : "Hold");
+        hold.type = "button";
+        hold.setAttribute("data-hold", o.id);
+        hold.title = isHoldFlag(o) ? "Release this hold" : "Hold this order (red)";
+        if (isHoldFlag(o)) hold.style.color = "var(--stop)";
+        td.appendChild(edit); td.appendChild(hold); td.appendChild(del);
     }
     /* Feeds the mobile card layout's ::before label — unused, and harmless,
        on the desktop table where the header row already labels the column. */
@@ -2736,6 +2772,7 @@ function submitOrder(e) {
     proofRcvdTime: back.value,
     fin: segValue("segFin"),
     savedToDrive: segValue("segDrive"),
+    held: "FALSE",
     notes: $("fNotes").value.trim(),
     updatedAt: nowIso()
   };
@@ -3481,6 +3518,65 @@ function applyTheme(theme) {
   prefs.theme = theme;
   writeJson(KEY_PREFS, prefs);
 }
+function toggleHold(id) {
+  var o = byId(id);
+  if (!o) return;
+  o.held = isHoldFlag(o) ? "FALSE" : "TRUE";
+  o.updatedAt = nowIso();
+  if (!persistOrders()) {
+    o.held = o.held === "TRUE" ? "FALSE" : "TRUE";
+    saveFailedModal("hold");
+    return;
+  }
+  toast(o.held === "TRUE" ? "Held #" + o.seq + "." : "Released #" + o.seq + ".");
+  scheduleRender();
+}
+function applyEntryHeight(px) {
+  var bar = $("entrybar");
+  if (!bar || bar.classList.contains("collapsed")) return;
+  var min = 120, max = Math.max(180, Math.floor(window.innerHeight * 0.72));
+  var h = Math.max(min, Math.min(max, px));
+  bar.style.height = h + "px";
+  bar.style.maxHeight = h + "px";
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.entryHeight = h;
+  writeJson(KEY_PREFS, prefs);
+}
+function bindSplitter() {
+  var split = $("splitbar");
+  var bar = $("entrybar");
+  if (!split || !bar || split._bound) return;
+  split._bound = true;
+  var startY = 0, startH = 0;
+  var move = function (e) {
+    var y = e.touches ? e.touches[0].clientY : e.clientY;
+    applyEntryHeight(startH + (y - startY));
+  };
+  var up = function () {
+    document.removeEventListener("mousemove", move);
+    document.removeEventListener("mouseup", up);
+    document.removeEventListener("touchmove", move);
+    document.removeEventListener("touchend", up);
+    split.classList.remove("dragging");
+    bar.classList.remove("dragging");
+    document.querySelector(".shell").classList.remove("dragging");
+  };
+  var down = function (e) {
+    if (bar.classList.contains("collapsed")) return;
+    e.preventDefault();
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    startH = bar.getBoundingClientRect().height;
+    split.classList.add("dragging");
+    bar.classList.add("dragging");
+    document.querySelector(".shell").classList.add("dragging");
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+    document.addEventListener("touchmove", move, { passive: false });
+    document.addEventListener("touchend", up);
+  };
+  split.addEventListener("mousedown", down);
+  split.addEventListener("touchstart", down, { passive: false });
+}
 function setPanel(collapsed, animate) {
   var bar = $("entrybar");
   var btn = $("btnPanel");
@@ -3518,6 +3614,16 @@ function setPanel(collapsed, animate) {
   btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
   $("btnPanelLabel").textContent = collapsed ? "Show entry row" : "Hide entry row";
   btn.title = collapsed ? "Show the entry row" : "Hide the entry row";
+  var split = $("splitbar");
+  if (split) split.hidden = !!collapsed;
+  if (collapsed) {
+    bar.style.height = "";
+    bar.style.maxHeight = "0px";
+  } else {
+    var prefs = readJson(KEY_PREFS, {});
+    if (prefs.entryHeight) applyEntryHeight(prefs.entryHeight);
+    else bar.style.maxHeight = "";
+  }
 }
 function panelCollapsed() { return $("entrybar").classList.contains("collapsed"); }
 function togglePanel() {
@@ -3628,6 +3734,7 @@ function wire() {
     applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
   });
   $("btnPanel").addEventListener("click", togglePanel);
+  bindSplitter();
   $("btnSummary").addEventListener("click", openSummary);
   $("btnMenu").addEventListener("click", function (e) { e.stopPropagation(); openMenu(); });
 
@@ -3658,6 +3765,8 @@ function wire() {
     var inl = e.target.closest("[data-inline]");
     if (inl) { startInline(inl.getAttribute("data-inline")); return; }
 
+    var hd = e.target.closest("[data-hold]");
+    if (hd) { toggleHold(hd.getAttribute("data-hold")); return; }
     var dl = e.target.closest("[data-del]");
     if (dl) {
       var id = dl.getAttribute("data-del");
