@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Award Order Tracker — Crown Awards International HQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -592,6 +592,24 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   .sum-grid{grid-template-columns:repeat(2,1fr)}
   .auth-brand .foot{display:none}
 }
+/* Phone rescue: leftover desktop heights / wide table / page-flow must not
+   pin the app to a locked 100vh box on a 402px screen. */
+@media (max-width:760px){
+  html,body,html.page-flow,html.page-flow body{
+    height:auto!important;min-height:100svh;overflow-y:auto!important;overflow-x:hidden!important;
+  }
+  .shell,html.page-flow .shell{
+    height:auto!important;min-height:100svh;overflow:visible!important;
+  }
+  .entrybar:not(.collapsed){
+    height:auto!important;max-height:none!important;overflow:visible!important;
+  }
+  table{min-width:0!important;width:100%!important;table-layout:auto!important}
+  .tablewrap,html.page-flow .tablewrap{overflow:visible!important;min-height:0!important}
+  .cm-hub-btn{bottom:max(10px,env(safe-area-inset-bottom));right:10px}
+  tbody td:not(.rowacts):not(.seq):empty{display:none}
+}
+
 @media (max-width:420px){
   .auth-brand{padding:26px 20px}
   .auth-brand h1{font-size:27px}
