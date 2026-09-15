@@ -131,11 +131,9 @@ html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
 .shell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
 /* Open entry: the document itself can scroll so the log is always reachable
    even when the add-an-order fields do not overflow. */
-html.page-flow,html.page-flow body{height:auto;overflow-y:auto;overflow-x:hidden}
-html.page-flow .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
-html.page-flow .tablewrap{overflow-y:auto;min-height:36vh}
-html.page-flow .console{position:sticky;top:0;z-index:30}
-html.page-flow thead,html.page-flow thead th{top:0}
+html.page-flow,html.page-flow body{height:100%;overflow:hidden}
+html.page-flow .shell{height:100vh;height:100dvh;overflow:hidden}
+html.page-flow .tablewrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
 .console{background:linear-gradient(180deg,var(--crown-2) 0%,var(--crown) 100%);
   color:var(--crown-ink);padding:0 22px;display:flex;align-items:center;gap:16px;height:68px;flex:0 0 auto;
   box-shadow:0 1px 0 rgba(0,0,0,.25)}
@@ -332,17 +330,18 @@ html[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--code);color:
 .ledger-bar .spacer{flex:1}
 
 /* ---------------- table ---------------- */
-.tablewrap{flex:1 1 auto;overflow-y:auto;overflow-x:auto;background:var(--surface);min-height:150px}
+.tablewrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;background:var(--surface)}
 .tablewrap.in-left{animation:slideFromLeft .26s var(--ease)}
 .tablewrap.in-right{animation:slideFromRight .26s var(--ease)}
 @keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
 @keyframes slideFromLeft{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px}
-thead{position:sticky;top:0;z-index:8}
-thead th{position:sticky;top:0;z-index:8;background:var(--surface-2);text-align:left;padding:8px 8px;
+thead{position:sticky;top:0;z-index:12}
+thead th{position:sticky;top:0;z-index:12;background:var(--surface-2);text-align:left;padding:8px 8px;
   font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--line);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   box-shadow:0 6px 10px -8px rgba(18,22,28,.45)}
+thead th.note-hd{min-width:56px}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--text)}
 thead th .arrow{opacity:.3;margin-left:3px}
@@ -409,12 +408,13 @@ td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:1
 .pdf-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:6px;
   font:600 11px var(--sans);padding:3px 8px;cursor:pointer}
 .pdf-btn.has{color:var(--code);border-color:var(--code)}
-.proof-pop{position:fixed;z-index:81;width:280px;background:var(--surface);border:1px solid var(--line);
-  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px}
-.proof-pop h4{margin:0 0 8px;font-size:13px}
-.proof-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.proof-drop{border:1px dashed var(--line);border-radius:10px;padding:18px 14px;text-align:center;color:var(--text-2);
+  background:var(--surface-2);cursor:pointer;margin:10px 0 14px}
+.proof-drop.hot{border-color:var(--code);color:var(--code);background:var(--code-bg)}
+.proof-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 .proof-item:last-of-type{border-bottom:none}
-.proof-item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proof-item .nm{flex:1;min-width:0}
+.proof-item .sz{color:var(--muted);font-size:11.5px;font-family:var(--mono)}
 .note-pop{position:fixed;z-index:80;max-width:280px;background:var(--surface);border:1px solid var(--line);
   border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;white-space:pre-wrap;font-size:12.5px;line-height:1.45}
 .slog-mini{display:flex;gap:4px;margin-top:6px}
@@ -511,7 +511,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   .entrygrid{grid-template-columns:repeat(4,1fr)!important}
   .ecell{grid-column:span 1}
   .ecell.wide{grid-column:span 2}
-  .tablewrap{overflow-x:auto}
+  .tablewrap{overflow-x:hidden;overflow-y:auto}
   table{table-layout:fixed;min-width:0}
 }
 @media (max-width:900px){
@@ -971,7 +971,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
     <div class="who">
       <button class="avatar" id="avatar" type="button" title="Change photo">--</button>
       <input id="avatarFile" type="file" accept="image/*" hidden>
-      <input id="proofFile" type="file" accept="application/pdf,.pdf" hidden>
+      <input id="proofFile" type="file" accept="application/pdf,.pdf" multiple hidden>
       <button class="icon-btn" id="btnMenu" aria-haspopup="true" aria-expanded="false">Account ▾</button>
     </div>
   </div>
@@ -2286,8 +2286,8 @@ var COLUMNS = [
   { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.8,  wd: 3.6,  entry: "calc", field: "calcTurn" },
   { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segFin" },
   { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
-  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 3.6,  wd: 3.4,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
-  { key: "acts",   label: "",         entryLabel: "Save", w: 7.6,  wd: 7.4,  entry: "acts" }
+  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 5.2,  wd: 5,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 8.2,  wd: 8,    entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
@@ -2316,6 +2316,7 @@ function buildChrome() {
       th.appendChild(el("span", "arrow", "↕"));
     }
     if (c.key === "acts") th.className = "rowacts";
+    if (c.key === "notes") th.className = ((th.className || "") + " note-hd").trim();
     head.appendChild(th);
   });
   var sig = cols.map(function (c) { return c.key; }).join("|");
@@ -3179,46 +3180,67 @@ function idbDelProof(key) {
   });
 }
 function closeProofPop() {
-  var pop = $("proofPop");
-  if (pop && pop.parentNode) pop.parentNode.removeChild(pop);
+  var host = $("modalHost");
+  if (host && host.querySelector(".proof-modal")) host.innerHTML = "";
 }
-function openProofPop(id, anchor) {
-  closeProofPop();
+function prettyBytes(n) {
+  n = Number(n) || 0;
+  if (n < 1024) return n + " B";
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+  return (n / (1024 * 1024)).toFixed(1) + " MB";
+}
+function openProofPop(id) {
   var o = byId(id);
   if (!o) return;
-  var pop = el("div", "proof-pop");
-  pop.id = "proofPop";
-  pop.appendChild(el("h4", null, "Proof PDFs · #" + o.seq));
+  var host = $("modalHost");
+  host.innerHTML = "";
+  var overlay = el("div", "scrim");
+  var box = el("div", "modal proof-modal");
+  box.appendChild(el("h3", null, "Proof PDFs"));
+  box.appendChild(el("p", "sub", "#" + o.seq + (o.orderId ? " · " + o.orderId : "") + (o.customer ? " · " + o.customer : "")));
+  var list = el("div");
   (o.proofs || []).forEach(function (p) {
     var row = el("div", "proof-item");
-    var open = el("button", "btn quiet xs nm", p.name || "proof.pdf");
+    var meta = el("div", "nm");
+    meta.appendChild(el("b", null, p.name || "proof.pdf"));
+    meta.appendChild(document.createElement("br"));
+    meta.appendChild(el("span", "sz", prettyBytes(p.size) + (p.stored === "cloud" ? " · live" : " · this device")));
+    var open = el("button", "btn quiet xs", "Open");
     open.type = "button";
-    open.title = "Open PDF";
     open.addEventListener("click", function () { openProofFile(p); });
     var rm = el("button", "btn quiet xs", "Remove");
     rm.type = "button";
     rm.style.color = "var(--stop)";
     rm.addEventListener("click", function () { removeProofFile(id, p.id); });
-    row.appendChild(open); row.appendChild(rm);
-    pop.appendChild(row);
+    row.appendChild(meta); row.appendChild(open); row.appendChild(rm);
+    list.appendChild(row);
   });
-  if (!(o.proofs && o.proofs.length)) pop.appendChild(el("p", "sub", "No PDFs yet."));
-  var add = el("button", "btn sm", "Upload PDF");
-  add.type = "button";
-  add.style.marginTop = "8px";
-  add.addEventListener("click", function () {
+  if (!(o.proofs && o.proofs.length)) list.appendChild(el("p", "sub", "No proof PDFs on this order yet."));
+  var drop = el("div", "proof-drop", "Drop PDFs here, or click to choose files");
+  function takeFiles(files) {
+    Array.prototype.forEach.call(files || [], function (f) { attachProofPdf(id, f); });
+  }
+  drop.addEventListener("click", function () {
     var inp = $("proofFile");
     inp.setAttribute("data-order", id);
     inp.click();
   });
-  pop.appendChild(add);
-  document.body.appendChild(pop);
-  var r = anchor.getBoundingClientRect();
-  var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(8, r.right - pop.offsetWidth));
-  var top = r.bottom + 6;
-  if (top + pop.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - pop.offsetHeight - 6);
-  pop.style.left = left + "px";
-  pop.style.top = top + "px";
+  drop.addEventListener("dragover", function (e) { e.preventDefault(); drop.classList.add("hot"); });
+  drop.addEventListener("dragleave", function () { drop.classList.remove("hot"); });
+  drop.addEventListener("drop", function (e) {
+    e.preventDefault();
+    drop.classList.remove("hot");
+    takeFiles(e.dataTransfer && e.dataTransfer.files);
+  });
+  var actions = el("div", "photo-actions");
+  var close = el("button", "btn ghost", "Close");
+  close.type = "button";
+  close.addEventListener("click", closeProofPop);
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) closeProofPop(); });
+  actions.appendChild(close);
+  box.appendChild(list); box.appendChild(drop); box.appendChild(actions);
+  overlay.appendChild(box);
+  host.appendChild(overlay);
 }
 function openProofFile(meta) {
   if (!meta) return;
@@ -3245,9 +3267,9 @@ function removeProofFile(orderId, fileId) {
     CAOTCloud.deleteProofFile(hit.path).catch(function () {});
   }
   if (hit && (hit.idbKey || hit.id)) idbDelProof(hit.idbKey || hit.id).catch(function () {});
-  closeProofPop();
   scheduleRender();
   toast("Removed proof PDF.");
+  openProofPop(orderId);
 }
 function attachProofPdf(orderId, file) {
   var o = byId(orderId);
@@ -3270,6 +3292,7 @@ function attachProofPdf(orderId, file) {
     if (!persistOrders()) { saveFailedModal("proof upload"); return; }
     scheduleRender();
     toast("Attached " + rec.name + ".");
+    openProofPop(orderId);
   };
   if (window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud && CAOTCloud.uploadProof) {
     CAOTCloud.uploadProof(state.user.key, o.id, rec.id, file).then(function (path) {
@@ -4251,7 +4274,7 @@ function openPhotoModal() {
   if (!state.user) return;
   var host = $("modalHost");
   host.innerHTML = "";
-  var overlay = el("div", "overlay");
+  var overlay = el("div", "scrim");
   var box = el("div", "modal photo-modal");
   box.appendChild(el("h3", null, "Profile photo"));
   box.appendChild(el("p", "sub", "Pick a file, drag to frame it, then save. This stays on your account."));
@@ -4429,7 +4452,7 @@ function toggleHold(id) {
 function applyEntryHeight(px) {
   var bar = $("entrybar");
   if (!bar || bar.classList.contains("collapsed")) return;
-  var min = 120, max = Math.max(220, Math.floor(window.innerHeight * 0.88));
+  var min = 120, max = Math.max(180, Math.floor(window.innerHeight * 0.58));
   var h = Math.max(min, Math.min(max, px));
   bar.style.height = h + "px";
   bar.style.maxHeight = h + "px";
@@ -4641,11 +4664,11 @@ function wire() {
     toast("Add the order first, then attach the PDF from the row’s PDF button.");
   });
   $("proofFile").addEventListener("change", function () {
-    var file = this.files && this.files[0];
+    var files = this.files ? Array.prototype.slice.call(this.files) : [];
     var id = this.getAttribute("data-order");
     this.value = "";
     this.removeAttribute("data-order");
-    if (file && id) attachProofPdf(id, file);
+    if (id) files.forEach(function (file) { attachProofPdf(id, file); });
   });
   $("formOrder").addEventListener("submit", submitOrder);
 
@@ -4708,7 +4731,6 @@ function wire() {
   });
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".note-pop") && !e.target.closest("[data-note]")) closeNotePop();
-    if (!e.target.closest(".proof-pop") && !e.target.closest("[data-pdfs]") && !e.target.closest("#btnEntryPdf")) closeProofPop();
   });
   $("tbody").addEventListener("dblclick", function (e) {
     if (state.inlineId) return;
