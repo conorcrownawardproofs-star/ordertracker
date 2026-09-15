@@ -129,6 +129,13 @@ html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
 
 /* ---------------- shell ---------------- */
 .shell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+/* Open entry: the document itself can scroll so the log is always reachable
+   even when the add-an-order fields do not overflow. */
+html.page-flow,html.page-flow body{height:auto;overflow-y:auto;overflow-x:hidden}
+html.page-flow .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+html.page-flow .tablewrap{overflow:visible;min-height:42vh}
+html.page-flow .console{position:sticky;top:0;z-index:30}
+html.page-flow thead,html.page-flow thead th{top:68px}
 .console{background:linear-gradient(180deg,var(--crown-2) 0%,var(--crown) 100%);
   color:var(--crown-ink);padding:0 22px;display:flex;align-items:center;gap:16px;height:68px;flex:0 0 auto;
   box-shadow:0 1px 0 rgba(0,0,0,.25)}
@@ -2799,7 +2806,10 @@ function submitOrder(e) {
     state.flashId = rec.id;
     clearForm();
     render();
-    $("fOrderId").focus();
+    setPanel(true, true);
+    var prefsHide = readJson(KEY_PREFS, {});
+    prefsHide.panelHidden = true;
+    writeJson(KEY_PREFS, prefsHide);
 
     /* An order added while a filter or a search is active lands in the ledger
        but not on screen, which reads exactly like a failed save. Say so, and
@@ -3609,6 +3619,7 @@ function setPanel(collapsed, animate) {
     };
     bar.addEventListener("transitionend", done);
   }
+  document.documentElement.classList.toggle("page-flow", !collapsed);
   document.documentElement.classList.remove("page-scroll");
   bar.setAttribute("aria-hidden", collapsed ? "true" : "false");
   btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
