@@ -191,7 +191,7 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 /* Open state scrolls inside itself and can be dragged shorter, so the entry
    fields and the ledger are both usable at once instead of one pushing the
    other off the screen. */
-.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;max-height:42vh;overscroll-behavior:contain}
+.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;max-height:42vh}
 .entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden}
 .entrybar::-webkit-scrollbar{width:10px}
 .entrybar::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
@@ -425,7 +425,7 @@ td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:1
 .muted-cell{color:var(--muted)}
 td.cust{white-space:pre-line}
 .tags{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
-.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;line-height:1.45;max-width:100%;overflow-wrap:anywhere}
+.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;line-height:1.45;max-width:100%;overflow-wrap:break-word}
 .tag.t-code{background:var(--code-bg);color:var(--code)}
 .tag.t-go{background:var(--go-bg);color:var(--go)}
 .tag.t-warn{background:var(--hold-bg);color:var(--hold)}
@@ -444,7 +444,7 @@ td.cust{white-space:pre-line}
 tr:hover .nowbtn{opacity:1}
 .nowbtn:hover{color:var(--code);border-color:var(--code);border-style:solid}
 .running{color:var(--code);font-weight:600}
-.rowacts{text-align:right;white-space:nowrap;min-width:148px;padding-right:12px!important}
+.rowacts{text-align:right;padding-right:12px!important}
 .rowacts button{opacity:1;transition:opacity .12s var(--ease)}
 tr:hover .rowacts button,tr.editing .rowacts button{opacity:1}
 .cellinput{width:100%;padding:5px 6px;font-size:12.5px;border-radius:5px;border:1px solid var(--line);
@@ -779,6 +779,48 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
 }
 </style>
 <style>
+  /* ============ Desktop: one page that scrolls ============
+     The document is the scroller. The entry panel can still be sized with the
+     bar (and scrolls inside itself when shorter than its fields); once it hits
+     its end the wheel carries on down the page. The column header row sticks
+     to the top of the window while the log is on screen, and the totals bar
+     sticks to the bottom. Nothing is wider than the window. */
+  @media (min-width:761px){
+    html{height:auto;overflow-x:hidden;overflow-y:auto}
+    body{height:auto;overflow:visible}          /* body must NOT be a scroller or sticky breaks */
+    .shell{height:auto;min-height:100vh;overflow:visible}
+    .tablewrap{flex:none;min-height:0;overflow:visible;max-width:100%}
+    .tablewrap table{width:100%;max-width:100%;table-layout:fixed}
+    thead,thead th{position:sticky;top:0;z-index:12}
+    thead th{box-shadow:inset 0 -1px 0 var(--line)}
+    tbody td{overflow-wrap:break-word;word-break:normal}
+    /* Header labels wrap to two lines instead of turning into "Amou…". */
+    thead th{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2;vertical-align:bottom;
+      padding:8px 6px;overflow-wrap:normal;hyphens:none}
+    thead th.note-hd{min-width:0}
+    tbody td{padding-left:6px;padding-right:6px}
+    td.num{white-space:nowrap;padding-right:10px!important}
+    td .mark-chip{max-width:100%;overflow-wrap:normal;word-break:keep-all;line-height:1.25}
+    /* Row buttons sit two per line rather than a tall stack of four. */
+    td.rowacts{display:table-cell}
+    td.rowacts .btn,td.rowacts button{padding:3px 6px}
+    tbody td .tag,tbody td .pill,tbody td .mark-chip{max-width:100%;white-space:normal}
+    td.rowacts{white-space:normal}
+    td.rowacts .btn,td.rowacts button{margin:2px 0 2px 2px;max-width:100%}
+    @media (max-width:1280px){
+      table{font-size:12px}
+      td.num,td.oid{font-size:11.5px}
+      .tag{padding:2px 4px}
+      tbody td{padding-left:4px;padding-right:4px}
+      thead th{padding:8px 4px;font-size:10.5px}
+      td .pill{padding:2px 5px;font-size:10.5px}
+      td .mark-chip{padding:2px 4px;font-size:10.5px}
+    }
+    .cellinput{max-width:100%;min-width:0}
+    .ribbon,.ledger-bar,.appfoot{max-width:100%}
+    .ledger-bar{flex-wrap:wrap;row-gap:8px}
+    .appfoot{position:sticky;bottom:0;z-index:20;box-shadow:0 -1px 0 var(--line)}
+  }
   /* Shared return-to-hub control — scoped so it won't collide with app styles */
   .cm-hub-btn {
     position: fixed;
@@ -2301,7 +2343,21 @@ function activeColumns() {
   var showDate = state.scope !== "day";
   return COLUMNS.filter(function (c) { return !c.dateOnly || showDate; });
 }
-function columnWidth(c) { return (state.scope !== "day" ? c.wd : c.w) + "%"; }
+/* The raw widths add up to ~117-121%, which is what pushed the log past the
+   screen edge. Scale them so the visible columns always total exactly 100%. */
+/* Relative widths tuned so short values ("19", "RTR", "$1,234.56") never get
+   chopped mid-word on a laptop screen. Unknown keys fall back to 60. */
+var COL_WEIGHT = {
+  seq: 36, date: 70, placedDate: 70, orderId: 86, customer: 128, reqShipDate: 70, eventDate: 70,
+  otype: 50, qty: 40, amount: 84, proof: 52, marking: 80, status: 112,
+  startTime: 60, completionTime: 60, taken: 50, proofRcvdTime: 60, turn: 50,
+  fin: 58, savedToDrive: 54, notes: 50, acts: 104
+};
+function columnWidth(c) {
+  var wOf = function (k) { return COL_WEIGHT[k.key] || 60; };
+  var total = activeColumns().reduce(function (t, k) { return t + wOf(k); }, 0) || 100;
+  return ((wOf(c) / total) * 100).toFixed(3) + "%";
+}
 
 /* Rebuilding the entry row throws away whatever is half-typed in it. The row
    only needs rebuilding when the set of columns changes (the Date column comes
@@ -4571,52 +4627,6 @@ function bindSplitter() {
       if (prefs.entryHeight && !bar.classList.contains("collapsed")) applyEntryHeight(prefs.entryHeight);
     }, 120);
   });
-  bindScrollHandoff(bar, $("tablewrap"));
-}
-/* The entry panel and the log are separate scroll areas side by side in a
-   one-screen shell, so the browser never passes scrolling from one to the
-   other. This does it by hand: once the panel hits its bottom, the wheel keeps
-   going into the log; once the log is back at its top, scrolling up carries
-   on into the panel. Inner scrollers (status list, notes) still get first go. */
-function bindScrollHandoff(bar, log) {
-  if (!bar || !log || bar._handoff) return;
-  bar._handoff = true;
-  var desktop = function () { return window.matchMedia("(min-width:761px)").matches; };
-  var lineH = 16;
-  var dy = function (e) {
-    if (e.deltaMode === 1) return e.deltaY * lineH;
-    if (e.deltaMode === 2) return e.deltaY * window.innerHeight;
-    return e.deltaY;
-  };
-  var canScroll = function (node, d) {
-    if (d > 0) return node.scrollTop + node.clientHeight < node.scrollHeight - 1;
-    return node.scrollTop > 0;
-  };
-  /* Is there a scrollable box between the pointer and `root` that can still move? */
-  var innerCanScroll = function (target, root, d) {
-    for (var n = target; n && n !== root; n = n.parentElement) {
-      if (n.scrollHeight > n.clientHeight + 1) {
-        var oy = getComputedStyle(n).overflowY;
-        if ((oy === "auto" || oy === "scroll") && canScroll(n, d)) return true;
-      }
-    }
-    return false;
-  };
-  bar.addEventListener("wheel", function (e) {
-    if (!desktop() || e.ctrlKey || bar.classList.contains("collapsed")) return;
-    var d = dy(e);
-    if (d <= 0 || innerCanScroll(e.target, bar, d) || canScroll(bar, d)) return;
-    e.preventDefault();
-    log.scrollTop += d;
-  }, { passive: false });
-  log.addEventListener("wheel", function (e) {
-    if (!desktop() || e.ctrlKey || bar.classList.contains("collapsed")) return;
-    var d = dy(e);
-    if (d >= 0 || innerCanScroll(e.target, log, d) || log.scrollTop > 0) return;
-    if (!canScroll(bar, d)) return;
-    e.preventDefault();
-    bar.scrollTop += d;
-  }, { passive: false });
 }
 function setPanel(collapsed, animate) {
   var bar = $("entrybar");
