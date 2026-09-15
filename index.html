@@ -52,8 +52,8 @@ html[data-theme="dark"]{
   --row-hover:rgba(255,255,255,.07);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+html,body{height:100%;overflow:hidden}
+body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 :focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-radius:4px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important}}
 
@@ -128,12 +128,7 @@ html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
 .steps span.on{background:var(--brass)}
 
 /* ---------------- shell ---------------- */
-.shell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-/* Open entry: the document itself can scroll so the log is always reachable
-   even when the add-an-order fields do not overflow. */
-html.page-flow,html.page-flow body{height:100%;overflow:hidden}
-html.page-flow .shell{height:100vh;height:100dvh;overflow:hidden}
-html.page-flow .tablewrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}
+.shell{height:100%;display:flex;flex-direction:column;overflow:hidden}
 .console{background:linear-gradient(180deg,var(--crown-2) 0%,var(--crown) 100%);
   color:var(--crown-ink);padding:0 22px;display:flex;align-items:center;gap:16px;height:68px;flex:0 0 auto;
   box-shadow:0 1px 0 rgba(0,0,0,.25)}
@@ -196,8 +191,7 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 /* Open state scrolls inside itself and can be dragged shorter, so the entry
    fields and the ledger are both usable at once instead of one pushing the
    other off the screen. */
-.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;overscroll-behavior:auto;resize:vertical}
-.entrybar.page-pass{overflow:visible!important}
+.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;max-height:42vh;resize:vertical}
 .entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden;resize:none}
 .entrybar::-webkit-scrollbar{width:10px}
 .entrybar::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
@@ -330,7 +324,7 @@ html[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--code);color:
 .ledger-bar .spacer{flex:1}
 
 /* ---------------- table ---------------- */
-.tablewrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;background:var(--surface)}
+.tablewrap{flex:1 1 auto;min-height:180px;overflow:auto;background:var(--surface)}
 .tablewrap.in-left{animation:slideFromLeft .26s var(--ease)}
 .tablewrap.in-right{animation:slideFromRight .26s var(--ease)}
 @keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
@@ -483,7 +477,13 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 .toast.out{animation:toastOut .18s var(--ease) forwards}
 @keyframes toastOut{to{opacity:0;transform:translateY(8px) scale(.98)}}
 .toast .link{color:var(--brass-lit)}
-.scrim{position:fixed;inset:0;background:rgba(6,14,28,.55);z-index:70;display:grid;place-items:center;padding:20px;animation:fadeIn .16s var(--ease);overflow:auto}
+#modalHost{position:fixed;inset:0;z-index:80;pointer-events:none}
+#modalHost:not(:empty){pointer-events:auto}
+.scrim{position:absolute;inset:0;background:rgba(6,14,28,.55);z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .16s var(--ease)}
+.datefield{position:relative}
+input[type="date"]{width:100%;padding:9px 28px 9px 11px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--text);font-family:var(--mono);font-size:13.5px}
+input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;width:14px;height:14px;margin:0}
 .modal{background:var(--surface);border-radius:11px;box-shadow:var(--shadow);width:100%;max-width:440px;padding:24px;border:1px solid var(--line);animation:modalIn .22s var(--ease)}
 .modal.photo-modal{max-width:420px}
 .crop-stage{width:280px;height:280px;margin:12px auto;border-radius:50%;overflow:hidden;position:relative;background:#111;cursor:grab;touch-action:none;box-shadow:inset 0 0 0 2px var(--line)}
@@ -2119,6 +2119,7 @@ function normalizeOrder(o) {
     customer: txt(o.customer).trim(),
     reqShipDate: parseDay(o.reqShipDate),
     eventDate: parseDay(o.eventDate),
+    placedDate: parseDay(o.placedDate),
     otype: normType(o.otype),
     qty: parseQty(o.qty),
     amount: parseMoney(o.amount),
@@ -2188,7 +2189,7 @@ function matchesFilter(o) {
 }
 function searchText(o) {
   if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
-    o.__hay = [o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+    o.__hay = [o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
                o.amount === "" ? "" : money(o.amount), o.status, o.marking, o.notes,
                o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
     o.__hayStamp = o.updatedAt;
@@ -2268,8 +2269,9 @@ function scheduleTable() {
    the table, so the fields you type into sit over the columns they fill. */
 var COLUMNS = [
   { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 2.8,  wd: 2.6,  sort: "seq",  entry: "new" },
-  { key: "date",   label: "Date",     entryLabel: "Date", hint: "Uses the selected day", w: 0,    wd: 4.2,  sort: "date", entry: "date", dateOnly: true },
-  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 9.4,  wd: 8.8,  sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
+  { key: "date",   label: "Date",     entryLabel: "Log date", hint: "Uses the selected day", w: 0,    wd: 4.2,  sort: "date", entry: "date", dateOnly: true },
+  { key: "placedDate", label: "Placed", entryLabel: "Date placed", hint: "When the customer placed it", w: 5.4, wd: 5, sort: "placedDate", entry: "dayfield", field: "fPlacedDate" },
+  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 8.8,  wd: 8.2,  sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
   { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 14.5,  wd: 13.2, sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
   { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 5.2, wd: 4.8, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
   { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 5.2, wd: 4.8, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
@@ -2339,7 +2341,7 @@ var ENTRY_SPAN = {
 };
 /* Every text-ish field in the entry row, in one place, so caching, clearing
    and draft-saving can never drift out of sync with the fields on screen. */
-var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
+var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fPlacedDate", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
                       "fStatus", "fStart", "fDone", "fBack", "fNotes"];
 var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive", "segMark"];
 function buildEntryRow(cols) {
@@ -2389,11 +2391,13 @@ function buildEntryRow(cols) {
         cell.appendChild(dl);
       }
     } else if (c.entry === "dayfield") {
+      var wrap = el("div", "datefield");
       var di = document.createElement("input");
       di.type = "date";
       di.id = c.field;
       di.className = "mono";
-      cell.appendChild(di);
+      wrap.appendChild(di);
+      cell.appendChild(wrap);
     } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
       var input = document.createElement("input");
       input.type = "text"; input.id = c.field; input.placeholder = c.ph || "";
@@ -2792,6 +2796,7 @@ function readRow(o, cols) {
       case "date": td = el("td", "tm", shortDate(o.date)); break;
       case "orderId": td = el("td", "oid", o.orderId); break;
       case "customer": td = el("td", "cust", o.customer); break;
+      case "placedDate": td = el("td", "tm", o.placedDate ? shortDate(o.placedDate) : "—"); break;
       case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
       case "eventDate": td = el("td", "tm", o.eventDate ? shortDate(o.eventDate) : "—"); break;
       case "otype":
@@ -2937,6 +2942,11 @@ function inlineRow(o, cols) {
         td.appendChild(fields.amount);
         break;
       case "customer": fields.customer = mk("textarea", "", o.customer, "Customer"); td.appendChild(fields.customer); break;
+      case "placedDate":
+        fields.placedDate = mk("input", "mono", o.placedDate || "", "YYYY-MM-DD");
+        fields.placedDate.type = "date";
+        td.appendChild(fields.placedDate);
+        break;
       case "reqShipDate":
         fields.reqShipDate = mk("input", "mono", o.reqShipDate || "", "YYYY-MM-DD");
         fields.reqShipDate.type = "date";
@@ -3049,6 +3059,7 @@ function saveInline(id) {
   if (f.date && /^\d{4}-\d{2}-\d{2}$/.test(f.date.value)) o.date = snapToWeekday(f.date.value);
   o.orderId = f.orderId.value.trim();
   o.customer = f.customer.value.trim();
+  if (f.placedDate) o.placedDate = parseDay(f.placedDate.value);
   if (f.reqShipDate) o.reqShipDate = parseDay(f.reqShipDate.value);
   if (f.eventDate) o.eventDate = parseDay(f.eventDate.value);
   if (f.otype) o.otype = normType(f.otype.value);
@@ -3414,6 +3425,7 @@ function submitOrder(e) {
 
   var fields = {
     orderId: orderId, customer: customer,
+    placedDate: parseDay($("fPlacedDate") ? $("fPlacedDate").value : ""),
     reqShipDate: parseDay($("fShipDate") ? $("fShipDate").value : ""),
     eventDate: parseDay($("fEventDate") ? $("fEventDate").value : ""),
     otype: normType($("fType") ? $("fType").value : ""),
@@ -3736,14 +3748,14 @@ function csvCell(v) {
 function exportCsv() {
   var rows = visibleOrders();
   if (!rows.length) { toast("There is nothing in view to export."); return; }
-  var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
+  var head = ["#", "Date", "Date Placed", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
               "PROOF?", "Marking", "Status",
               "Time Started", "Time of Completion", "Time Taken (min)",
               "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
   var lines = [head.map(csvCell).join(",")];
   rows.forEach(function (o) {
     var taken = timeTaken(o), turn = turnaround(o);
-    lines.push([o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+    lines.push([o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
                 o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.marking, o.status,
                 o.startTime, o.completionTime, taken === null ? "" : taken,
                 o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
@@ -4452,12 +4464,10 @@ function toggleHold(id) {
 function applyEntryHeight(px) {
   var bar = $("entrybar");
   if (!bar || bar.classList.contains("collapsed")) return;
-  var min = 120, max = Math.max(180, Math.floor(window.innerHeight * 0.58));
+  var min = 120, max = Math.max(160, Math.floor(window.innerHeight * 0.42));
   var h = Math.max(min, Math.min(max, px));
   bar.style.height = h + "px";
   bar.style.maxHeight = h + "px";
-  if (bar.scrollHeight <= h + 4) bar.classList.add("page-pass");
-  else bar.classList.remove("page-pass");
   var prefs = readJson(KEY_PREFS, {});
   prefs.entryHeight = h;
   writeJson(KEY_PREFS, prefs);
