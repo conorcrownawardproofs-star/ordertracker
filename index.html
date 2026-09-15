@@ -988,6 +988,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
     <div class="spacer"></div>
     <button class="btn ghost sm" id="btnExportCsv">Export CSV</button>
     <button class="btn ghost sm" id="btnBackup">Back up</button>
+    <button class="btn ghost sm" id="btnRecoverLocal">Recover local</button>
     <button class="btn ghost sm" id="btnCopySync">Copy sync</button>
     <button class="btn ghost sm" id="btnPasteSync">Paste sync</button>
     <button class="btn ghost sm" id="btnRestore">Restore</button>
@@ -1016,7 +1017,6 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 <div id="modalHost"></div>
 <div id="menuHost"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/supabase-config.js"></script>
 <script src="assets/caot-supabase.js"></script>
 <script>
@@ -1889,6 +1889,55 @@ function stripInternal(o) {
   for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k) && k.slice(0, 2) !== "__") c[k] = o[k];
   return c;
 }
+function scanLocalLedgers() {
+  var found = [];
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (!k || k.indexOf("caot_orders_") !== 0) continue;
+      var raw = readJson(k, null);
+      var list = raw && Array.isArray(raw.orders) ? raw.orders : (Array.isArray(raw) ? raw : []);
+      if (list.length) found.push({ key: k, orders: list.map(normalizeOrder) });
+    }
+  } catch (e) {}
+  return found;
+}
+function mergeLedgerList(incoming) {
+  var seenId = {}, seenJob = {};
+  state.orders.forEach(function (o) {
+    seenId[o.id] = true;
+    if (o.orderId) seenJob[o.date + "|" + String(o.orderId).toLowerCase()] = true;
+  });
+  var added = 0;
+  incoming.forEach(function (o) {
+    o = normalizeOrder(o);
+    var job = o.orderId ? o.date + "|" + String(o.orderId).toLowerCase() : "";
+    if (seenId[o.id] || (job && seenJob[job])) return;
+    state.orders.push(o);
+    seenId[o.id] = true;
+    if (job) seenJob[job] = true;
+    added++;
+  });
+  return added;
+}
+function recoverLocalLedgers(quiet) {
+  var packs = scanLocalLedgers();
+  var incoming = [];
+  packs.forEach(function (p) { incoming = incoming.concat(p.orders); });
+  if (!incoming.length) {
+    if (!quiet) toast("No older ledgers found in this browser.");
+    return 0;
+  }
+  var added = mergeLedgerList(incoming);
+  if (added) {
+    persistOrders();
+    scheduleRender();
+    toast("Recovered " + added + " order" + (added === 1 ? "" : "s") + " from this browser.", null, 7000);
+  } else if (!quiet) {
+    toast("Found older ledgers, but those orders are already in this account.");
+  }
+  return added;
+}
 function loadOrders() {
   if (!state.user) { state.orders = []; state.rev = 0; reindex(); return; }
   var raw = readOrdersRaw(state.user.key);
@@ -1900,12 +1949,14 @@ function loadOrders() {
     CAOTCloud.pull().then(function (rows) {
       if (rows && rows.length) {
         state.orders = rows.map(normalizeOrder);
+        recoverLocalLedgers(true);
         writeOrdersRaw(state.user.key, state.orders.map(stripInternal), state.rev + 1);
         state.rev += 1;
         reindex();
         scheduleRender();
         return;
       }
+      recoverLocalLedgers(true);
       if (state.orders.length) {
         return CAOTCloud.pushAll(state.user.key, state.orders, {}).then(function () {
           toast("Uploaded " + state.orders.length + " local orders to the live ledger.", null, 6000);
@@ -4232,6 +4283,7 @@ function wire() {
   });
   $("btnExportCsv").addEventListener("click", exportCsv);
   $("btnBackup").addEventListener("click", backupJson);
+  $("btnRecoverLocal").addEventListener("click", function () { recoverLocalLedgers(false); });
   $("btnCopySync").addEventListener("click", copySyncPack);
   $("btnPasteSync").addEventListener("click", pasteSyncPack);
   $("btnRestore").addEventListener("click", function () { $("fileRestore").click(); });
