@@ -259,6 +259,27 @@ html[data-theme="dark"] .tri.go button[aria-pressed="true"][data-v="FALSE"]{colo
 .tri.stopno button[data-v="FALSE"]:hover{background:var(--stop-bg);color:var(--stop)}
 .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{background:var(--stop);color:#fff}
 html[data-theme="dark"] .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{color:#2A100D}
+.tri.proofyes button[aria-pressed="true"][data-v="TRUE"]{background:var(--go);color:#fff}
+html[data-theme="dark"] .tri.proofyes button[aria-pressed="true"][data-v="TRUE"]{color:#0C2019}
+.quad{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.quad button{flex:1 1 25%;min-width:72px;background:var(--surface);border:none;border-right:1px solid var(--line);
+  font:600 11.5px var(--sans);color:var(--text-2);cursor:pointer;padding:8px 6px;min-height:40px}
+.quad button:last-child{border-right:none}
+.quad button[aria-pressed="true"]{background:var(--crown);color:#fff}
+html[data-theme="dark"] .quad button[aria-pressed="true"]{background:var(--code);color:#0A1A2E}
+.slog{display:flex;flex-direction:column;gap:8px;width:100%}
+.slog-list{display:flex;flex-direction:column;gap:4px;max-height:140px;overflow:auto}
+.slog-row{display:flex;gap:8px;align-items:center;font-size:12.5px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:7px;padding:6px 8px}
+.slog-row .t{font-family:var(--mono);color:var(--muted);min-width:52px}
+.slog-row .c{font-weight:700}
+.slog-add{display:flex;gap:6px}
+.slog-add input{flex:1;min-width:0}
+.mark-chip{display:inline-block;padding:2px 7px;border-radius:5px;font:700 11px var(--sans);
+  background:var(--idle-bg);color:var(--idle)}
+.mark-chip.ETCH{background:var(--hold-bg);color:var(--hold)}
+.mark-chip.LOGO{background:var(--code-bg);color:var(--code)}
+.mark-chip.BOTH{background:var(--go-bg);color:var(--go)}
 .entry-actions{display:flex;flex-direction:row;gap:8px}
 .entry-actions .btn{flex:1;padding:10px;font-size:13.5px;min-height:40px}
 .edit-banner{background:var(--code-bg);border:1px solid color-mix(in srgb,var(--code) 45%,transparent);
@@ -691,6 +712,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   tbody td[data-label="Req. Ship"],
   tbody td[data-label="Event"],
   tbody td[data-label="Status"],
+  tbody td[data-label="Mark"],
   tbody td[data-label="Notes"]{grid-column:1/-1}
   tbody td.rowacts{grid-column:1/-1;justify-content:flex-end}
   /* Hide clock/calc noise so the list reads as a breakdown, not a spreadsheet. */
@@ -786,7 +808,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
         <div class="alert ok" id="signinOk" hidden></div>
         <form id="formSignin" novalidate>
           <div class="field">
-            <label class="fl" for="siUser">Username</label>
+            <label class="fl" for="siUser" id="siUserLabel">Username</label>
             <input id="siUser" type="text" autocomplete="username" spellcheck="false" required>
           </div>
           <div class="field">
@@ -966,6 +988,8 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
     <div class="spacer"></div>
     <button class="btn ghost sm" id="btnExportCsv">Export CSV</button>
     <button class="btn ghost sm" id="btnBackup">Back up</button>
+    <button class="btn ghost sm" id="btnCopySync">Copy sync</button>
+    <button class="btn ghost sm" id="btnPasteSync">Paste sync</button>
     <button class="btn ghost sm" id="btnRestore">Restore</button>
     <button class="btn ghost sm" id="btnPrint">Print</button>
     <input type="file" id="fileRestore" accept="application/json" hidden>
@@ -992,6 +1016,9 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 <div id="modalHost"></div>
 <div id="menuHost"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/caot-supabase.js"></script>
 <script>
 /* =========================================================================
    Award Order Tracker — Crown Awards International HQ
@@ -1773,6 +1800,41 @@ function classifyStatus(line) {
   if (RX_WARN.test(u)) return "t-warn";
   return "t-plain";
 }
+var MARKING_OPTS = [
+  { v: "NONE", l: "Nothing" },
+  { v: "ETCH", l: "Etch" },
+  { v: "LOGO", l: "Logo" },
+  { v: "BOTH", l: "Logo + Etch" }
+];
+function normMarking(v) {
+  var s = String(v == null ? "" : v).trim().toUpperCase();
+  if (s === "ETCH" || s === "LOGO" || s === "BOTH" || s === "NONE") return s;
+  if (s === "LOGO+ETCH" || s === "LOGO AND ETCH" || s === "BOTH") return "BOTH";
+  if (s === "NO LOGO" || s === "NOTHING" || s === "") return "NONE";
+  return "NONE";
+}
+function markingLabel(v) {
+  var hit = MARKING_OPTS.filter(function (o) { return o.v === normMarking(v); })[0];
+  return hit ? hit.l : "Nothing";
+}
+function parseStatusLog(log, statusText) {
+  if (Array.isArray(log) && log.length) {
+    return log.map(function (e) {
+      return { t: String(e && e.t || "").trim(), code: String(e && e.code || "").trim() };
+    }).filter(function (e) { return e.code; });
+  }
+  return String(statusText || "").split("\n").map(function (line) {
+    line = line.trim();
+    if (!line) return null;
+    var m = line.match(/^(\d{1,2}:\d{2}(?:\s*[AP]M)?)\s+[—\-]\s+(.+)$/i)
+         || line.match(/^(\d{1,2}:\d{2}(?:\s*[AP]M)?)\s+(.+)$/i);
+    if (m) return { t: m[1], code: m[2] };
+    return { t: "", code: line };
+  }).filter(Boolean);
+}
+function statusTextFromLog(log) {
+  return (log || []).map(function (e) { return (e.t ? e.t + " — " : "") + e.code; }).join("\n");
+}
 function statusParts(status) {
   return String(status || "").split("\n")
     .map(function (l) { return l.trim(); })
@@ -1834,6 +1896,25 @@ function loadOrders() {
   state.rev = raw.rev;
   state.deleted = {};
   reindex();
+  if (window.CAOTCloud && CAOTCloud.enabled() && state.user.cloud) {
+    CAOTCloud.pull().then(function (rows) {
+      if (rows && rows.length) {
+        state.orders = rows.map(normalizeOrder);
+        writeOrdersRaw(state.user.key, state.orders.map(stripInternal), state.rev + 1);
+        state.rev += 1;
+        reindex();
+        scheduleRender();
+        return;
+      }
+      if (state.orders.length) {
+        return CAOTCloud.pushAll(state.user.key, state.orders, {}).then(function () {
+          toast("Uploaded " + state.orders.length + " local orders to the live ledger.", null, 6000);
+        });
+      }
+    }).catch(function (err) {
+      toast("Could not reach the live ledger: " + (err && err.message ? err.message : "offline"), null, 7000);
+    });
+  }
 }
 function reindex() {
   state.byId = {};
@@ -1878,6 +1959,13 @@ function persistOrders() {
   }
   if (ok) { state.rev = rev; state.lastSaved = new Date(); state.saveFailed = false; }
   else { state.saveFailed = true; }
+  if (ok && window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud) {
+    CAOTCloud.pushAll(state.user.key, state.orders, state.deleted).catch(function (err) {
+      state.saveFailed = true;
+      toast("Cloud save failed: " + (err && err.message ? err.message : "try again"), null, 7000);
+      scheduleRender();
+    });
+  }
   reindex();
   if (merged) {
     toast("Picked up " + merged + " change" + (merged === 1 ? "" : "s") +
@@ -1953,7 +2041,9 @@ function normalizeOrder(o) {
     qty: parseQty(o.qty),
     amount: parseMoney(o.amount),
     proof: tri(o.proof),
-    status: txt(o.status),
+    marking: normMarking(o.marking),
+    statusLog: parseStatusLog(o.statusLog, o.status),
+    status: txt(o.status) || statusTextFromLog(parseStatusLog(o.statusLog, o.status)),
     startTime: txt(o.startTime),
     completionTime: txt(o.completionTime),
     proofRcvdTime: txt(o.proofRcvdTime),
@@ -2012,7 +2102,7 @@ function matchesFilter(o) {
 function searchText(o) {
   if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
     o.__hay = [o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
-               o.amount === "" ? "" : money(o.amount), o.status, o.notes,
+               o.amount === "" ? "" : money(o.amount), o.status, o.marking, o.notes,
                o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
     o.__hayStamp = o.updatedAt;
   }
@@ -2099,8 +2189,9 @@ var COLUMNS = [
   { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
   { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
   { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
-  { key: "proof",  label: "Proof",    entryLabel: "Proof sent?", hint: "Yes / No / N/A", w: 4,    wd: 4,    entry: "tri", field: "segProof" },
-  { key: "status", label: "Status",   entryLabel: "Status", hint: "Where this job is right now", w: 10,   wd: 9.5,  entry: "area", field: "fStatus", ph: "CLC, LEC, Proof Sent!" },
+  { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 4,    wd: 4,    entry: "tri", field: "segProof" },
+  { key: "marking",label: "Mark",     entryLabel: "Etch / logo", hint: "Nothing, etch, logo, or both", w: 7, wd: 6.5, entry: "mark", field: "segMark" },
+  { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 12,   wd: 11,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
   { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 6,    wd: 5.5,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
   { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 6, wd: 5.5,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
   { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 4.5,  wd: 4.5,  sort: "taken", entry: "calc", field: "calcTaken" },
@@ -2154,7 +2245,7 @@ function buildChrome() {
    keeps the table's field ORDER but sizes each one to be readable. */
 var ENTRY_SPAN = {
   seq: "", date: "", orderId: "s3", customer: "s3", reqShipDate: "", eventDate: "", otype: "", qty: "", amount: "",
-  proof: "", status: "s4",
+  proof: "", marking: "s4", status: "s6",
   startTime: "", completionTime: "", taken: "", proofRcvdTime: "", turn: "",
   fin: "", savedToDrive: "", notes: "s4", acts: ""
 };
@@ -2162,7 +2253,7 @@ var ENTRY_SPAN = {
    and draft-saving can never drift out of sync with the fields on screen. */
 var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
                       "fStatus", "fStart", "fDone", "fBack", "fNotes"];
-var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive"];
+var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive", "segMark"];
 function buildEntryRow(cols) {
   var grid = $("entrygrid");
   grid.textContent = "";
@@ -2233,17 +2324,42 @@ function buildEntryRow(cols) {
       } else {
         cell.appendChild(input);
       }
+    } else if (c.entry === "slog") {
+      var slog = el("div", "slog");
+      var list = el("div", "slog-list");
+      list.id = "slogList";
+      var add = el("div", "slog-add");
+      var code = document.createElement("input");
+      code.type = "text"; code.id = "fStatusCode"; code.placeholder = c.ph || "CLC";
+      var logBtn = el("button", "stamp", "Log now");
+      logBtn.type = "button"; logBtn.id = "btnLogStatus";
+      add.appendChild(code); add.appendChild(logBtn);
+      var hidden = document.createElement("textarea");
+      hidden.id = "fStatus"; hidden.hidden = true;
+      slog.appendChild(list); slog.appendChild(add); slog.appendChild(hidden);
+      cell.appendChild(slog);
+    } else if (c.entry === "mark") {
+      var quad = el("div", "quad");
+      quad.id = c.field;
+      MARKING_OPTS.forEach(function (opt) {
+        var b = el("button", null, opt.l);
+        b.type = "button";
+        b.setAttribute("data-v", opt.v);
+        quad.appendChild(b);
+      });
+      cell.appendChild(quad);
     } else if (c.entry === "area") {
       var ta = document.createElement("textarea");
       ta.id = c.field; ta.rows = 2; ta.placeholder = c.ph || "";
       cell.appendChild(ta);
     } else if (c.entry === "tri") {
       var tri = el("div", "tri" + (c.key === "fin" || c.key === "savedToDrive" ? " go" : "") +
-                            (c.key === "proof" ? " stopno" : ""));
+                            (c.key === "proof" ? " stopno proofyes" : ""));
       tri.id = c.field;
       tri.setAttribute("role", "group");
       tri.setAttribute("aria-label", c.label);
-      [["TRUE", "Yes"], ["FALSE", "No"], ["X", "N/A"]].forEach(function (pair) {
+      var finNo = c.key === "fin" ? "Not Yet" : "No";
+      [["TRUE", "Yes"], ["FALSE", finNo], ["X", "N/A"]].forEach(function (pair) {
         var b = el("button", null, pair[1]);
         b.type = "button";
         b.setAttribute("data-v", pair[0]);
@@ -2268,7 +2384,7 @@ function buildEntryRow(cols) {
   wireEntryRow();
 }
 function wireEntryRow() {
-  ["segProof", "segFin", "segDrive"].forEach(function (id) {
+  ["segProof", "segFin", "segDrive", "segMark"].forEach(function (id) {
     var seg = $(id);
     if (!seg) return;
     seg.addEventListener("click", function (e) {
@@ -2279,6 +2395,12 @@ function wireEntryRow() {
   $("fStart").addEventListener("input", updateCalcs);
   $("fDone").addEventListener("input", updateCalcs);
   $("fBack").addEventListener("input", updateCalcs);
+  if ($("btnLogStatus")) {
+    $("btnLogStatus").addEventListener("click", addStatusStamp);
+    $("fStatusCode").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); addStatusStamp(); }
+    });
+  }
   Array.prototype.forEach.call(document.querySelectorAll("[data-now]"), function (b) {
     b.addEventListener("click", function () {
       var input = $(b.getAttribute("data-now"));
@@ -2360,12 +2482,17 @@ function cacheFormValues() {
 }
 function restoreFormValues() {
   if (!$("fOrderId")) return;
-  if (!formCache) { setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); }
+  if (!formCache) {
+    setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); setSeg("segMark", "NONE");
+    writeSlog([]);
+  }
   else {
     ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = formCache[id] || ""; });
     setSeg("segProof", formCache.segProof || "TRUE");
     setSeg("segFin", formCache.segFin || "FALSE");
     setSeg("segDrive", formCache.segDrive || "FALSE");
+    setSeg("segMark", formCache.segMark || "NONE");
+    writeSlog(parseStatusLog(null, formCache.fStatus || ""));
   }
   refreshEntryMeta();
 }
@@ -2397,7 +2524,7 @@ function renderFooter() {
     listTitle.textContent = shown + (shown === 1 ? " order" : " orders") + " · " + scopeName;
   }
   /* A visible, running confirmation that writes are actually landing. */
-  var hint = state.user ? "Signed in as " + state.user.username : "";
+  var hint = state.user ? ((state.user.cloud ? "Live · " : "") + "Signed in as " + (state.user.email || state.user.username)) : "";
   if (state.saveFailed) hint += " · NOT SAVED — back up now";
   else if (state.lastSaved) hint += " · saved " + prettyTime(pad2(state.lastSaved.getHours()) + ":" +
     pad2(state.lastSaved.getMinutes()) + ":" + pad2(state.lastSaved.getSeconds()));
@@ -2488,8 +2615,9 @@ function renderChips() {
   host.appendChild(frag);
 }
 function triPill(value, field, id) {
+  var noLabel = field === "fin" ? "Not Yet" : "No";
   var b = el("button", "pill " + (value === "TRUE" ? "yes" : value === "FALSE" ? "no" : "na"),
-             value === "TRUE" ? "Yes" : value === "FALSE" ? "No" : "N/A");
+             value === "TRUE" ? "Yes" : value === "FALSE" ? noLabel : "N/A");
   b.type = "button";
   b.setAttribute("data-cycle", field);
   b.setAttribute("data-id", id);
@@ -2586,12 +2714,21 @@ function readRow(o, cols) {
         td = el("td");
         td.appendChild(triPill(o[c.key], c.key, o.id));
         break;
+      case "marking":
+        td = el("td");
+        var mb = el("button", "mark-chip " + normMarking(o.marking), markingLabel(o.marking));
+        mb.type = "button";
+        mb.setAttribute("data-cycle-mark", o.id);
+        mb.title = "Click to change etch / logo";
+        td.appendChild(mb);
+        break;
       case "status":
         td = el("td");
         var tags = el("div", "tags");
-        statusParts(o.status).forEach(function (p) {
-          var tag = el("span", "tag " + p.cls, p.text);
-          tag.title = p.text;
+        parseStatusLog(o.statusLog, o.status).forEach(function (e) {
+          var label = (e.t ? e.t + " · " : "") + e.code;
+          var tag = el("span", "tag " + (classifyStatus(e.code) || "t-plain"), label);
+          tag.title = label;
           tags.appendChild(tag);
         });
         td.appendChild(tags);
@@ -2692,7 +2829,19 @@ function inlineRow(o, cols) {
         fields.eventDate.type = "date";
         td.appendChild(fields.eventDate);
         break;
-      case "status": fields.status = mk("textarea", "", o.status, "Status"); td.appendChild(fields.status); break;
+      case "status": fields.status = mk("textarea", "", statusTextFromLog(parseStatusLog(o.statusLog, o.status)), "9:20 — CLC"); td.appendChild(fields.status); break;
+      case "marking":
+        var msel = document.createElement("select");
+        msel.className = "cellinput";
+        MARKING_OPTS.forEach(function (opt) {
+          var op = document.createElement("option");
+          op.value = opt.v; op.textContent = opt.l;
+          if (normMarking(o.marking) === opt.v) op.selected = true;
+          msel.appendChild(op);
+        });
+        fields.marking = msel;
+        td.appendChild(msel);
+        break;
       case "notes": fields.notes = mk("textarea", "", o.notes, "Notes"); td.appendChild(fields.notes); break;
       case "startTime": case "completionTime": case "proofRcvdTime":
         fields[c.key] = mk("input", "mono", isClock(o[c.key]) ? prettyTime(o[c.key]) : o[c.key], "h:mm");
@@ -2701,7 +2850,7 @@ function inlineRow(o, cols) {
       case "proof": case "fin": case "savedToDrive":
         var sel = document.createElement("select");
         sel.className = "cellinput";
-        [["TRUE", "Yes"], ["FALSE", "No"], ["X", "N/A"]].forEach(function (pair) {
+        [["TRUE", "Yes"], ["FALSE", c.key === "fin" ? "Not Yet" : "No"], ["X", "N/A"]].forEach(function (pair) {
           var opt = document.createElement("option");
           opt.value = pair[0]; opt.textContent = pair[1];
           if (o[c.key] === pair[0]) opt.selected = true;
@@ -2782,6 +2931,8 @@ function saveInline(id) {
   if (f.qty) o.qty = parseQty(f.qty.value);
   if (f.amount) o.amount = parseMoney(f.amount.value);
   o.status = f.status.value.trim();
+  o.statusLog = parseStatusLog(null, o.status);
+  if (f.marking) o.marking = normMarking(f.marking.value);
   o.notes = f.notes.value.trim();
   o.startTime = start.value;
   o.completionTime = done.value;
@@ -2832,6 +2983,49 @@ function segValue(id) {
   var on = $(id).querySelector('[aria-pressed="true"]');
   return on ? on.getAttribute("data-v") : "X";
 }
+function readSlog() {
+  var rows = document.querySelectorAll("#slogList .slog-row");
+  var log = [];
+  Array.prototype.forEach.call(rows, function (row) {
+    log.push({ t: row.getAttribute("data-t") || "", code: row.getAttribute("data-code") || "" });
+  });
+  return log;
+}
+function writeSlog(log) {
+  var list = $("slogList");
+  if (!list) return;
+  list.textContent = "";
+  (log || []).forEach(function (e) {
+    var row = el("div", "slog-row");
+    row.setAttribute("data-t", e.t || "");
+    row.setAttribute("data-code", e.code || "");
+    row.appendChild(el("span", "t", e.t || "—"));
+    row.appendChild(el("span", "c", e.code));
+    var x = el("button", "btn ghost xs", "✕");
+    x.type = "button";
+    x.addEventListener("click", function () {
+      list.removeChild(row);
+      syncStatusField();
+    });
+    row.appendChild(x);
+    list.appendChild(row);
+  });
+  syncStatusField();
+}
+function syncStatusField() {
+  if ($("fStatus")) $("fStatus").value = statusTextFromLog(readSlog());
+}
+function addStatusStamp() {
+  var input = $("fStatusCode");
+  if (!input) return;
+  var code = input.value.trim();
+  if (!code) { input.focus(); return; }
+  var log = readSlog();
+  log.push({ t: prettyTime(nowClock()), code: code });
+  writeSlog(log);
+  input.value = "";
+  input.focus();
+}
 function setSeg(id, value) {
   Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) {
     b.setAttribute("aria-pressed", b.getAttribute("data-v") === value ? "true" : "false");
@@ -2853,7 +3047,8 @@ function updateCalcs() {
 }
 function clearForm() {
   ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = ""; });
-  setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE");
+  setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); setSeg("segMark", "NONE");
+  writeSlog([]);
   formCache = null;
   clearDraft();
   $("entryTitle").textContent = "Add an order";
@@ -2892,7 +3087,9 @@ function submitOrder(e) {
     qty: parseQty(rawQty),
     amount: parseMoney(rawAmount),
     proof: segValue("segProof"),
-    status: $("fStatus").value.trim(),
+    marking: $("segMark") ? segValue("segMark") : "NONE",
+    statusLog: readSlog(),
+    status: statusTextFromLog(readSlog()) || ($("fStatus") ? $("fStatus").value.trim() : ""),
     startTime: start.value,
     completionTime: done.value,
     proofRcvdTime: back.value,
@@ -2969,12 +3166,24 @@ function cyclePill(id, field) {
   o.updatedAt = nowIso();
   if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("change"); return; }
   scheduleRender();
-  var names = { proof: "Proof", fin: "Finished", savedToDrive: "Saved to drive" };
-  var shown = { TRUE: "Yes", FALSE: "No", X: "N/A" };
+  var names = { proof: "Send proof", fin: "Finished", savedToDrive: "Saved to drive" };
+  var shown = { TRUE: "Yes", FALSE: field === "fin" ? "Not Yet" : "No", X: "N/A" };
   toast(names[field] + " on #" + o.seq + " set to " + shown[next] + ".", {
     label: "Undo",
     run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
   }, 5000);
+}
+function cycleMarking(id) {
+  var o = byId(id);
+  if (!o) return;
+  var order = ["NONE", "ETCH", "LOGO", "BOTH"];
+  var prev = normMarking(o.marking);
+  var next = order[(order.indexOf(prev) + 1) % order.length];
+  o.marking = next;
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { o.marking = prev; scheduleRender(); saveFailedModal("change"); return; }
+  scheduleRender();
+  toast("#" + o.seq + " marking set to " + markingLabel(next) + ".");
 }
 function deleteOrder(id) {
   var idx = -1;
@@ -3195,14 +3404,14 @@ function exportCsv() {
   var rows = visibleOrders();
   if (!rows.length) { toast("There is nothing in view to export."); return; }
   var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
-              "PROOF?", "Status",
+              "PROOF?", "Marking", "Status",
               "Time Started", "Time of Completion", "Time Taken (min)",
               "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
   var lines = [head.map(csvCell).join(",")];
   rows.forEach(function (o) {
     var taken = timeTaken(o), turn = turnaround(o);
     lines.push([o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
-                o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.status,
+                o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.marking, o.status,
                 o.startTime, o.completionTime, taken === null ? "" : taken,
                 o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
                .map(csvCell).join(","));
@@ -3215,39 +3424,109 @@ function exportCsv() {
   download(name, "\ufeff" + lines.join("\r\n"), "text/csv;charset=utf-8");
   toast("Exported " + rows.length + " row" + (rows.length === 1 ? "" : "s") + ".");
 }
-function backupJson() {
-  var payload = {
+function syncPayload() {
+  return {
     app: "Award Order Tracker", version: 3, exportedAt: nowIso(),
-    username: state.user.username, orders: state.orders.map(stripInternal)
+    username: state.user ? state.user.username : "",
+    orders: state.orders.map(stripInternal)
   };
+}
+function backupJson() {
+  var payload = syncPayload();
   download("crown-orders-backup-" + todayKey() + ".json", JSON.stringify(payload, null, 2), "application/json");
   toast("Backed up " + state.orders.length + " orders.");
+}
+function copySyncPack() {
+  var text = JSON.stringify(syncPayload());
+  var done = function () { toast("Sync pack copied. Paste it on your other device."); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); });
+  } else fallbackCopy(text);
+  function fallbackCopy(s) {
+    var ta = document.createElement("textarea");
+    ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); }
+    catch (e) { toast("Copy failed — use Back up instead."); }
+    document.body.removeChild(ta);
+  }
+}
+function applyIncomingOrders(incoming, mode) {
+  var clean = incoming.map(normalizeOrder);
+  if (mode === "replace") {
+    state.orders = clean;
+    if (!persistOrders()) { saveFailedModal("restore"); return; }
+    scheduleRender();
+    toast("Replaced the ledger with " + clean.length + " orders.");
+    return;
+  }
+  var seenId = {}, seenJob = {};
+  state.orders.forEach(function (o) {
+    seenId[o.id] = true;
+    if (o.orderId) seenJob[o.date + "|" + String(o.orderId).toLowerCase()] = true;
+  });
+  var added = 0;
+  clean.forEach(function (o) {
+    var job = o.orderId ? o.date + "|" + String(o.orderId).toLowerCase() : "";
+    if (seenId[o.id] || (job && seenJob[job])) return;
+    state.orders.push(o);
+    seenId[o.id] = true;
+    if (job) seenJob[job] = true;
+    added++;
+  });
+  if (!persistOrders()) { saveFailedModal("restore"); return; }
+  scheduleRender();
+  toast("Merged " + added + " order" + (added === 1 ? "" : "s") + ".");
+}
+function parseSyncText(raw) {
+  var data;
+  try { data = JSON.parse(raw); }
+  catch (e) { return null; }
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.orders)) return data.orders;
+  return null;
+}
+function offerRestore(incoming) {
+  if (!incoming || !incoming.length) { toast("No orders found in that pack."); return; }
+  confirmModal("Bring in " + incoming.length + " orders",
+    "This device stores orders only in its own browser. Merge adds anything this phone is missing. Replace overwrites this login's ledger here.",
+    "Merge", function () { applyIncomingOrders(incoming, "merge"); },
+    "Replace", function () { applyIncomingOrders(incoming, "replace"); });
+}
+function pasteSyncPack() {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, "Paste a sync pack"));
+  box.appendChild(el("p", "sub", "On the other device tap Copy sync, then paste the whole block here."));
+  var ta = document.createElement("textarea");
+  ta.rows = 8; ta.style.width = "100%"; ta.style.marginTop = "10px";
+  ta.placeholder = "{ \"app\": \"Award Order Tracker\", ... }";
+  box.appendChild(ta);
+  var actions = el("div", "modal-actions");
+  var go = el("button", "btn", "Read pack");
+  go.type = "button";
+  go.addEventListener("click", function () {
+    var incoming = parseSyncText(ta.value);
+    closeModal();
+    offerRestore(incoming);
+  });
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", closeModal);
+  actions.appendChild(go); actions.appendChild(cancel);
+  box.appendChild(actions);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  ta.focus();
 }
 function restoreJson(file) {
   var reader = new FileReader();
   reader.onload = function () {
-    var data;
-    try { data = JSON.parse(reader.result); }
-    catch (e) { toast("That file is not readable JSON."); return; }
-    var incoming = Array.isArray(data) ? data : (data && Array.isArray(data.orders) ? data.orders : null);
+    var incoming = parseSyncText(reader.result);
     if (!incoming) { toast("No orders found in that file."); return; }
-    var clean = incoming.map(normalizeOrder);
-    confirmModal("Restore " + clean.length + " orders",
-      "Merge keeps what you have and adds anything missing. Replace wipes this account's ledger first.",
-      "Merge", function () {
-        var seen = {};
-        state.orders.forEach(function (o) { seen[o.id] = true; });
-        var added = 0;
-        clean.forEach(function (o) { if (!seen[o.id]) { state.orders.push(o); added++; } });
-        if (!persistOrders()) { saveFailedModal("restore"); return; }
-        scheduleRender();
-        toast("Merged " + added + " order" + (added === 1 ? "" : "s") + ".");
-      }, "Replace", function () {
-        state.orders = clean;
-        if (!persistOrders()) { saveFailedModal("restore"); return; }
-        scheduleRender();
-        toast("Replaced the ledger with " + clean.length + " orders.");
-      });
+    offerRestore(incoming);
   };
   reader.onerror = function () { toast("That file could not be read."); };
   reader.readAsText(file);
@@ -3338,6 +3617,21 @@ function doSignin(e) {
   var pass = $("siPass").value;
   var btn = $("siSubmit");
   if (!name || !pass) { showAlert("signinErr", "Enter your username and password."); return; }
+  if (window.CAOTCloud && CAOTCloud.enabled()) {
+    var email = name.indexOf("@") !== -1 ? name : "";
+    if (!email) { showAlert("signinErr", "Live mode uses your email address as the login."); return; }
+    btn.disabled = true; btn.textContent = "Checking…";
+    CAOTCloud.signIn(email, pass).then(function (user) {
+      btn.disabled = false; btn.textContent = "Sign in";
+      startSession(user, $("siRemember").checked);
+      $("siPass").value = "";
+      enterApp(user);
+    }).catch(function (err) {
+      btn.disabled = false; btn.textContent = "Sign in";
+      showAlert("signinErr", err.message || "Could not sign in.");
+    });
+    return;
+  }
   var user = getUser(name);
   if (user && user.lockUntil && user.lockUntil > Date.now()) {
     showAlert("signinErr", lockMessage(user.lockUntil)); return;
@@ -3385,6 +3679,19 @@ function doRegister(e) {
   if (!validEmail(email)) { showAlert("regErr", "That email address does not look right."); return; }
   if (!passwordOk(p1)) { showAlert("regErr", "Use at least 10 characters with three of: uppercase, lowercase, number, symbol."); return; }
   if (p1 !== p2) { showAlert("regErr", "The two passwords do not match."); return; }
+  if (window.CAOTCloud && CAOTCloud.enabled()) {
+    var rbtn = $("rgSubmit");
+    rbtn.disabled = true; rbtn.textContent = "Creating…";
+    CAOTCloud.signUp(email, p1, name).then(function (user) {
+      rbtn.disabled = false; rbtn.textContent = "Create account";
+      startSession(user, true);
+      enterApp(user);
+    }).catch(function (err) {
+      rbtn.disabled = false; rbtn.textContent = "Create account";
+      showAlert("regErr", err.message || "Could not create the live account.");
+    });
+    return;
+  }
   if (getUser(name)) { showAlert("regErr", "That username is taken."); return; }
   if (findByEmail(email)) { showAlert("regErr", "That email is already on another account."); return; }
   var btn = $("rgSubmit");
@@ -3599,6 +3906,7 @@ function outsideMenu(e) {
   }
 }
 function signOut() {
+  if (window.CAOTCloud && CAOTCloud.enabled()) CAOTCloud.signOut();
   endSession();
   state.user = null; state.orders = []; state.byId = {}; state.inlineId = null;
   $("appView").hidden = true;
@@ -3635,6 +3943,12 @@ function enterApp(user) {
   clearForm();
   render();
   restoreDraft();
+  if (!state.orders.length) {
+    confirmModal("This device has no orders yet",
+      "The login is the same, but each phone and computer keeps its own copy. On the device that already has today's log, tap Copy sync (or Back up). Then come back here and tap Paste sync (or Restore).",
+      "Paste sync", pasteSyncPack,
+      "Restore file", function () { $("fileRestore").click(); });
+  }
   if (bootstrapReport && bootstrapReport.added && user.key === BOOTSTRAP_USER.key) {
     toast("Added " + bootstrapReport.added + " new orders from your updated sheet.", null, 6000);
     bootstrapReport = null;
@@ -3892,6 +4206,8 @@ function wire() {
     if (stamp) { stampNow(stamp.getAttribute("data-id"), stamp.getAttribute("data-stamp")); return; }
     var cyc = e.target.closest("[data-cycle]");
     if (cyc) { cyclePill(cyc.getAttribute("data-id"), cyc.getAttribute("data-cycle")); return; }
+    var mk = e.target.closest("[data-cycle-mark]");
+    if (mk) { cycleMarking(mk.getAttribute("data-cycle-mark")); return; }
     var inl = e.target.closest("[data-inline]");
     if (inl) { startInline(inl.getAttribute("data-inline")); return; }
 
@@ -3916,6 +4232,8 @@ function wire() {
   });
   $("btnExportCsv").addEventListener("click", exportCsv);
   $("btnBackup").addEventListener("click", backupJson);
+  $("btnCopySync").addEventListener("click", copySyncPack);
+  $("btnPasteSync").addEventListener("click", pasteSyncPack);
   $("btnRestore").addEventListener("click", function () { $("fileRestore").click(); });
   $("fileRestore").addEventListener("change", function () {
     if (this.files && this.files[0]) restoreJson(this.files[0]);
@@ -3952,7 +4270,19 @@ function boot() {
     alert("This browser is blocking local storage, so accounts and orders cannot be saved. Turn off private browsing or allow site data, then reload.");
   }
   bootstrapReport = installBootstrap();
+  if (window.CAOTCloud && CAOTCloud.enabled() && $("siUserLabel")) {
+    $("siUserLabel").textContent = "Email";
+    $("siUser").setAttribute("autocomplete", "email");
+    $("siUser").type = "email";
+  }
   wire();
+  if (window.CAOTCloud && CAOTCloud.enabled()) {
+    CAOTCloud.sessionUser().then(function (user) {
+      if (user) enterApp(user);
+      else { $("authView").hidden = false; $("appView").hidden = true; showPane("signin"); }
+    });
+    return;
+  }
   var user = restoreSession();
   if (user) enterApp(user);
   else { $("authView").hidden = false; $("appView").hidden = true; showPane("signin"); }
