@@ -183,15 +183,25 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
    some fields down to ~4.5% of the screen, which is what made this area
    cramped and hard to read. Fields keep the same ORDER as the table columns,
    but are laid out on a 12-column grid at sizes you can actually read. */
-.entrybar{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;padding:18px 20px 20px;
-  max-height:60vh;opacity:1;overflow:hidden;
+.entrybar{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;padding:16px 20px 18px;
+  max-height:min(52vh,520px);opacity:1;overflow:hidden;position:relative;
   transition:max-height .34s var(--ease),opacity .22s var(--ease),padding .3s var(--ease),border-bottom-color .3s var(--ease)}
-.entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none}
-.entryhead{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:0}
+/* Open state scrolls inside itself and can be dragged shorter, so the entry
+   fields and the ledger are both usable at once instead of one pushing the
+   other off the screen. */
+.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;resize:vertical}
+.entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden;resize:none}
+.entrybar::-webkit-scrollbar{width:10px}
+.entrybar::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+.entrybar::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+/* The header stays put while the fields scroll under it. */
+.entryhead{position:sticky;top:-16px;z-index:4;background:var(--surface);
+  padding-top:16px!important;margin-top:-16px}
+.entryhead{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:0}
 .entryhead h3{font-size:16px;font-weight:700;letter-spacing:-.01em}
 .entryhead .eyebrow{font-size:12.5px;color:var(--text-2)}
 .entryhead .spacer{flex:1}
-.entrygrid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px 14px;align-items:end}
+.entrygrid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px 12px;align-items:end}
 .ecell{min-width:0;display:flex;flex-direction:column;gap:6px;padding:0;grid-column:span 2}
 .ecell.s3{grid-column:span 3}
 .ecell.s4{grid-column:span 4}
@@ -201,8 +211,10 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
    problem in here. Bigger, heavier, and a full contrast step brighter. */
 .ecell label{font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:.05em;
   text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ecell input,.ecell textarea,.ecell select{padding:10px 12px;font-size:14px;border-radius:8px;min-height:42px}
-.ecell textarea{min-height:42px;line-height:1.4}
+.ecell input,.ecell textarea,.ecell select{padding:9px 11px;font-size:14px;border-radius:8px;min-height:40px}
+.ecell textarea{min-height:40px;line-height:1.4}
+.ecell input.money{text-align:right}
+.ecell input.qty{text-align:right}
 .ecell input::placeholder,.ecell textarea::placeholder{opacity:.9}
 /* Time field: the "now" stamp sits beside its input instead of under it,
    so the row keeps one consistent baseline. */
@@ -215,10 +227,10 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 /* Calculated values read as readouts, not as empty inputs: solid fill,
    full-strength text, no dashed border that vanished against dark surfaces. */
 .calcbox{font-family:var(--mono);font-size:13.5px;font-weight:500;color:var(--text);
-  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;
-  text-align:center;min-height:42px;display:flex;align-items:center;justify-content:center}
+  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;
+  text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
 .calcbox.warn{color:var(--stop);border-color:var(--stop);background:var(--stop-bg)}
-.tri{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-height:42px}
+.tri{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-height:40px}
 .tri button{flex:1;background:var(--surface);border:none;border-right:1px solid var(--line);
   font:600 12.5px var(--sans);color:var(--text-2);cursor:pointer;padding:0;
   transition:background .12s var(--ease),color .12s}
@@ -230,8 +242,14 @@ html[data-theme="dark"] .tri button[aria-pressed="true"]{background:var(--code);
 .tri.go button[aria-pressed="true"][data-v="FALSE"]{background:var(--stop);color:#fff}
 html[data-theme="dark"] .tri.go button[aria-pressed="true"][data-v="TRUE"]{color:#0C2019}
 html[data-theme="dark"] .tri.go button[aria-pressed="true"][data-v="FALSE"]{color:#2A100D}
+/* Proof: "No" reads red whether or not it is the selected answer, because a
+   job going out with no proof is the exception worth spotting at a glance. */
+.tri.stopno button[data-v="FALSE"]{color:var(--stop);font-weight:700}
+.tri.stopno button[data-v="FALSE"]:hover{background:var(--stop-bg);color:var(--stop)}
+.tri.stopno button[aria-pressed="true"][data-v="FALSE"]{background:var(--stop);color:#fff}
+html[data-theme="dark"] .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{color:#2A100D}
 .entry-actions{display:flex;flex-direction:row;gap:8px}
-.entry-actions .btn{flex:1;padding:11px 10px;font-size:13.5px;min-height:42px}
+.entry-actions .btn{flex:1;padding:10px;font-size:13.5px;min-height:40px}
 .edit-banner{background:var(--code-bg);border:1px solid color-mix(in srgb,var(--code) 45%,transparent);
   color:var(--code);border-radius:7px;padding:6px 12px;font-size:12.5px;font-weight:600;animation:fadeIn .2s var(--ease)}
 
@@ -261,7 +279,7 @@ html[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--code);color:
 .ledger-bar .spacer{flex:1}
 
 /* ---------------- table ---------------- */
-.tablewrap{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;background:var(--surface);min-height:0}
+.tablewrap{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;background:var(--surface);min-height:150px}
 .tablewrap.in-left{animation:slideFromLeft .26s var(--ease)}
 .tablewrap.in-right{animation:slideFromRight .26s var(--ease)}
 @keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
@@ -304,6 +322,14 @@ td.seq.k-hot{border-left-color:var(--stop)}
 td.oid{font-family:var(--mono);font-weight:500}
 td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 td.dur{font-family:var(--mono);font-size:12px}
+td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
+td.num.zero{color:var(--muted)}
+.otype{display:inline-block;padding:2px 7px;border-radius:5px;font:700 11px var(--mono);letter-spacing:.04em;
+  background:var(--idle-bg);color:var(--idle)}
+.otype.t-rtr{background:var(--code-bg);color:var(--code)}
+.otype.t-int{background:var(--brass-soft);color:var(--brass)}
+html[data-theme="dark"] .otype.t-int{color:var(--brass-lit)}
+.otype.t-sam{background:var(--go-bg);color:var(--go)}
 td.notes{font-size:12px;color:var(--text-2);white-space:pre-line}
 td.cust{white-space:pre-line}
 .tags{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
@@ -391,7 +417,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   .ecell{grid-column:span 1}
   .ecell.wide{grid-column:span 2}
   .tablewrap{overflow-x:auto}
-  table{table-layout:auto;min-width:1180px}
+  table{table-layout:auto;min-width:1420px}
 }
 @media (max-width:900px){
   .auth{grid-template-columns:1fr}
@@ -445,6 +471,8 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 
   /* ---- entry row: one full-width field per line instead of a column grid */
   .entrybar{padding:16px 14px 18px;max-height:1600px}
+  .entrybar:not(.collapsed){overflow:visible;resize:none}
+  .entryhead{position:static;margin-top:0;padding-top:0!important}
   .entryhead{flex-wrap:wrap;padding:0;row-gap:6px}
   /* One field per line on a phone — 12 columns has nothing to offer here. */
   .entrygrid{display:flex!important;flex-direction:column;gap:14px}
@@ -452,6 +480,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   .ecell label{white-space:normal}
   /* 16px prevents iOS Safari zooming the page when a field is focused. */
   .ecell input,.ecell textarea,.ecell select{font-size:16px;padding:12px 14px;min-height:48px}
+  .ecell input.money,.ecell input.qty{text-align:left}
   .ecell textarea{min-height:56px}
   .tri{min-height:48px}
   .tri button{font-size:13.5px}
@@ -1327,7 +1356,7 @@ function installBootstrap() {
     users[BOOTSTRAP_USER.key] = JSON.parse(JSON.stringify(BOOTSTRAP_USER));
     saveUsers(users);
     if (localStorage.getItem(ordersKey(BOOTSTRAP_USER.key)) === null) {
-      writeJson(ordersKey(BOOTSTRAP_USER.key), BOOTSTRAP_ORDERS.map(seedRecord));
+      writeOrdersRaw(BOOTSTRAP_USER.key, BOOTSTRAP_ORDERS.map(seedRecord), 1);
     }
     return { added: 0, updated: 0, fresh: true };
   }
@@ -1335,7 +1364,8 @@ function installBootstrap() {
      stepping on anything that has been edited since it was seeded. */
   var user = users[BOOTSTRAP_USER.key];
   if ((user.seedVersion || 1) >= SEED_VERSION) return { added: 0, updated: 0, fresh: false };
-  var current = readJson(ordersKey(BOOTSTRAP_USER.key), []);
+  var existing = readOrdersRaw(BOOTSTRAP_USER.key);
+  var current = existing.orders;
   var index = {};
   current.forEach(function (o) { index[o.date + "|" + String(o.orderId).toLowerCase()] = o; });
   var added = 0, updated = 0;
@@ -1348,7 +1378,7 @@ function installBootstrap() {
       updated++;
     }
   });
-  writeJson(ordersKey(BOOTSTRAP_USER.key), current);
+  writeOrdersRaw(BOOTSTRAP_USER.key, current, existing.rev + 1);
   user.seedVersion = SEED_VERSION;
   putUser(user);
   return { added: added, updated: updated, fresh: false };
@@ -1362,7 +1392,9 @@ var state = {
   user: null, orders: [], byId: {},
   scopeDate: todayKey(), weekStart: null, scope: "day",
   query: "", filter: "all", sortKey: "seq", sortDir: 1, flashId: null,
-  inlineId: null, inlineFields: null
+  inlineId: null, inlineFields: null,
+  /* save bookkeeping — see persistOrders() */
+  rev: 0, lastSaved: null, saveFailed: false, deleted: {}
 };
 
 function startSession(userRec, remember) {
@@ -1543,10 +1575,35 @@ function rowAccent(order) {
 }
 
 /* --------------------------------------------------------------- orders */
+/* Orders used to be written as a bare array. They are now wrapped in an
+   envelope carrying a revision number, so a second tab writing the same key
+   can be detected and merged instead of silently clobbering this one. Both
+   shapes are still read, so nothing already in storage is lost. */
+function unwrapOrders(v) {
+  if (Array.isArray(v)) return { orders: v, rev: 0, savedAt: null };
+  if (v && Array.isArray(v.orders)) {
+    return { orders: v.orders, rev: Number(v.rev) || 0, savedAt: v.savedAt || null };
+  }
+  return { orders: [], rev: 0, savedAt: null };
+}
+function readOrdersRaw(userKey) { return unwrapOrders(readJson(ordersKey(userKey), [])); }
+function writeOrdersRaw(userKey, orders, rev) {
+  return writeJson(ordersKey(userKey), { v: 2, rev: rev, savedAt: nowIso(), orders: orders });
+}
+/* The search index is cached on each order as __hay. It must never be written
+   to storage — it roughly doubled the size of the payload, which is the fast
+   way to hit the 5 MB localStorage ceiling and start failing writes. */
+function stripInternal(o) {
+  var c = {};
+  for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k) && k.slice(0, 2) !== "__") c[k] = o[k];
+  return c;
+}
 function loadOrders() {
-  if (!state.user) { state.orders = []; reindex(); return; }
-  var raw = readJson(ordersKey(state.user.key), []);
-  state.orders = Array.isArray(raw) ? raw.map(normalizeOrder) : [];
+  if (!state.user) { state.orders = []; state.rev = 0; reindex(); return; }
+  var raw = readOrdersRaw(state.user.key);
+  state.orders = raw.orders.map(normalizeOrder);
+  state.rev = raw.rev;
+  state.deleted = {};
   reindex();
 }
 function reindex() {
@@ -1554,11 +1611,98 @@ function reindex() {
   for (var i = 0; i < state.orders.length; i++) state.byId[state.orders[i].id] = state.orders[i];
 }
 function byId(id) { return state.byId[id] || null; }
-function persistOrders() {
-  if (!state.user) return;
-  writeJson(ordersKey(state.user.key), state.orders);
-  reindex();
+/* Pulls in anything a second tab added since this tab last read, so two open
+   windows can't erase each other's orders. Rows deleted in this tab stay
+   deleted. */
+function mergeForeign(foreign) {
+  var merged = 0;
+  for (var i = 0; i < foreign.length; i++) {
+    var f = normalizeOrder(foreign[i]);
+    if (state.deleted[f.id]) continue;
+    var mine = state.byId[f.id];
+    if (!mine) { state.orders.push(f); merged++; continue; }
+    if (f.updatedAt && mine.updatedAt && f.updatedAt > mine.updatedAt) {
+      for (var k in f) if (k.slice(0, 2) !== "__") mine[k] = f[k];
+      merged++;
+    }
+  }
+  if (merged) reindex();
+  return merged;
 }
+/* Returns true only when the change is actually on disk. Every caller that
+   can lose data on a false is expected to check it. */
+function persistOrders() {
+  if (!state.user) return false;
+  var key = state.user.key;
+  var stored = readOrdersRaw(key);
+  var merged = 0;
+  if (stored.rev !== state.rev) merged = mergeForeign(stored.orders);
+  var rev = Math.max(stored.rev, state.rev) + 1;
+  var payload = state.orders.map(stripInternal);
+  var ok = writeOrdersRaw(key, payload, rev);
+  if (ok) {
+    /* Read it straight back. A write can be accepted and then dropped by
+       storage pressure or an extension, and a silent drop is exactly the
+       failure that looks like "I entered it and it vanished". */
+    var back = readOrdersRaw(key);
+    if (back.rev !== rev || back.orders.length !== payload.length) ok = false;
+  }
+  if (ok) { state.rev = rev; state.lastSaved = new Date(); state.saveFailed = false; }
+  else { state.saveFailed = true; }
+  reindex();
+  if (merged) {
+    toast("Picked up " + merged + " change" + (merged === 1 ? "" : "s") +
+          " made in another tab.", null, 6000);
+    scheduleRender();
+  }
+  return ok;
+}
+/* One place to shout when a save does not land, instead of a toast that
+   scrolls away while you carry on typing. */
+function saveFailedModal(what) {
+  confirmModal("That " + what + " was not saved",
+    "The browser refused to write to local storage. This is almost always a full quota or " +
+    "private-browsing mode. Your work is still on screen — use Back up to write a JSON file " +
+    "before you reload or close this tab.",
+    "Back up now", backupJson, "Ignore", function () {});
+}
+/* ------------------------------------------------- order type / qty / money */
+var ORDER_TYPES = ["RTR", "INT", "SAM"];
+function normType(v) {
+  var t = String(v == null ? "" : v).trim().toUpperCase().replace(/\s+/g, " ");
+  return t.slice(0, 14);
+}
+function typeClass(t) {
+  return ORDER_TYPES.indexOf(normType(t)) !== -1 ? "t-" + normType(t).toLowerCase() : "";
+}
+function parseQty(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  var digits = String(v).replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  var n = parseInt(digits, 10);
+  return isFinite(n) ? n : "";
+}
+function parseMoney(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  var clean = String(v).replace(/[^0-9.]/g, "");
+  if (!clean) return "";
+  var n = parseFloat(clean);
+  if (!isFinite(n)) return "";
+  return Math.round(n * 100) / 100;
+}
+function money(n) {
+  if (n === "" || n === null || n === undefined) return "";
+  return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function sumQty(list) {
+  return list.reduce(function (t, o) { return t + (o.qty === "" ? 0 : Number(o.qty)); }, 0);
+}
+function sumAmount(list) {
+  return Math.round(list.reduce(function (t, o) {
+    return t + (o.amount === "" ? 0 : Number(o.amount));
+  }, 0) * 100) / 100;
+}
+
 function normalizeOrder(o) {
   o = o || {};
   var tri = function (v) {
@@ -1574,6 +1718,9 @@ function normalizeOrder(o) {
     seq: Number(o.seq) > 0 ? Number(o.seq) : 0,
     orderId: txt(o.orderId).trim(),
     customer: txt(o.customer).trim(),
+    otype: normType(o.otype),
+    qty: parseQty(o.qty),
+    amount: parseMoney(o.amount),
     proof: tri(o.proof),
     status: txt(o.status),
     startTime: txt(o.startTime),
@@ -1598,7 +1745,7 @@ function renumberDate(dateKey) {
   var rows = state.orders.filter(function (o) { return o.date === dateKey; })
     .sort(function (a, b) { return (a.seq - b.seq) || a.createdAt.localeCompare(b.createdAt); });
   rows.forEach(function (o, i) { o.seq = i + 1; o.updatedAt = nowIso(); });
-  persistOrders();
+  if (!persistOrders()) saveFailedModal("renumber");
   scheduleRender();
 }
 function weekKeysSet() {
@@ -1632,7 +1779,8 @@ function matchesFilter(o) {
 }
 function searchText(o) {
   if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
-    o.__hay = [o.seq, o.date, o.orderId, o.customer, o.status, o.notes,
+    o.__hay = [o.seq, o.date, o.orderId, o.customer, o.otype, o.qty,
+               o.amount === "" ? "" : money(o.amount), o.status, o.notes,
                o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
     o.__hayStamp = o.updatedAt;
   }
@@ -1666,6 +1814,12 @@ function visibleOrders() {
       if (x === null && y !== null) return 1;
       if (y === null && x !== null) return -1;
       r = (x === null && y === null) ? 0 : x - y;
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    } else if (k === "qty" || k === "amount") {
+      var qa = a[k] === "" ? null : Number(a[k]), qb = b[k] === "" ? null : Number(b[k]);
+      if (qa === null && qb !== null) return 1;
+      if (qb === null && qa !== null) return -1;
+      r = (qa === null && qb === null) ? 0 : qa - qb;
       if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
     } else {
       r = String(a[k] || "").localeCompare(String(b[k] || ""), undefined, { numeric: true, sensitivity: "base" });
@@ -1705,20 +1859,23 @@ function scheduleTable() {
    the table, so the fields you type into sit over the columns they fill. */
 var COLUMNS = [
   { key: "seq",    label: "#",        w: 3.5,  wd: 3.5,  sort: "seq",  entry: "new" },
-  { key: "date",   label: "Date",     w: 0,    wd: 5,    sort: "date", entry: "date", dateOnly: true },
-  { key: "orderId",label: "Order #",  w: 8,    wd: 7.5,  sort: "orderId", entry: "text", field: "fOrderId", ph: "16248803" },
-  { key: "customer",label:"Customer", w: 13.5, wd: 12,   sort: "customer", entry: "area", field: "fCustomer", ph: "Name or email" },
-  { key: "proof",  label: "Proof",    w: 4.5,  wd: 4.5,  entry: "tri", field: "segProof" },
-  { key: "status", label: "Status",   w: 13.5, wd: 12,   entry: "area", field: "fStatus", ph: "CLC, LEC, Proof Sent!" },
-  { key: "startTime", label: "Start", w: 6,    wd: 6,    sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
-  { key: "completionTime", label: "End", w: 6, wd: 6,    sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
-  { key: "taken",  label: "Taken",    w: 5,    wd: 5,    sort: "taken", entry: "calc", field: "calcTaken" },
-  { key: "proofRcvdTime", label: "Back", w: 6, wd: 6,    entry: "time", field: "fBack", ph: "9:39" },
-  { key: "turn",   label: "Turn",     w: 5,    wd: 5,    entry: "calc", field: "calcTurn" },
-  { key: "fin",    label: "Fin",      w: 4.5,  wd: 4.5,  entry: "tri", field: "segFin" },
+  { key: "date",   label: "Date",     w: 0,    wd: 4.5,  sort: "date", entry: "date", dateOnly: true },
+  { key: "orderId",label: "Order #",  w: 7,    wd: 7,    sort: "orderId", entry: "text", field: "fOrderId", ph: "16248803" },
+  { key: "customer",label:"Customer", w: 10,   wd: 9.5,  sort: "customer", entry: "area", field: "fCustomer", ph: "Name or email" },
+  { key: "otype",  label: "Type",     w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR" },
+  { key: "qty",    label: "Qty",      w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
+  { key: "amount", label: "Amount",   w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
+  { key: "proof",  label: "Proof",    w: 4,    wd: 4,    entry: "tri", field: "segProof" },
+  { key: "status", label: "Status",   w: 10,   wd: 9.5,  entry: "area", field: "fStatus", ph: "CLC, LEC, Proof Sent!" },
+  { key: "startTime", label: "Start", w: 6,    wd: 5.5,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
+  { key: "completionTime", label: "End", w: 6, wd: 5.5,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
+  { key: "taken",  label: "Taken",    w: 4.5,  wd: 4.5,  sort: "taken", entry: "calc", field: "calcTaken" },
+  { key: "proofRcvdTime", label: "Back", w: 6, wd: 5.5,  entry: "time", field: "fBack", ph: "9:39" },
+  { key: "turn",   label: "Turn",     w: 4.5,  wd: 4.5,  entry: "calc", field: "calcTurn" },
+  { key: "fin",    label: "Fin",      w: 4.5,  wd: 4,    entry: "tri", field: "segFin" },
   { key: "savedToDrive", label: "Drive", w: 5, wd: 4.5,  entry: "tri", field: "segDrive" },
-  { key: "notes",  label: "Notes",    w: 13,   wd: 12,   entry: "area", field: "fNotes", ph: "Anything worth remembering" },
-  { key: "acts",   label: "",         w: 6.5,  wd: 6.5,  entry: "acts" }
+  { key: "notes",  label: "Notes",    w: 8.5,  wd: 9,    entry: "area", field: "fNotes", ph: "Anything worth remembering" },
+  { key: "acts",   label: "",         w: 5.5,  wd: 5.5,  entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
@@ -1726,6 +1883,11 @@ function activeColumns() {
 }
 function columnWidth(c) { return (state.scope !== "day" ? c.wd : c.w) + "%"; }
 
+/* Rebuilding the entry row throws away whatever is half-typed in it. The row
+   only needs rebuilding when the set of columns changes (the Date column comes
+   and goes with the scope), so everything else — a pill toggled in the table,
+   a day change, an undo — now leaves your typing exactly where it was. */
+var entrySig = "";
 function buildChrome() {
   var cols = activeColumns();
   var colgroup = $("cols");
@@ -1744,16 +1906,29 @@ function buildChrome() {
     if (c.key === "acts") th.className = "rowacts";
     head.appendChild(th);
   });
-  buildEntryRow(cols);
+  var sig = cols.map(function (c) { return c.key; }).join("|");
+  if (sig !== entrySig || !$("fOrderId")) {
+    cacheFormValues();
+    entrySig = sig;
+    buildEntryRow(cols);
+    restoreFormValues();
+  }
+  refreshEntryMeta();
 }
 /* How many of the 12 grid columns each field gets. Mirroring the table's own
    widths here squeezed several fields to ~4.5% of the screen, so the entry row
    keeps the table's field ORDER but sizes each one to be readable. */
 var ENTRY_SPAN = {
-  seq: "", date: "", orderId: "s3", customer: "s4", proof: "", status: "s5",
+  seq: "", date: "", orderId: "s3", customer: "s3", otype: "", qty: "", amount: "",
+  proof: "", status: "s4",
   startTime: "", completionTime: "", taken: "", proofRcvdTime: "", turn: "",
-  fin: "", savedToDrive: "", notes: "s6", acts: ""
+  fin: "", savedToDrive: "", notes: "s4", acts: ""
 };
+/* Every text-ish field in the entry row, in one place, so caching, clearing
+   and draft-saving can never drift out of sync with the fields on screen. */
+var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fType", "fQty", "fAmount",
+                      "fStatus", "fStart", "fDone", "fBack", "fNotes"];
+var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive"];
 function buildEntryRow(cols) {
   var grid = $("entrygrid");
   grid.textContent = "";
@@ -1771,11 +1946,37 @@ function buildEntryRow(cols) {
       var dv = el("div", "calcbox", "");
       dv.id = "calcDate";
       cell.appendChild(dv);
-    } else if (c.entry === "text" || c.entry === "time") {
+    } else if (c.entry === "type") {
+      /* A datalist, not a select: RTR / INT / SAM are one keystroke away and
+         anything else can still just be typed in. */
+      var ti = document.createElement("input");
+      ti.type = "text"; ti.id = c.field; ti.placeholder = c.ph || "";
+      ti.spellcheck = false; ti.autocomplete = "off";
+      ti.className = "mono";
+      ti.setAttribute("list", "orderTypeList");
+      ti.addEventListener("input", function () {
+        var at = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        try { this.setSelectionRange(at, at); } catch (e) {}
+      });
+      cell.appendChild(ti);
+      if (!document.getElementById("orderTypeList")) {
+        var dl = document.createElement("datalist");
+        dl.id = "orderTypeList";
+        ORDER_TYPES.concat(["OTHER"]).forEach(function (t) {
+          var op = document.createElement("option");
+          op.value = t;
+          dl.appendChild(op);
+        });
+        cell.appendChild(dl);
+      }
+    } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
       var input = document.createElement("input");
       input.type = "text"; input.id = c.field; input.placeholder = c.ph || "";
       input.spellcheck = false;
-      input.className = c.entry === "time" ? "mono" : "";
+      input.className = c.entry === "text" ? "" : "mono";
+      if (c.entry === "num") { input.className += " qty"; input.inputMode = "numeric"; }
+      if (c.entry === "money") { input.className += " money"; input.inputMode = "decimal"; }
       if (c.entry === "time") {
         var wrap = el("div", "timefield");
         var stamp = el("button", "stamp", "now");
@@ -1792,7 +1993,8 @@ function buildEntryRow(cols) {
       ta.id = c.field; ta.rows = 2; ta.placeholder = c.ph || "";
       cell.appendChild(ta);
     } else if (c.entry === "tri") {
-      var tri = el("div", "tri" + (c.key === "fin" || c.key === "savedToDrive" ? " go" : ""));
+      var tri = el("div", "tri" + (c.key === "fin" || c.key === "savedToDrive" ? " go" : "") +
+                            (c.key === "proof" ? " stopno" : ""));
       tri.id = c.field;
       tri.setAttribute("role", "group");
       tri.setAttribute("aria-label", c.label);
@@ -1841,11 +2043,61 @@ function wireEntryRow() {
     });
   });
   $("btnCancelEdit").addEventListener("click", function () { clearForm(); });
+  /* Anything typed in the entry row is mirrored to a draft, so a refresh, a
+     crash or an accidental tab close does not take the half-entered order
+     with it. Restored on the next sign-in. */
+  var grid = $("entrygrid");
+  grid.addEventListener("input", queueDraft);
+  grid.addEventListener("click", function (e) {
+    if (e.target.closest("[data-v]")) queueDraft();
+  });
+}
+var draftTimer = null;
+function queueDraft() {
+  if (draftTimer) clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 400);
+}
+function draftKey() { return state.user ? "caot_draft_" + state.user.key : null; }
+function collectForm() {
+  if (!$("fOrderId")) return null;
+  var d = {};
+  ENTRY_TEXT_IDS.forEach(function (id) { d[id] = $(id) ? $(id).value : ""; });
+  ENTRY_SEG_IDS.forEach(function (id) { d[id] = segValue(id); });
+  return d;
+}
+function draftIsEmpty(d) {
+  if (!d) return true;
+  for (var i = 0; i < ENTRY_TEXT_IDS.length; i++) {
+    if (String(d[ENTRY_TEXT_IDS[i]] || "").trim()) return false;
+  }
+  return true;
+}
+function saveDraft() {
+  var k = draftKey();
+  if (!k) return;
+  var d = collectForm();
+  if (draftIsEmpty(d)) { clearDraft(); return; }
+  writeJson(k, { savedAt: nowIso(), date: state.scopeDate, form: d });
+}
+function clearDraft() {
+  var k = draftKey();
+  if (!k) return;
+  try { localStorage.removeItem(k); } catch (e) {}
+}
+function restoreDraft() {
+  var k = draftKey();
+  if (!k) return;
+  var d = readJson(k, null);
+  if (!d || !d.form || draftIsEmpty(d.form)) return;
+  formCache = d.form;
+  restoreFormValues();
+  toast("Restored the order you were part-way through typing.", {
+    label: "Discard", run: function () { clearForm(); }
+  }, 9000);
 }
 
 function render() {
   buildChrome();
-  restoreFormValues();
   renderWeek();
   renderRibbon();
   renderChips();
@@ -1859,20 +2111,22 @@ function render() {
 var formCache = null;
 function cacheFormValues() {
   if (!$("fOrderId")) return;
-  formCache = {
-    fOrderId: $("fOrderId").value, fCustomer: $("fCustomer").value, fStatus: $("fStatus").value,
-    fStart: $("fStart").value, fDone: $("fDone").value, fBack: $("fBack").value, fNotes: $("fNotes").value,
-    segProof: segValue("segProof"), segFin: segValue("segFin"), segDrive: segValue("segDrive")
-  };
+  formCache = collectForm();
 }
 function restoreFormValues() {
+  if (!$("fOrderId")) return;
   if (!formCache) { setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); }
   else {
-    ["fOrderId","fCustomer","fStatus","fStart","fDone","fBack","fNotes"].forEach(function (id) {
-      $(id).value = formCache[id] || "";
-    });
-    setSeg("segProof", formCache.segProof); setSeg("segFin", formCache.segFin); setSeg("segDrive", formCache.segDrive);
+    ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = formCache[id] || ""; });
+    setSeg("segProof", formCache.segProof || "TRUE");
+    setSeg("segFin", formCache.segFin || "FALSE");
+    setSeg("segDrive", formCache.segDrive || "FALSE");
   }
+  refreshEntryMeta();
+}
+/* The read-only bits of the entry row (which date it will file under, which
+   number it will take) refresh on every render; the fields themselves do not. */
+function refreshEntryMeta() {
   if ($("calcDate")) $("calcDate").textContent = shortDate(state.scopeDate);
   if ($("calcSeq")) $("calcSeq").textContent = "#" + nextSeq(state.scopeDate);
 }
@@ -1885,11 +2139,23 @@ function renderFooter() {
   var scopeName = state.scope === "day" ? prettyDate(state.scopeDate)
     : state.scope === "week" ? "week of " + shortDate(state.weekStart)
     : "all dates";
+  var visible = visibleOrders();
+  var q = sumQty(visible), amt = sumAmount(visible);
   count.appendChild(el("b", null, shown));
   count.appendChild(document.createTextNode(
     (shown === 1 ? " order" : " orders") + (shown !== scoped.length ? " of " + scoped.length : "") +
-    " shown for " + scopeName + (live ? " · " + live + " in progress" : "")));
-  $("footHint").textContent = state.user ? "Signed in as " + state.user.username : "";
+    " shown for " + scopeName + (live ? " · " + live + " in progress" : "") +
+    (q ? " · " + q + " pc" + (q === 1 ? "" : "s") : "") +
+    (amt ? " · " + money(amt) : "")));
+  /* A visible, running confirmation that writes are actually landing. */
+  var hint = state.user ? "Signed in as " + state.user.username : "";
+  if (state.saveFailed) hint += " · NOT SAVED — back up now";
+  else if (state.lastSaved) hint += " · saved " + prettyTime(pad2(state.lastSaved.getHours()) + ":" +
+    pad2(state.lastSaved.getMinutes()) + ":" + pad2(state.lastSaved.getSeconds()));
+  var hintEl = $("footHint");
+  hintEl.textContent = hint;
+  hintEl.style.color = state.saveFailed ? "var(--stop)" : "";
+  hintEl.style.fontWeight = state.saveFailed ? "700" : "";
 }
 function renderWeek() {
   var host = $("days");
@@ -2055,6 +2321,16 @@ function readRow(o, cols) {
       case "date": td = el("td", "tm", shortDate(o.date)); break;
       case "orderId": td = el("td", "oid", o.orderId); break;
       case "customer": td = el("td", "cust", o.customer); break;
+      case "otype":
+        td = el("td");
+        if (o.otype) td.appendChild(el("span", "otype " + typeClass(o.otype), o.otype));
+        break;
+      case "qty":
+        td = el("td", "num" + (o.qty === "" ? " zero" : ""), o.qty === "" ? "—" : o.qty);
+        break;
+      case "amount":
+        td = el("td", "num" + (o.amount === "" ? " zero" : ""), o.amount === "" ? "—" : money(o.amount));
+        break;
       case "proof": case "fin": case "savedToDrive":
         td = el("td");
         td.appendChild(triPill(o[c.key], c.key, o.id));
@@ -2131,6 +2407,24 @@ function inlineRow(o, cols) {
         td.appendChild(fields.date);
         break;
       case "orderId": fields.orderId = mk("input", "mono", o.orderId, "Order #"); td.appendChild(fields.orderId); break;
+      case "otype":
+        fields.otype = mk("input", "mono", o.otype, "RTR");
+        fields.otype.setAttribute("list", "orderTypeList");
+        fields.otype.addEventListener("input", function () { this.value = this.value.toUpperCase(); });
+        td.appendChild(fields.otype);
+        break;
+      case "qty":
+        fields.qty = mk("input", "mono", o.qty, "Qty");
+        fields.qty.style.textAlign = "right";
+        fields.qty.inputMode = "numeric";
+        td.appendChild(fields.qty);
+        break;
+      case "amount":
+        fields.amount = mk("input", "mono", o.amount === "" ? "" : Number(o.amount).toFixed(2), "0.00");
+        fields.amount.style.textAlign = "right";
+        fields.amount.inputMode = "decimal";
+        td.appendChild(fields.amount);
+        break;
       case "customer": fields.customer = mk("textarea", "", o.customer, "Customer"); td.appendChild(fields.customer); break;
       case "status": fields.status = mk("textarea", "", o.status, "Status"); td.appendChild(fields.status); break;
       case "notes": fields.notes = mk("textarea", "", o.notes, "Notes"); td.appendChild(fields.notes); break;
@@ -2216,6 +2510,9 @@ function saveInline(id) {
   if (f.date && /^\d{4}-\d{2}-\d{2}$/.test(f.date.value)) o.date = snapToWeekday(f.date.value);
   o.orderId = f.orderId.value.trim();
   o.customer = f.customer.value.trim();
+  if (f.otype) o.otype = normType(f.otype.value);
+  if (f.qty) o.qty = parseQty(f.qty.value);
+  if (f.amount) o.amount = parseMoney(f.amount.value);
   o.status = f.status.value.trim();
   o.notes = f.notes.value.trim();
   o.startTime = start.value;
@@ -2225,7 +2522,14 @@ function saveInline(id) {
   o.fin = f.fin.value;
   o.savedToDrive = f.savedToDrive.value;
   o.updatedAt = nowIso();
-  persistOrders();
+  if (!persistOrders()) {
+    /* Put the row back the way it was rather than leave the screen and the
+       storage disagreeing about what is saved. */
+    for (var rk in before) o[rk] = before[rk];
+    scheduleRender();
+    saveFailedModal("edit");
+    return;
+  }
   state.inlineId = null;
   state.inlineFields = null;
   $("editBanner").hidden = true;
@@ -2247,7 +2551,7 @@ function stampNow(id, field) {
   var prev = o[field];
   o[field] = nowClock();
   o.updatedAt = nowIso();
-  persistOrders();
+  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("time stamp"); return; }
   scheduleRender();
   var names = { startTime: "Started", completionTime: "Ended", proofRcvdTime: "Proof back" };
   toast(names[field] + " on #" + o.seq + " set to " + prettyTime(o[field]) + ".", {
@@ -2280,12 +2584,13 @@ function updateCalcs() {
   show(turn, b, c);
 }
 function clearForm() {
-  ["fOrderId", "fCustomer", "fStatus", "fStart", "fDone", "fBack", "fNotes"].forEach(function (id) { $(id).value = ""; });
+  ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = ""; });
   setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE");
   formCache = null;
+  clearDraft();
   $("entryTitle").textContent = "Add an order";
   $("btnSaveOrder").textContent = "Add";
-  if ($("calcSeq")) $("calcSeq").textContent = "#" + nextSeq(state.scopeDate);
+  refreshEntryMeta();
   updateCalcs();
   scheduleTable();
 }
@@ -2302,8 +2607,20 @@ function submitOrder(e) {
   var customer = $("fCustomer").value.trim();
   if (!orderId && !customer) { toast("Add an order number or a customer before saving."); $("fOrderId").focus(); return; }
 
+  var rawAmount = $("fAmount") ? $("fAmount").value.trim() : "";
+  var rawQty = $("fQty") ? $("fQty").value.trim() : "";
+  if (rawAmount && parseMoney(rawAmount) === "") {
+    toast("The amount should be a number, like 48 or 48.50."); $("fAmount").focus(); return;
+  }
+  if (rawQty && parseQty(rawQty) === "") {
+    toast("The quantity should be a whole number."); $("fQty").focus(); return;
+  }
+
   var fields = {
     orderId: orderId, customer: customer,
+    otype: normType($("fType") ? $("fType").value : ""),
+    qty: parseQty(rawQty),
+    amount: parseMoney(rawAmount),
     proof: segValue("segProof"),
     status: $("fStatus").value.trim(),
     startTime: start.value,
@@ -2327,12 +2644,39 @@ function submitOrder(e) {
     rec.seq = nextSeq(state.scopeDate);
     rec.createdAt = nowIso();
     state.orders.push(rec);
-    persistOrders();
+    if (!persistOrders()) {
+      /* Leave the typed values in the form so nothing has to be re-keyed. */
+      state.orders.pop();
+      reindex();
+      saveFailedModal("order");
+      return;
+    }
     state.flashId = rec.id;
-    toast("Added #" + rec.seq + (rec.orderId ? " · " + rec.orderId : "") + ".");
     clearForm();
     render();
     $("fOrderId").focus();
+
+    /* An order added while a filter or a search is active lands in the ledger
+       but not on screen, which reads exactly like a failed save. Say so, and
+       offer one click back to it. */
+    var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    var visible = inScope(rec) && matchesFilter(rec) && matchesQuery(rec, terms);
+    if (visible) {
+      toast("Added #" + rec.seq + (rec.orderId ? " · " + rec.orderId : "") + ".");
+    } else {
+      toast("Saved #" + rec.seq + " on " + prettyDate(rec.date) +
+            ", but the current filter or search is hiding it.", {
+        label: "Show it",
+        run: function () {
+          state.filter = "all";
+          state.query = ""; $("search").value = "";
+          state.scopeDate = rec.date;
+          state.weekStart = mondayOf(rec.date);
+          state.flashId = rec.id;
+          render();
+        }
+      }, 9000);
+    }
   };
   if (dupe) {
     confirmModal("Order " + orderId + " is already on this date",
@@ -2349,7 +2693,7 @@ function cyclePill(id, field) {
   var next = order[(order.indexOf(prev) + 1) % 3];
   o[field] = next;
   o.updatedAt = nowIso();
-  persistOrders();
+  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("change"); return; }
   scheduleRender();
   var names = { proof: "Proof", fin: "Finished", savedToDrive: "Saved to drive" };
   var shown = { TRUE: "Yes", FALSE: "No", X: "N/A" };
@@ -2364,13 +2708,22 @@ function deleteOrder(id) {
   if (idx === -1) return;
   var removed = state.orders[idx];
   state.orders.splice(idx, 1);
+  state.deleted[id] = true;
   if (state.inlineId === id) { state.inlineId = null; state.inlineFields = null; }
-  persistOrders();
+  if (!persistOrders()) {
+    state.orders.splice(idx, 0, removed);
+    delete state.deleted[id];
+    reindex();
+    scheduleRender();
+    saveFailedModal("deletion");
+    return;
+  }
   scheduleRender();
   toast("Deleted #" + removed.seq + (removed.orderId ? " · " + removed.orderId : "") + ".", {
     label: "Undo",
     run: function () {
       state.orders.splice(idx, 0, removed);
+      delete state.deleted[removed.id];
       persistOrders();
       state.flashId = removed.id;
       scheduleRender();
@@ -2415,6 +2768,12 @@ function summarize(orders) {
     lec: orders.filter(function (o) { return isCode(o, "LEC"); }).length,
     held: orders.filter(isHeld).length,
     notDrive: orders.filter(function (o) { return o.savedToDrive === "FALSE"; }).length,
+    qty: sumQty(orders), amount: sumAmount(orders),
+    types: (function () {
+      var t = {};
+      orders.forEach(function (o) { if (o.otype) t[o.otype] = (t[o.otype] || 0) + 1; });
+      return t;
+    })(),
     medTaken: med(takens), medTurn: med(turns), totalTaken: totalTaken,
     timed: takens.filter(function (n) { return n !== null && n >= 0; }).length,
     first: firstMark, last: ends.length ? Math.max.apply(null, ends) : null,
@@ -2435,6 +2794,7 @@ function summaryText(dateKey, s) {
     "Median time taken: " + (s.medTaken === null ? "—" : durationText(s.medTaken)) +
       "   Median proof turnaround: " + (s.medTurn === null ? "—" : durationText(s.medTurn)),
     "Tracked working time: " + durationText(s.totalTaken) + " across " + s.timed + " timed orders",
+    "Pieces: " + (s.qty || 0) + "   Order value: " + (s.amount ? money(s.amount) : "$0.00"),
     "First activity: " + clockFromMinutes(s.first) + "   Last completion: " + clockFromMinutes(s.last)
   ];
   return lines.join("\n");
@@ -2459,7 +2819,9 @@ function openSummary() {
     [s.proofs, "proofs sent"], [s.awaiting, "proofs outstanding"], [s.notDrive, "not on the drive"],
     [s.medTaken === null ? "—" : durationText(s.medTaken), "median time taken"],
     [s.medTurn === null ? "—" : durationText(s.medTurn), "median proof turnaround"],
-    [durationText(s.totalTaken), "tracked working time"]
+    [durationText(s.totalTaken), "tracked working time"],
+    [s.qty || "—", "pieces"],
+    [s.amount ? money(s.amount) : "—", "order value"]
   ].forEach(function (pair) {
     var c = el("div", "sum-cell");
     c.appendChild(el("b", null, pair[0]));
@@ -2488,6 +2850,17 @@ function openSummary() {
   });
   wrap.appendChild(bars);
   box.appendChild(wrap);
+
+  var typeKeys = Object.keys(s.types).sort();
+  if (typeKeys.length) {
+    box.appendChild(el("div", "sum-h", "Order types"));
+    typeKeys.forEach(function (t) {
+      var row = el("div", "sum-row");
+      row.appendChild(el("span", null, t));
+      row.appendChild(el("span", null, s.types[t]));
+      box.appendChild(row);
+    });
+  }
 
   box.appendChild(el("div", "sum-h", "Status mix"));
   [["Routing codes (CLC, LEC, WEE, ILS)", s.tally["t-code"]],
@@ -2547,17 +2920,22 @@ function csvCell(v) {
 function exportCsv() {
   var rows = visibleOrders();
   if (!rows.length) { toast("There is nothing in view to export."); return; }
-  var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "PROOF?", "Status",
+  var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "Type", "Qty", "Amount",
+              "PROOF?", "Status",
               "Time Started", "Time of Completion", "Time Taken (min)",
               "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
   var lines = [head.map(csvCell).join(",")];
   rows.forEach(function (o) {
     var taken = timeTaken(o), turn = turnaround(o);
-    lines.push([o.seq, o.date, o.orderId, o.customer, o.proof, o.status,
+    lines.push([o.seq, o.date, o.orderId, o.customer, o.otype, o.qty,
+                o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.status,
                 o.startTime, o.completionTime, taken === null ? "" : taken,
                 o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
                .map(csvCell).join(","));
   });
+  /* Totals row, so the export matches what the footer says. */
+  lines.push(["", "", "", "TOTALS", "", sumQty(rows), sumAmount(rows).toFixed(2)]
+             .map(csvCell).join(","));
   var name = "crown-orders-" + (state.scope === "day" ? state.scopeDate :
              state.scope === "week" ? "week-of-" + state.weekStart : "all-dates") + ".csv";
   download(name, "\ufeff" + lines.join("\r\n"), "text/csv;charset=utf-8");
@@ -2566,11 +2944,7 @@ function exportCsv() {
 function backupJson() {
   var payload = {
     app: "Award Order Tracker", version: 3, exportedAt: nowIso(),
-    username: state.user.username, orders: state.orders.map(function (o) {
-      var c = {};
-      for (var k in o) if (k.slice(0, 2) !== "__") c[k] = o[k];
-      return c;
-    })
+    username: state.user.username, orders: state.orders.map(stripInternal)
   };
   download("crown-orders-backup-" + todayKey() + ".json", JSON.stringify(payload, null, 2), "application/json");
   toast("Backed up " + state.orders.length + " orders.");
@@ -2591,11 +2965,13 @@ function restoreJson(file) {
         state.orders.forEach(function (o) { seen[o.id] = true; });
         var added = 0;
         clean.forEach(function (o) { if (!seen[o.id]) { state.orders.push(o); added++; } });
-        persistOrders(); scheduleRender();
+        if (!persistOrders()) { saveFailedModal("restore"); return; }
+        scheduleRender();
         toast("Merged " + added + " order" + (added === 1 ? "" : "s") + ".");
       }, "Replace", function () {
         state.orders = clean;
-        persistOrders(); scheduleRender();
+        if (!persistOrders()) { saveFailedModal("restore"); return; }
+        scheduleRender();
         toast("Replaced the ledger with " + clean.length + " orders.");
       });
   };
@@ -2748,7 +3124,7 @@ function doRegister(e) {
       seedVersion: SEED_VERSION, failedAttempts: 0, lockUntil: 0, reset: null
     };
     putUser(rec);
-    writeJson(ordersKey(rec.key), []);
+    writeOrdersRaw(rec.key, [], 1);
     startSession(rec, false);
     btn.disabled = false; btn.textContent = "Create account";
     $("rgPass").value = ""; $("rgPass2").value = "";
@@ -2978,9 +3354,13 @@ function enterApp(user) {
   $("avatar").textContent = (user.username || "?").slice(0, 2).toUpperCase();
   formCache = null;
   state.inlineId = null;
+  state.saveFailed = false;
+  state.lastSaved = null;
+  entrySig = "";
   buildChrome();
   clearForm();
   render();
+  restoreDraft();
   if (bootstrapReport && bootstrapReport.added && user.key === BOOTSTRAP_USER.key) {
     toast("Added " + bootstrapReport.added + " new orders from your updated sheet.", null, 6000);
     bootstrapReport = null;
@@ -3007,6 +3387,9 @@ function setPanel(collapsed, animate) {
   } else {
     bar.classList.toggle("collapsed", collapsed);
   }
+  /* A drag-resized panel carries an inline height, which would fight the
+     collapse animation, so it is dropped when the panel closes. */
+  if (collapsed) bar.style.height = "";
   bar.setAttribute("aria-hidden", collapsed ? "true" : "false");
   btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
   $("btnPanelLabel").textContent = collapsed ? "Show entry row" : "Hide entry row";
@@ -3059,6 +3442,25 @@ function shiftWeek(delta) {
 
 /* ------------------------------------------------------------ listeners */
 function wire() {
+  /* Two tabs open on the same ledger used to overwrite each other silently.
+     This one notices the other's write and folds it in. */
+  window.addEventListener("storage", function (e) {
+    if (!state.user || !e.key || e.key !== ordersKey(state.user.key)) return;
+    var stored = readOrdersRaw(state.user.key);
+    if (stored.rev === state.rev) return;
+    var before = state.orders.length;
+    var merged = mergeForeign(stored.orders);
+    state.rev = Math.max(state.rev, stored.rev);
+    if (merged || state.orders.length !== before) {
+      scheduleRender();
+      toast("This ledger changed in another tab — the new rows are here too.", null, 6000);
+    }
+  });
+  /* Last chance to flush a half-typed order before the tab goes away. */
+  window.addEventListener("beforeunload", function () {
+    if (draftTimer) clearTimeout(draftTimer);
+    saveDraft();
+  });
   document.addEventListener("click", function (e) {
     var go = e.target.closest("[data-go]");
     if (go) { showPane(go.getAttribute("data-go")); return; }
@@ -3209,7 +3611,16 @@ window.__CAOT__ = {
   setPanel: setPanel, panelCollapsed: panelCollapsed,
   isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
   startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
-  BOOTSTRAP_ORDERS: BOOTSTRAP_ORDERS
+  BOOTSTRAP_ORDERS: BOOTSTRAP_ORDERS,
+  persistOrders: persistOrders, loadOrders: loadOrders, mergeForeign: mergeForeign,
+  parseQty: parseQty, parseMoney: parseMoney, money: money, normType: normType,
+  sumQty: sumQty, sumAmount: sumAmount, readOrdersRaw: readOrdersRaw,
+  writeOrdersRaw: writeOrdersRaw, stripInternal: stripInternal,
+  collectForm: collectForm, clearForm: clearForm, submitOrderForm: function () {
+    $("formOrder").dispatchEvent(new Event("submit", { cancelable: true }));
+  },
+  deleteOrder: deleteOrder, cyclePill: cyclePill, exportCsv: exportCsv,
+  enterApp: enterApp, buildChrome: buildChrome, render: render
 };
 })();
 
