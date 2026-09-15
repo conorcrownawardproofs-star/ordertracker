@@ -435,9 +435,8 @@ td.cust{white-space:pre-line}
 tr:hover .nowbtn{opacity:1}
 .nowbtn:hover{color:var(--code);border-color:var(--code);border-style:solid}
 .running{color:var(--code);font-weight:600}
-.rowacts{text-align:right;white-space:nowrap;min-width:148px;padding-right:12px!important}
-.rowacts button{opacity:1;transition:opacity .12s var(--ease)}
-tr:hover .rowacts button,tr.editing .rowacts button{opacity:1}
+.rowacts{text-align:right;white-space:nowrap;overflow:visible;padding:6px 8px 6px 4px!important}
+.rowacts button{opacity:1;padding:2px 5px!important;font-size:11px!important}
 .cellinput{width:100%;padding:5px 6px;font-size:12.5px;border-radius:5px;border:1px solid var(--line);
   background:var(--surface);color:var(--text);font-family:var(--sans)}
 .cellinput.mono{font-family:var(--mono);font-size:12px}
@@ -2288,8 +2287,8 @@ var COLUMNS = [
   { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.8,  wd: 3.6,  entry: "calc", field: "calcTurn" },
   { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segFin" },
   { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
-  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 5.2,  wd: 5,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
-  { key: "acts",   label: "",         entryLabel: "Save", w: 8.2,  wd: 8,    entry: "acts" }
+  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 4.4,  wd: 4.2,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 10.5, wd: 10,   entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
@@ -2869,7 +2868,7 @@ function readRow(o, cols) {
         td = el("td", "rowacts");
         var edit = el("button", "btn quiet xs", "Edit");
         edit.type = "button"; edit.setAttribute("data-inline", o.id); edit.title = "Edit every field in place";
-        var del = el("button", "btn quiet xs", "Delete");
+        var del = el("button", "btn quiet xs", "Del");
         del.type = "button"; del.setAttribute("data-del", o.id);
         del.title = "Delete this order";
         del.setAttribute("aria-label", "Delete order");
