@@ -192,6 +192,26 @@
         });
       }
       return chain;
+    },
+    loadAvatar: function (userId) {
+      return req("/rest/v1/profiles?id=eq." + encodeURIComponent(userId) + "&select=avatar", { method: "GET" })
+        .then(function (rows) {
+          return rows && rows[0] ? rows[0].avatar : "";
+        }).catch(function () { return ""; });
+    },
+    saveAvatar: function (dataUrl) {
+      var s = readSession();
+      var id = s && s.user && s.user.id;
+      if (!id) return Promise.resolve();
+      return req("/rest/v1/profiles?id=eq." + encodeURIComponent(id), {
+        method: "PATCH",
+        body: { avatar: dataUrl }
+      }).catch(function () {
+        return req("/rest/v1/profiles", {
+          method: "POST",
+          body: { id: id, avatar: dataUrl }
+        }).catch(function () {});
+      });
     }
   };
 })(window);
