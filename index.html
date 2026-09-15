@@ -488,7 +488,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   .ecell{grid-column:span 1}
   .ecell.wide{grid-column:span 2}
   .tablewrap{overflow-x:auto}
-  table{table-layout:auto;min-width:1420px}
+  table{table-layout:fixed;min-width:0}
 }
 @media (max-width:900px){
   .auth{grid-template-columns:1fr}
@@ -2247,7 +2247,7 @@ var COLUMNS = [
   { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 5,    wd: 4.6,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
   { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 5,    wd: 4.8,  entry: "tri", field: "segProof" },
   { key: "marking",label: "Mark",     entryLabel: "Etch / logo", hint: "Nothing, etch, logo, or both", w: 6.5, wd: 6, entry: "mark", field: "segMark" },
-  { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 13,   wd: 12,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
+  { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 8,    wd: 7.5,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
   { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 4.6,  wd: 4.3,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
   { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 4.6, wd: 4.3,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
   { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 3.6,  wd: 3.4,  sort: "taken", entry: "calc", field: "calcTaken" },
