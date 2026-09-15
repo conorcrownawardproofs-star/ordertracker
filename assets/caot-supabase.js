@@ -13,6 +13,7 @@
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       user: data.user,
+      expires_at: data.expires_at || (data.expires_in ? Math.floor(Date.now() / 1000) + data.expires_in : 0),
       savedAt: Date.now()
     })); } catch (e) {}
   }
@@ -37,6 +38,33 @@
     var s = readSession();
     return (s && s.access_token) || cfg.anonKey;
   }
+  /* Access tokens expire after about an hour. Refresh a bit before that, and
+     share one in-flight refresh between concurrent requests. */
+  var refreshing = null;
+  function refresh() {
+    var s = readSession();
+    if (!s || !s.refresh_token) return Promise.resolve(false);
+    if (refreshing) return refreshing;
+    refreshing = fetch(origin + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { apikey: cfg.anonKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (res.ok && data.access_token) { saveSession(data); return true; }
+        return false;
+      });
+    }).catch(function () { return false; })
+      .then(function (ok) { refreshing = null; return ok; });
+    return refreshing;
+  }
+  function ensureFresh() {
+    var s = readSession();
+    if (!s || !s.refresh_token) return Promise.resolve();
+    var exp = s.expires_at || 0;
+    if (exp && exp - Math.floor(Date.now() / 1000) > 60) return Promise.resolve();
+    return refresh();
+  }
   function jsonHeaders(useUserToken) {
     var t = useUserToken ? token() : cfg.anonKey;
     return {
@@ -51,13 +79,24 @@
     return data.error_description || data.msg || data.message || data.error ||
       data.hint || ("Request failed (" + status + ")");
   }
-  function req(path, opts) {
+  function req(path, opts, retried) {
     opts = opts || {};
-    return fetch(origin + path, {
-      method: opts.method || "GET",
-      headers: jsonHeaders(opts.auth !== false),
-      body: opts.body ? JSON.stringify(opts.body) : undefined
+    var useUser = opts.auth !== false;
+    return (useUser ? ensureFresh() : Promise.resolve()).then(function () {
+      var h = jsonHeaders(useUser);
+      if (opts.prefer) h.Prefer = opts.prefer;
+      return fetch(origin + path, {
+        method: opts.method || "GET",
+        headers: h,
+        body: opts.body ? JSON.stringify(opts.body) : undefined
+      });
     }).then(function (res) {
+      if (res.status === 401 && useUser && !retried) {
+        return refresh().then(function (ok) {
+          if (ok) return req(path, opts, true);
+          return res.text().then(function () { throw new Error("Your cloud session expired. Sign out and back in."); });
+        });
+      }
       return res.text().then(function (text) {
         var data = {};
         try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { message: text }; }
@@ -169,7 +208,8 @@
       if (upserts.length) {
         chain = req("/rest/v1/orders?on_conflict=id", {
           method: "POST",
-          body: upserts
+          body: upserts,
+          prefer: "resolution=merge-duplicates,return=minimal"
         }).catch(function (err) {
           /* Prefer header-based upsert */
           return fetch(origin + "/rest/v1/orders", {
@@ -192,7 +232,8 @@
       var gone = Object.keys(deleted || {});
       if (gone.length) {
         chain = chain.then(function () {
-          return req("/rest/v1/orders?id=in.(" + gone.join(",") + ")", { method: "DELETE" });
+          var list = gone.map(function (id) { return '"' + String(id).replace(/"/g, "") + '"'; }).join(",");
+          return req("/rest/v1/orders?id=in.(" + encodeURIComponent(list) + ")", { method: "DELETE", prefer: "return=minimal" });
         });
       }
       return chain;
@@ -205,7 +246,7 @@
     },
     uploadProof: function (userId, orderId, fileId, file) {
       var path = userId + "/" + orderId + "/" + fileId + ".pdf";
-      return fetch(origin + "/storage/v1/object/proofs/" + path, {
+      return ensureFresh().then(function () { return fetch(origin + "/storage/v1/object/proofs/" + path, {
         method: "POST",
         headers: {
           apikey: cfg.anonKey,
@@ -214,7 +255,7 @@
           "x-upsert": "true"
         },
         body: file
-      }).then(function (res) {
+      }); }).then(function (res) {
         return res.text().then(function (text) {
           if (!res.ok) {
             var data = {};
@@ -237,13 +278,13 @@
       });
     },
     deleteProofFile: function (path) {
-      return fetch(origin + "/storage/v1/object/proofs/" + path, {
+      return ensureFresh().then(function () { return fetch(origin + "/storage/v1/object/proofs/" + path, {
         method: "DELETE",
         headers: {
           apikey: cfg.anonKey,
           Authorization: "Bearer " + token()
         }
-      }).then(function () {});
+      }); }).then(function () {});
     },
     saveAvatar: function (dataUrl) {
       var s = readSession();
@@ -252,6 +293,13 @@
       return req("/rest/v1/profiles?id=eq." + encodeURIComponent(id), {
         method: "PATCH",
         body: { avatar: dataUrl }
+      }).then(function (rows) {
+        if (Array.isArray(rows) && rows.length) return;
+        return req("/rest/v1/profiles?on_conflict=id", {
+          method: "POST",
+          body: { id: id, avatar: dataUrl },
+          prefer: "resolution=merge-duplicates,return=minimal"
+        });
       }).catch(function () {
         return req("/rest/v1/profiles", {
           method: "POST",
