@@ -76,6 +76,8 @@ html[data-theme="dark"] .btn{color:#17130A}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn.ghost{background:transparent;color:var(--text);border-color:var(--line)}
 .btn.ghost:hover{background:var(--surface-2);border-color:var(--muted)}
+html[data-theme="dark"] .btn.ghost{border-color:#4B5768;background:rgba(255,255,255,.045)}
+html[data-theme="dark"] .btn.ghost:hover{border-color:#6E7F97;background:rgba(255,255,255,.09)}
 .btn.quiet{background:transparent;color:var(--text-2);border-color:transparent;padding:5px 7px}
 .btn.quiet:hover{background:var(--surface-2);color:var(--text)}
 .btn.wide{width:100%}
@@ -1508,7 +1510,7 @@ function snapToWeekday(key, forward) {
 }
 
 /* ------------------------------------------------------- status colouring */
-var RX_CODE = /\b(CLC|LEC|WEE|ILS|LOF|COR|CDL|OE|ORDER ?EDIT|PGROUP\d*)\b/;
+var RX_CODE = /\b(CLC|LEC|WEE|ILS|LOF|COR|CDL|OE|ORDER ?EDIT)\b/;
 var RX_GO   = /\b(APPROVED|APPROVAL|SENT|COMPLETE[D]?|DONE|CONFIRMED|OK(?:'D|AYED)?|SHIPPED|CLOSED)\b|SENT!/;
 var RX_HOT  = /\b(HELD ?UP|HOLD|WAITING|WAIT|RUSH|URGENT|ISSUE|PROBLEM|REJECTED|CANCELL?ED|REDO|ERROR|MISSING|CLARIFICATION)\b/;
 var RX_WARN = /\b(PROOF|REQUIRED|REQUESTED|24 ?HR|PENDING|REVIEW|JUDGE?MENT|LOGO|STANDARD)\b/;
