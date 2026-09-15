@@ -1,522 +1,3882 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conor McCutcheon</title>
-<script>try{if(localStorage.getItem('cm_seen_intro')==='1')document.documentElement.classList.add('seen-intro')}catch(e){}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Award Order Tracker — Crown Awards International HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root{
+  --crown:#0E3A78; --crown-2:#134C9B; --crown-line:#2A5FA8; --crown-ink:#EAF1FB; --crown-dim:#9CB6DC;
+  --paper:#EEF0F3; --surface:#FFFFFF; --surface-2:#F7F8FA; --line:#DCE0E6;
+  --text:#161A20; --text-2:#454E5A; --muted:#6C7683;
+  --brass:#9C6F16; --brass-lit:#C99A34; --brass-soft:#F6ECD6;
+  --go:#166148; --go-bg:#DCEFE6;
+  --stop:#983A32; --stop-bg:#FAE1DE;
+  --hold:#8B5C0E; --hold-bg:#FAEED6;
+  --code:#12508F; --code-bg:#DDE9F8;
+  --idle:#5A6472; --idle-bg:#E6E9ED;
+  --focus:#2F6FD0;
+  --sans:'Archivo','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(18,22,28,.06), 0 8px 24px -12px rgba(18,22,28,.18);
+  --ease:cubic-bezier(.2,.7,.3,1);
+  /* Row banding. Every category has two shades: A for odd rows, B for even,
+     so the light/dark alternation survives the status colouring. */
+  --row-a:#FFFFFF;      --row-b:#EFF1F4;
+  --row-code-a:#E9F1FC; --row-code-b:#D8E6F8;
+  --row-go-a:#E8F5EE;   --row-go-b:#D6EDE0;
+  --row-warn-a:#FCF4E2; --row-warn-b:#F7E9CE;
+  --row-hot-a:#FDEBE8;  --row-hot-b:#F9DBD6;
+  --row-hover:rgba(14,58,120,.07);
+}
+html[data-theme="dark"]{
+  --crown:#0A2A5A; --crown-2:#0E3A78; --crown-line:#1F4780; --crown-ink:#DCE8F8; --crown-dim:#89A4CC;
+  --paper:#14181E; --surface:#1B212A; --surface-2:#222A34; --line:#323B48;
+  --text:#E8EBEF; --text-2:#B7BFCA; --muted:#8B95A3;
+  --brass:#D3A344; --brass-lit:#E5BC68; --brass-soft:#3A2F16;
+  --go:#7BD3AC; --go-bg:#16362B;
+  --stop:#F0A49C; --stop-bg:#3D211E;
+  --hold:#E8BE72; --hold-bg:#3A2D14;
+  --code:#8FBDF2; --code-bg:#17304F;
+  --idle:#A3ACB9; --idle-bg:#2A323D;
+  --focus:#7FB0FF;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --row-a:#1B212A;      --row-b:#232B36;
+  --row-code-a:#152C49; --row-code-b:#1C3A5D;
+  --row-go-a:#15332A;   --row-go-b:#1B4136;
+  --row-warn-a:#352A13; --row-warn-b:#42351A;
+  --row-hot-a:#3A201D;  --row-hot-b:#492824;
+  --row-hover:rgba(255,255,255,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--paper);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.001ms!important;animation-duration:.001ms!important}}
 
-  :root {
-    --bg: #0a0a0a;
-    --text: #f0ede8;
-    --muted: #555550;
-    --line: #1a1a18;
-    --serif: 'DM Serif Display', Georgia, serif;
-    --sans: 'DM Sans', system-ui, sans-serif;
-    --c1: #c8f04a;
-    --c2: #f07aaa;
-    --c3: #6ab4f5;
-  }
+label.fl{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:5px}
+input[type=text],input[type=password],input[type=email],select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--text);font-family:var(--sans);font-size:14.5px;
+  transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+textarea{resize:vertical;line-height:1.4}
+input:focus,select:focus,textarea:focus{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 22%,transparent);outline:none}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.7}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;
+  border:1px solid transparent;border-radius:7px;background:var(--brass);color:#fff;
+  font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;
+  transition:background .15s var(--ease),transform .08s var(--ease),border-color .15s,color .15s}
+html[data-theme="dark"] .btn{color:#17130A}
+.btn:hover{background:var(--brass-lit)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn.ghost{border-color:var(--line)}
+.btn.ghost:hover{background:var(--surface-2);border-color:var(--muted)}
+html[data-theme="dark"] .btn.ghost{border-color:#4B5768;background:#c4c8cf}
+html[data-theme="dark"] .btn.ghost:hover{border-color:#6E7F97;background:#91959c}
+.btn.quiet{background:transparent;color:var(--text-2);border-color:transparent;padding:5px 7px}
+.btn.quiet:hover{background:var(--surface-2);color:var(--text)}
+.btn.wide{width:100%}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.xs{padding:3px 7px;font-size:11.5px;border-radius:5px;font-weight:600}
+.link{background:none;border:none;padding:0;color:var(--brass);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.link:hover{color:var(--brass-lit)}
+[hidden]{display:none!important}
 
-  html { scroll-behavior: smooth; }
+/* ---------------- auth ---------------- */
+.auth{height:100vh;display:grid;grid-template-columns:minmax(360px,44%) 1fr;overflow:auto}
+.auth-brand{background:linear-gradient(160deg,var(--crown) 0%,#08224A 100%);color:var(--crown-ink);
+  padding:56px 52px;display:flex;flex-direction:column;justify-content:space-between}
+.auth-brand .plate{border:1px solid var(--crown-line);border-left:3px solid var(--brass-lit);
+  padding:26px;border-radius:3px;background:rgba(255,255,255,.04);max-width:430px;animation:plateIn .5s var(--ease) both}
+@keyframes plateIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.auth-brand h1{font-size:33px;font-weight:700;letter-spacing:-.02em;line-height:1.14}
+.auth-brand .owner{margin-top:14px;font-family:var(--mono);font-size:13px;color:var(--brass-lit)}
+.auth-brand p{margin-top:16px;color:var(--crown-dim);font-size:14.5px;max-width:42ch}
+.auth-brand .foot{font-size:12.5px;color:#7690B6;max-width:46ch}
+.auth-panel{display:flex;align-items:center;justify-content:center;padding:40px 32px;background:var(--paper)}
+.auth-card{width:100%;max-width:400px}
+.auth-card h2{font-size:24px;font-weight:700;letter-spacing:-.01em}
+.auth-card .sub{color:var(--muted);font-size:14px;margin-top:6px;margin-bottom:24px}
+.field{margin-bottom:16px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:64px}
+.pw-peek{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font:600 12.5px var(--sans);cursor:pointer;padding:5px 7px;border-radius:5px}
+.pw-peek:hover{background:var(--surface-2);color:var(--text)}
+.meter{height:4px;border-radius:2px;background:var(--line);margin-top:9px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--stop);transition:width .25s var(--ease),background .25s}
+.rules{list-style:none;margin-top:9px;display:grid;gap:3px}
+.rules li{font-size:12.5px;color:var(--muted);display:flex;gap:7px;align-items:flex-start;transition:color .15s}
+.rules li::before{content:"○";font-size:11px;color:var(--muted)}
+.rules li.ok{color:var(--go)}
+.rules li.ok::before{content:"●";color:var(--go)}
+.alert{padding:11px 13px;border-radius:7px;font-size:13.5px;margin-bottom:16px;border:1px solid transparent;animation:fadeIn .2s var(--ease)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.alert.err{background:var(--stop-bg);color:var(--stop);border-color:color-mix(in srgb,var(--stop) 30%,transparent)}
+.alert.ok{background:var(--go-bg);color:var(--go);border-color:color-mix(in srgb,var(--go) 30%,transparent)}
+.auth-alt{margin-top:18px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.code-drop{border:1px dashed var(--brass);background:var(--brass-soft);border-radius:8px;padding:15px;margin-bottom:16px}
+.code-drop .lbl{font-size:12.5px;color:var(--text-2)}
+.code-drop .code{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:.14em;color:var(--brass);margin:6px 0 4px}
+html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
+.steps{display:flex;gap:6px;margin-bottom:20px}
+.steps span{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .25s var(--ease)}
+.steps span.on{background:var(--brass)}
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    min-height: 100svh;
-    overflow-x: hidden;
-  }
+/* ---------------- shell ---------------- */
+.shell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+/* Open entry: the document itself can scroll so the log is always reachable
+   even when the add-an-order fields do not overflow. */
+html.page-flow,html.page-flow body{height:auto;overflow-y:auto;overflow-x:hidden}
+html.page-flow .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+html.page-flow .tablewrap{overflow:visible;min-height:42vh}
+html.page-flow .console{position:sticky;top:0;z-index:30}
+html.page-flow thead,html.page-flow thead th{top:68px}
+.console{background:linear-gradient(180deg,var(--crown-2) 0%,var(--crown) 100%);
+  color:var(--crown-ink);padding:0 22px;display:flex;align-items:center;gap:16px;height:68px;flex:0 0 auto;
+  box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.mark{display:flex;align-items:center;gap:12px;padding-right:20px;border-right:1px solid var(--crown-line);height:38px}
+.crest{width:34px;height:34px;flex:0 0 auto;display:block;align-self:center}
+.mark .marktext{display:flex;flex-direction:column;justify-content:center;line-height:1.2}
+.mark b{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.mark span{font-size:11.5px;color:var(--crown-dim)}
+.console .spacer{flex:1}
+.searchbox{position:relative}
+.searchbox input{background:rgba(255,255,255,.1);border:1px solid var(--crown-line);color:#fff;width:245px;padding:9px 12px 9px 33px;font-size:13.5px}
+.searchbox input::placeholder{color:#A8BEDD}
+.searchbox input:focus{background:rgba(255,255,255,.16);box-shadow:0 0 0 3px rgba(255,255,255,.14)}
+.searchbox svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.75}
+.icon-btn{background:rgba(255,255,255,.1);border:1px solid var(--crown-line);color:var(--crown-ink);height:34px;min-width:34px;padding:0 13px;border-radius:7px;cursor:pointer;font:600 12.5px var(--sans);display:inline-flex;align-items:center;gap:6px;transition:background .15s var(--ease)}
+.icon-btn:hover{background:rgba(255,255,255,.2)}
+.icon-btn.accent{background:var(--brass-lit);border-color:var(--brass-lit);color:#1A1405;font-weight:700}
+.icon-btn.accent:hover{background:#E0AE4A;border-color:#E0AE4A}
+.icon-btn.accent[aria-expanded="false"]{background:transparent;color:var(--brass-lit);border-color:var(--brass-lit)}
+.icon-btn.accent[aria-expanded="false"]:hover{background:rgba(201,154,52,.18)}
+.caret{display:inline-block;font-size:9px;line-height:1;transition:transform .3s var(--ease)}
+.icon-btn[aria-expanded="false"] .caret{transform:rotate(-90deg)}
+.who{display:flex;align-items:center;gap:8px}
+.who .avatar{width:34px;height:34px;border-radius:50%;background:var(--brass-lit);color:#17130A;display:grid;place-items:center;font-weight:700;font-size:12.5px}
 
-  #loader {
-    position: fixed; inset: 0; background: var(--bg); z-index: 999;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none; transition: opacity 0.6s ease;
-  }
-  #loader.hidden { opacity: 0; }
-  html.seen-intro #loader { display: none !important; }
-  .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 2rem; }
-  .loader-name {
-    font-family: var(--serif); font-size: clamp(1.5rem, 5vw, 2.5rem);
-    font-weight: 400; letter-spacing: -0.02em; color: var(--text);
-    opacity: 0; animation: fadeWord 0.6s ease 0.2s forwards;
-  }
-  .loader-bar-wrap { width: 180px; height: 1px; background: #1e1e1c; position: relative; overflow: hidden; }
-  .loader-bar {
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
-    transform: scaleX(0); transform-origin: left;
-    animation: fillBar 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
-  }
-  @keyframes fadeWord { to { opacity: 1; } }
-  @keyframes fillBar { to { transform: scaleX(1); } }
+/* ---------------- week strip ---------------- */
+.weekbar{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 22px;height:62px}
+.weekbar .left{display:flex;align-items:center;gap:9px}
+.weekbar .right{display:flex;align-items:center;gap:9px;justify-content:flex-end}
+.weeknav{display:flex;align-items:center;gap:6px;justify-self:center}
+.wk{background:var(--surface);border:1px solid var(--line);border-radius:7px;width:34px;height:34px;cursor:pointer;
+  color:var(--text-2);font-size:16px;line-height:1;transition:background .15s var(--ease),color .15s}
+.wk:hover{background:var(--surface-2);color:var(--text)}
+.days{display:flex;gap:2px}
+.day{position:relative;background:none;border:none;border-bottom:3px solid transparent;padding:11px 22px 9px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:0;color:var(--text-2);font-family:var(--sans);
+  transition:color .15s var(--ease),background .15s var(--ease),border-color .2s var(--ease)}
+.day:hover{background:var(--surface-2);color:var(--text)}
+.day b{font-size:13.5px;font-weight:600}
+.day .d{font-family:var(--mono);font-size:11.5px;color:var(--text-2)}
+.day .cnt{position:absolute;top:3px;right:2px;font-family:var(--mono);font-size:9.5px;color:var(--crown);
+  background:var(--code-bg);border-radius:8px;padding:0 4px;line-height:14px}
+html[data-theme="dark"] .day .cnt{color:var(--code)}
+.day[aria-current="true"]{color:var(--crown);border-bottom-color:var(--crown)}
+html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-bottom-color:var(--code)}
+.day.today b::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--brass);margin-left:5px;vertical-align:middle}
+.weeklabel{font-size:12.5px;color:var(--text-2);white-space:nowrap;font-weight:500}
 
-  .page {
-    display: none; min-height: 100svh; flex-direction: column;
-    opacity: 0; transform: translateY(10px);
-  }
-  .page.active { display: flex; animation: pageIn 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
-  @keyframes pageIn { to { opacity: 1; transform: translateY(0); } }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+/* ---------------- entry bar ----------------
+   This no longer mirrors the table's column widths. Matching them 1:1 forced
+   some fields down to ~4.5% of the screen, which is what made this area
+   cramped and hard to read. Fields keep the same ORDER as the table columns,
+   but are laid out on a 12-column grid at sizes you can actually read. */
+.entrybar{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;padding:16px 20px 18px;
+  max-height:min(48vh,560px);opacity:1;overflow:hidden;position:relative;
+  transition:max-height .58s cubic-bezier(.22,.7,.2,1),opacity .4s ease,padding .5s ease,border-bottom-color .5s ease}
+/* Open state scrolls inside itself and can be dragged shorter, so the entry
+   fields and the ledger are both usable at once instead of one pushing the
+   other off the screen. */
+.entrybar:not(.collapsed){overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;resize:vertical}
+.entrybar.collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-bottom-color:transparent;pointer-events:none;overflow:hidden;resize:none}
+.entrybar::-webkit-scrollbar{width:10px}
+.entrybar::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+.entrybar::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+/* The header stays put while the fields scroll under it. */
+.entryhead{position:sticky;top:-16px;z-index:4;background:var(--surface);
+  padding-top:16px!important;margin-top:-16px}
+.entryhead{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:0}
+.entryhead h3{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.entryhead .eyebrow{font-size:12.5px;color:var(--text-2)}
+.entryhead .spacer{flex:1}
+.entrygrid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px 12px;align-items:end}
+.ecell{min-width:0;display:flex;flex-direction:column;gap:6px;padding:0;grid-column:span 2}
+.ecell.s3{grid-column:span 3}
+.ecell.s4{grid-column:span 4}
+.ecell.s5{grid-column:span 5}
+.ecell.s6{grid-column:span 6}
+/* Labels were 10.5px in --muted, which is the main dark-mode legibility
+   problem in here. Bigger, heavier, and a full contrast step brighter. */
+.ecell label{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.04em;
+  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ecell .hint{font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:0;
+  text-transform:none;line-height:1.3;margin-top:-2px}
+.ecell input,.ecell textarea,.ecell select{padding:9px 11px;font-size:14px;border-radius:8px;min-height:40px;
+  border:1.5px solid var(--line);background:var(--surface-2);color:var(--text)}
+.ecell input:focus,.ecell textarea:focus,.ecell select:focus{outline:2px solid var(--crown);outline-offset:1px;border-color:var(--crown)}
+.ecell textarea{min-height:40px;line-height:1.4}
+.ecell input.money{text-align:right}
+.ecell input.qty{text-align:right}
+.ecell input::placeholder,.ecell textarea::placeholder{opacity:.9}
+/* Time field: the "now" stamp sits beside its input instead of under it,
+   so the row keeps one consistent baseline. */
+.timefield{display:flex;gap:6px;align-items:stretch}
+.timefield input{flex:1;min-width:0}
+.stamp{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:8px;
+  font:700 11px var(--sans);cursor:pointer;padding:0 12px;flex:0 0 auto;letter-spacing:.04em;
+  text-transform:uppercase;transition:background .12s var(--ease),color .12s,border-color .12s}
+.stamp:hover{background:var(--code-bg);color:var(--code);border-color:var(--code)}
+/* Calculated values read as readouts, not as empty inputs: solid fill,
+   full-strength text, no dashed border that vanished against dark surfaces. */
+.calcbox{font-family:var(--mono);font-size:13.5px;font-weight:500;color:var(--text);
+  background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;
+  text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+.calcbox.warn{color:var(--stop);border-color:var(--stop);background:var(--stop-bg)}
+.tri{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-height:40px}
+.tri button{flex:1;background:var(--surface);border:none;border-right:1px solid var(--line);
+  font:600 12.5px var(--sans);color:var(--text-2);cursor:pointer;padding:0;
+  transition:background .12s var(--ease),color .12s}
+.tri button:last-child{border-right:none}
+.tri button:hover{background:var(--surface-2);color:var(--text)}
+.tri button[aria-pressed="true"]{background:var(--crown);color:#fff}
+html[data-theme="dark"] .tri button[aria-pressed="true"]{background:var(--code);color:#0A1A2E}
+.tri.go button[aria-pressed="true"][data-v="TRUE"]{background:var(--go);color:#fff}
+.tri.go button[aria-pressed="true"][data-v="FALSE"]{background:var(--stop);color:#fff}
+html[data-theme="dark"] .tri.go button[aria-pressed="true"][data-v="TRUE"]{color:#0C2019}
+html[data-theme="dark"] .tri.go button[aria-pressed="true"][data-v="FALSE"]{color:#2A100D}
+/* Proof: "No" reads red whether or not it is the selected answer, because a
+   job going out with no proof is the exception worth spotting at a glance. */
+.tri.stopno button[data-v="FALSE"]{color:var(--stop);font-weight:700}
+.tri.stopno button[data-v="FALSE"]:hover{background:var(--stop-bg);color:var(--stop)}
+.tri.stopno button[aria-pressed="true"][data-v="FALSE"]{background:var(--stop);color:#fff}
+html[data-theme="dark"] .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{color:#2A100D}
+.entry-actions{display:flex;flex-direction:row;gap:8px}
+.entry-actions .btn{flex:1;padding:10px;font-size:13.5px;min-height:40px}
+.edit-banner{background:var(--code-bg);border:1px solid color-mix(in srgb,var(--code) 45%,transparent);
+  color:var(--code);border-radius:7px;padding:6px 12px;font-size:12.5px;font-weight:600;animation:fadeIn .2s var(--ease)}
 
-  nav {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1rem 5vw; flex-shrink: 0;
-  }
-  .nav-logo {
-    font-family: var(--serif); font-size: 1rem; color: var(--text); text-decoration: none;
-    cursor: pointer; background: none; border: none; position: relative; overflow: hidden;
-    display: inline-block; vertical-align: bottom; line-height: 1.25;
-  }
-  .nav-logo .logo-default, .nav-logo .logo-home {
-    display: block; transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
-  }
-  .nav-logo .logo-home {
-    position: absolute; top: 0; left: 0; white-space: nowrap;
-    transform: translateY(100%); opacity: 0; font-style: italic; color: var(--muted);
-  }
-  .nav-logo:hover .logo-default { transform: translateY(-100%); opacity: 0; }
-  .nav-logo:hover .logo-home { transform: translateY(0); opacity: 1; }
+/* Mid-width screens: two fields per line rather than six squeezed ones. */
+@media (max-width:1240px){
+  .entrygrid{grid-template-columns:repeat(6,1fr)}
+  .ecell{grid-column:span 2}
+  .ecell.s3,.ecell.s4,.ecell.s5,.ecell.s6{grid-column:span 3}
+}
 
-  .nav-contact {
-    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); text-decoration: none; background: none; border: none; cursor: pointer;
-    transition: color 0.2s; font-family: var(--sans);
-  }
-  .nav-contact:hover { color: var(--text); }
+/* ---------------- page scrolling with the entry row open ----------------
+   With the entry panel open the app no longer has to fit inside one screen.
+   The whole page scrolls instead, the entry row shows every field at full
+   height, and the ledger continues below it — so reaching the table is just
+   a scroll down rather than a fight for vertical space. The scrollbar only
+   appears once the content actually outgrows the window, so on a tall screen
+   nothing changes. Collapsing the entry row snaps back to the fixed
+   single-screen shell where the table owns its own scroll area. */
+@media (min-width:761px){
+  /* page-scroll used to grow the whole document and kill sticky headers.
+     The shell stays one screen; the table is the thing that scrolls. */
+  html.page-scroll .tablewrap{overflow-y:auto;min-height:200px}
+  html.page-scroll thead,html.page-scroll thead th{top:0}
+  /* Counts, totals and the save indicator stay in view at the bottom. */
+  html.page-scroll .appfoot{position:sticky;bottom:0;z-index:20;box-shadow:0 -1px 0 var(--line)}
+}
 
-  main {
-    display: flex; flex-direction: column; justify-content: center;
-    padding: 0.25rem 5vw 0.9rem; flex: 1; gap: 1.15rem;
-  }
+/* ---------------- ribbon + toolbar ---------------- */
+.ribbon{display:flex;background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;overflow:hidden}
+.stat{padding:12px 20px;border-right:1px solid var(--line);flex:1;min-width:0}
+.stat b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.25}
+.stat span{font-size:11px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.stat.flag b{color:var(--hold)}
+.stat.good b{color:var(--go)}
+.stat.cool b{color:var(--code)}
+.ledger-bar{display:flex;align-items:center;gap:9px;padding:11px 20px;border-bottom:1px solid var(--line);background:var(--surface);flex:0 0 auto}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{background:var(--surface);border:1px solid var(--line);color:var(--text-2);padding:4px 10px;border-radius:20px;
+  font:600 12px var(--sans);cursor:pointer;transition:background .15s var(--ease),color .15s,border-color .15s}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--crown);color:#fff;border-color:var(--crown)}
+html[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--code);color:#0A1A2E;border-color:var(--code)}
+.chip .n{opacity:.7;margin-left:5px;font-family:var(--mono)}
+.ledger-bar .spacer{flex:1}
 
-  .headline {
-    font-family: var(--serif); font-size: clamp(1.65rem, 3.6vw, 2.75rem); font-weight: 400;
-    line-height: 1.08; letter-spacing: -0.02em; color: var(--text);
-    white-space: nowrap; max-width: none;
-    margin-bottom: 8px;
-    opacity: 0; animation: fadeUp 0.6s ease 0.1s forwards;
-  }
-  .headline em { font-style: italic; color: var(--muted); }
+/* ---------------- table ---------------- */
+.tablewrap{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;background:var(--surface);min-height:150px}
+.tablewrap.in-left{animation:slideFromLeft .26s var(--ease)}
+.tablewrap.in-right{animation:slideFromRight .26s var(--ease)}
+@keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+@keyframes slideFromLeft{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px}
+thead{position:sticky;top:0;z-index:8}
+thead th{position:sticky;top:0;z-index:8;background:var(--surface-2);text-align:left;padding:8px 8px;
+  font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--line);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 6px 10px -8px rgba(18,22,28,.45)}
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{color:var(--text)}
+thead th .arrow{opacity:.3;margin-left:3px}
+thead th[aria-sort] .arrow{opacity:1;color:var(--crown)}
+tbody td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+tbody tr{transition:background .12s var(--ease)}
+/* Banding: plain rows alternate light/dark grey; a row carrying a status
+   category takes that category's tint, still alternating between two shades. */
+tbody tr:nth-child(odd){background:var(--row-a)}
+tbody tr:nth-child(even){background:var(--row-b)}
+tbody tr.row-code:nth-child(odd){background:var(--row-code-a)}
+tbody tr.row-code:nth-child(even){background:var(--row-code-b)}
+tbody tr.row-go:nth-child(odd){background:var(--row-go-a)}
+tbody tr.row-go:nth-child(even){background:var(--row-go-b)}
+tbody tr.row-warn:nth-child(odd){background:var(--row-warn-a)}
+tbody tr.row-warn:nth-child(even){background:var(--row-warn-b)}
+tbody tr.row-hot:nth-child(odd){background:var(--row-hot-a)}
+tbody tr.row-hot:nth-child(even){background:var(--row-hot-b)}
+/* Hover tints on top of whatever band the row already has, instead of
+   replacing it, so the colour coding never disappears under the cursor. */
+tbody tr:hover{box-shadow:inset 0 0 0 9999px var(--row-hover)}
+tbody tr.editing,tbody tr.editing:nth-child(odd),tbody tr.editing:nth-child(even){background:var(--code-bg)}
+tbody tr.editing td{vertical-align:middle;padding:5px 6px}
+tbody tr.flash{animation:rowFlash 1.2s var(--ease)}
+@keyframes rowFlash{0%{background:var(--brass-soft)}100%{background:inherit}}
+tbody tr.live td.seq::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
+td.seq{font-family:var(--mono);color:var(--muted);text-align:right;border-left:3px solid transparent;position:relative}
+td.seq.k-code{border-left-color:var(--code)}
+td.seq.k-go{border-left-color:var(--go)}
+td.seq.k-warn{border-left-color:var(--hold)}
+td.seq.k-hot{border-left-color:var(--stop)}
+td.oid{font-family:var(--mono);font-weight:500}
+td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
+td.dur{font-family:var(--mono);font-size:12px}
+td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
+td.num.zero{color:var(--muted)}
+.otype{display:inline-block;padding:2px 7px;border-radius:5px;font:700 11px var(--mono);letter-spacing:.04em;
+  background:var(--idle-bg);color:var(--idle)}
+.otype.t-rtr{background:var(--code-bg);color:var(--code)}
+.otype.t-int{background:var(--brass-soft);color:var(--brass)}
+html[data-theme="dark"] .otype.t-int{color:var(--brass-lit)}
+.otype.t-sam{background:var(--go-bg);color:var(--go)}
+.otype.t-cor{background:var(--go-bg);color:var(--go)}
+.otype.t-hold{background:var(--stop-bg);color:var(--stop)}
+.splitter{
+  flex:0 0 10px;cursor:row-resize;background:var(--line);position:relative;z-index:6;
+  touch-action:none;
+}
+.splitter::after{
+  content:"";position:absolute;left:50%;top:3px;width:44px;height:4px;margin-left:-22px;
+  border-radius:4px;background:var(--muted);
+}
+.splitter:hover,.splitter.dragging{background:var(--crown-line)}
+.splitter.dragging::after{background:var(--brass-lit)}
+.entrybar.dragging{transition:none!important}
+.shell.dragging{user-select:none}
+.splitter[hidden]{display:none}
+td.notes{font-size:12px;color:var(--text-2);white-space:pre-line}
+td.cust{white-space:pre-line}
+.tags{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;line-height:1.45;max-width:100%;overflow-wrap:anywhere}
+.tag.t-code{background:var(--code-bg);color:var(--code)}
+.tag.t-go{background:var(--go-bg);color:var(--go)}
+.tag.t-warn{background:var(--hold-bg);color:var(--hold)}
+.tag.t-hot{background:var(--stop-bg);color:var(--stop)}
+.tag.t-plain{background:var(--idle-bg);color:var(--idle)}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font:600 11.5px var(--sans);
+  border:1px solid transparent;cursor:pointer;background:var(--idle-bg);color:var(--idle);
+  transition:filter .12s var(--ease),transform .08s var(--ease)}
+.pill.yes{background:var(--go-bg);color:var(--go)}
+.pill.no{background:var(--stop-bg);color:var(--stop)}
+.pill.na{background:var(--idle-bg);color:var(--idle)}
+.pill:hover{filter:brightness(.95);border-color:currentColor}
+.pill:active{transform:scale(.94)}
+.nowbtn{background:none;border:1px dashed var(--line);color:var(--muted);border-radius:5px;
+  font:600 10.5px var(--sans);cursor:pointer;padding:1px 6px;opacity:0;transition:opacity .12s var(--ease),color .12s,border-color .12s}
+tr:hover .nowbtn{opacity:1}
+.nowbtn:hover{color:var(--code);border-color:var(--code);border-style:solid}
+.running{color:var(--code);font-weight:600}
+.rowacts{text-align:right;white-space:nowrap}
+.rowacts button{opacity:.3;transition:opacity .12s var(--ease)}
+tr:hover .rowacts button,tr.editing .rowacts button{opacity:1}
+.cellinput{width:100%;padding:5px 6px;font-size:12.5px;border-radius:5px;border:1px solid var(--line);
+  background:var(--surface);color:var(--text);font-family:var(--sans)}
+.cellinput.mono{font-family:var(--mono);font-size:12px}
+textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
+.slow{color:var(--hold);font-weight:600}
+.empty{padding:50px 22px;text-align:center;color:var(--muted)}
 
-  .section-label {
-    font-size: 0.64rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 0.55rem; display: block;
-  }
+/* ---------------- footer ----------------
+   Buffer so the last row never sits flush against the bottom edge, and a
+   place for the running totals. */
+.appfoot{flex:0 0 auto;background:var(--surface);border-top:1px solid var(--line);
+  padding:14px 22px calc(14px + env(safe-area-inset-bottom,0px));
+  display:flex;align-items:center;gap:16px;font-size:12.5px;color:var(--text-2)}
+.appfoot .spacer{flex:1}
+.appfoot b{font-family:var(--mono);font-weight:600;color:var(--text)}
+.appfoot .muted{color:var(--muted)}
+.tablefoot-buffer{height:28px}
+.empty b{display:block;color:var(--text);font-size:16px;margin-bottom:6px}
 
-  .cards {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 0.7rem; align-items: stretch;
-  }
+/* ---------------- summary / modal / toast ---------------- */
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sum-cell{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px}
+.sum-cell b{display:block;font-family:var(--mono);font-size:19px;font-weight:600}
+.sum-cell span{font-size:11.5px;color:var(--muted)}
+.sum-h{font-size:12.5px;font-weight:700;color:var(--text-2);margin:18px 0 8px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:64px}
+.bars div{flex:1;background:var(--code-bg);border-radius:3px 3px 0 0;position:relative;min-height:2px}
+.bars div.on{background:var(--code)}
+.bars div span{position:absolute;bottom:-17px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:9.5px;color:var(--muted)}
+.barwrap{padding-bottom:20px}
+.sum-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.sum-row span:last-child{font-family:var(--mono);color:var(--text-2)}
+.toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{background:var(--crown);color:#fff;padding:10px 15px;border-radius:8px;box-shadow:var(--shadow);
+  font-size:13.5px;display:flex;align-items:center;gap:14px;border:1px solid var(--crown-line);animation:toastIn .22s var(--ease)}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.toast.out{animation:toastOut .18s var(--ease) forwards}
+@keyframes toastOut{to{opacity:0;transform:translateY(8px) scale(.98)}}
+.toast .link{color:var(--brass-lit)}
+.scrim{position:fixed;inset:0;background:rgba(6,14,28,.55);z-index:70;display:grid;place-items:center;padding:20px;animation:fadeIn .16s var(--ease);overflow:auto}
+.modal{background:var(--surface);border-radius:11px;box-shadow:var(--shadow);width:100%;max-width:440px;padding:24px;border:1px solid var(--line);animation:modalIn .22s var(--ease)}
+.modal.lg{max-width:620px}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.modal h3{font-size:19px;font-weight:700;margin-bottom:5px}
+.modal .sub{color:var(--muted);font-size:13.5px;margin-bottom:20px}
+.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
+.menu{position:absolute;right:18px;top:52px;background:var(--surface);border:1px solid var(--line);border-radius:9px;
+  box-shadow:var(--shadow);min-width:230px;padding:6px;z-index:50;animation:modalIn .16s var(--ease)}
+.menu button{width:100%;text-align:left;background:none;border:none;padding:9px 11px;border-radius:6px;
+  font:500 14px var(--sans);color:var(--text);cursor:pointer;display:flex;justify-content:space-between;gap:12px}
+.menu button:hover{background:var(--surface-2)}
+.menu kbd{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+.menu hr{border:none;border-top:1px solid var(--line);margin:6px 0}
+.menu .head{padding:8px 11px 10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.menu .head b{display:block;font-size:14px}
+.menu .head span{font-size:12.5px;color:var(--muted);word-break:break-all}
 
-  .card {
-    --card-bg: var(--c1);
-    background-color: var(--card-bg);
-    background-image: var(--card-image);
-    background-size: cover;
-    background-position: center;
-    text-decoration: none; color: #fff;
-    display: flex; flex-direction: column; gap: 0.38rem; border-radius: 10px;
-    cursor: pointer; border: none; text-align: left; font-family: var(--sans);
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, filter 0.3s ease;
-    position: relative; overflow: hidden; padding: 1.05rem 1.1rem 0.9rem;
-    min-height: 158px;
-    opacity: 0; animation: fadeUp 0.6s ease forwards;
-    isolation: isolate;
-  }
-  .cards .card:nth-child(1) { animation-delay: 0.2s; }
-  .cards .card:nth-child(2) { animation-delay: 0.3s; }
-  .cards .card:nth-child(3) { animation-delay: 0.4s; }
+@media (max-width:1280px){
+  .entrygrid{grid-template-columns:repeat(4,1fr)!important}
+  .ecell{grid-column:span 1}
+  .ecell.wide{grid-column:span 2}
+  .tablewrap{overflow-x:auto}
+  table{table-layout:auto;min-width:1420px}
+}
+@media (max-width:900px){
+  .auth{grid-template-columns:1fr}
+  .auth-brand{padding:34px 26px}
+  .entrygrid{grid-template-columns:repeat(2,1fr)!important}
+  .sum-grid{grid-template-columns:repeat(2,1fr)}
+}
 
-  .card::after {
-    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background: color-mix(in srgb, var(--card-bg) 58%, transparent);
-    mix-blend-mode: color;
-  }
-  .card::before {
-    content: ''; position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card-bg) 10%, rgba(0,0,0,0.15)) 0%,
-      color-mix(in srgb, var(--card-bg) 55%, rgba(0,0,0,0.62)) 100%
-    );
-    pointer-events: none;
-    transition: background 0.35s ease;
-  }
-  .card > * { position: relative; z-index: 2; }
+/* ================================================================
+   MOBILE: phones and small touch screens.
+   Everything here is scoped to this query (or to hover:none / pointer:coarse,
+   which real desktop mice never match) so nothing above this point changes
+   for anyone on a desktop-sized screen.
+   ================================================================ */
+@media (hover:none),(pointer:coarse){
+  /* Controls that only appeared on :hover are useless on a touchscreen —
+     there is no hover state to trigger them, so show them plainly. */
+  .nowbtn{opacity:1}
+  .rowacts button{opacity:1}
+  /* Touch targets grow to the ~44px minimum instead of a mouse-sized hit area. */
+  .pill{padding:6px 12px;font-size:12.5px;min-height:30px}
+  .tri button{min-height:40px}
+  .icon-btn{min-height:36px}
+  .wk{width:36px;height:36px}
+  .btn.xs{padding:7px 10px;font-size:12.5px}
+  .btn.sm{padding:9px 13px}
+}
 
-  .card:hover {
-    transform: translateY(-6px) scale(1.015);
-    filter: brightness(1.06);
-    box-shadow: 0 18px 36px rgba(0,0,0,0.42);
-  }
-  .card:hover::before {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card-bg) 4%, rgba(0,0,0,0.08)) 0%,
-      color-mix(in srgb, var(--card-bg) 48%, rgba(0,0,0,0.55)) 100%
-    );
-  }
-  .card:hover .card-arrow { transform: translateX(5px) rotate(-40deg); }
-  .card:hover .card-num { opacity: 0.7; transform: scale(1.15); }
-  .card:active { transform: translateY(-2px) scale(0.99); transition-duration: 0.08s; }
+@media (max-width:760px){
+  html,body{height:auto;overflow-y:auto;overflow-x:hidden}
+  .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+  .splitter{display:none!important}
+  .auth{height:auto;min-height:100vh;min-height:100dvh}
 
-  .card-1 { --card-bg: var(--c1); --card-image: url('images/work.png'); }
-  .card-2 { --card-bg: var(--c2); --card-image: url('images/design.png'); }
-  .card-3 { --card-bg: var(--c3); }
+  /* ---- header: wrap instead of clipping, search drops to its own row */
+  .console{height:auto;flex-wrap:wrap;padding:10px 12px;row-gap:10px;gap:10px}
+  .mark{border-right:none;padding-right:0}
+  .mark span{display:none}
+  .searchbox{order:4;flex:1 1 100%}
+  .searchbox input{width:100%}
+  .icon-btn{font-size:11.5px;padding:0 8px}
 
-  .card-num {
-    font-family: var(--serif); font-style: italic; font-size: 0.74rem; color: #fff;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.65), 0 0 2px #000;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease; display: inline-block;
-  }
-  .card-title {
-    font-family: var(--serif); font-size: clamp(1rem, 1.5vw, 1.28rem); font-weight: 500;
-    line-height: 1.15; letter-spacing: -0.015em; color: #fff;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.92), 0 0 16px rgba(0,0,0,0.7), 0 0 2px #000;
-  }
-  .card-desc {
-    font-size: 0.74rem; color: #fff; font-weight: 500;
-    line-height: 1.4; flex: 1;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.65), 0 0 2px #000;
-  }
-  .card-arrow {
-    font-size: 0.9rem; color: #fff;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.65), 0 0 2px #000;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    margin-top: auto; display: inline-block;
-  }
+  /* ---- week strip: stack the three zones, let the day tabs scroll */
+  .weekbar{grid-template-columns:1fr;height:auto;padding:10px 12px;row-gap:8px}
+  .weekbar .left{justify-content:center;order:1}
+  .weeknav{order:0}
+  .weekbar .right{justify-content:center;order:2}
+  .days{overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;flex:1}
+  .days::-webkit-scrollbar{display:none}
+  .day{scroll-snap-align:center;padding:8px 14px 6px;flex:0 0 auto}
+  .wk{flex:0 0 auto}
 
-  .card.card-split { padding: 0; background-image: none; }
-  .card.card-split::before,
-  .card.card-split::after { display: none; }
+  /* ---- entry row: one full-width field per line instead of a column grid */
+  .entrybar{padding:16px 14px 18px;max-height:1600px}
+  .entrybar:not(.collapsed){overflow:visible;resize:none}
+  .entryhead{position:static;margin-top:0;padding-top:0!important}
+  .entryhead{flex-wrap:wrap;padding:0;row-gap:6px}
+  /* One field per line on a phone — 12 columns has nothing to offer here. */
+  .entrygrid{display:flex!important;flex-direction:column;gap:14px}
+  .ecell,.ecell.s3,.ecell.s4,.ecell.s5,.ecell.s6{padding:0;grid-column:auto}
+  .ecell label{white-space:normal}
+  /* 16px prevents iOS Safari zooming the page when a field is focused. */
+  .ecell input,.ecell textarea,.ecell select{font-size:16px;padding:12px 14px;min-height:48px}
+  .ecell input.money,.ecell input.qty{text-align:left}
+  .ecell textarea{min-height:56px}
+  .tri{min-height:48px}
+  .tri button{font-size:13.5px}
+  .stamp{padding:0 16px;font-size:12px}
+  .calcbox{min-height:48px;font-size:14px}
+  .entry-actions{flex-direction:row}
+  .entry-actions .btn{padding:14px;font-size:15px;min-height:50px}
+  #calcSeq,#calcDate{min-height:48px}
 
-  .split-half {
-    flex: 1; display: flex; flex-direction: column; gap: 0.2rem;
-    padding: 0.72rem 1rem 0.7rem; text-decoration: none; color: #fff;
-    position: relative; z-index: 2; overflow: hidden;
-    background-color: var(--half-bg, var(--c3));
-    background-image: var(--half-image);
-    background-size: cover;
-    background-position: center;
-    isolation: isolate;
-    transition: filter 0.25s ease;
-  }
-  .split-half::after {
-    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background: color-mix(in srgb, var(--half-bg) 58%, transparent);
-    mix-blend-mode: color;
-  }
-  .split-half::before {
-    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--half-bg) 8%, rgba(0,0,0,0.12)),
-      color-mix(in srgb, var(--half-bg) 52%, rgba(0,0,0,0.62))
-    );
-    transition: background 0.25s ease;
-  }
-  .split-half > * { position: relative; z-index: 2; }
-  .split-half:hover { filter: brightness(1.08); }
-  .split-half:hover .card-arrow { transform: translateX(5px) rotate(-40deg); }
-  .split-notary { --half-bg: var(--c3); --half-image: url('images/notary.png'); }
-  .split-photo { --half-bg: #7ad0c6; --half-image: url('images/photo.png'); }
+  /* ---- ribbon: horizontal scroll instead of squeezing seven stats flat */
+  .ribbon{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .stat{flex:0 0 auto;min-width:132px}
 
-  .split-divider { position: relative; height: 1px; background: rgba(0,0,0,0.22); margin: 0; z-index: 3; }
-  .split-badge {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #0a0a0a; color: var(--c1); font-family: var(--serif); font-style: italic;
-    font-size: 0.64rem; width: 28px; height: 28px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.35); pointer-events: none;
-  }
+  .ledger-bar{flex-wrap:wrap;row-gap:8px;padding:10px 14px}
 
-  .quicklinks { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .quicklinks a { opacity: 0; animation: fadeUp 0.5s ease forwards; }
-  .quicklinks a:nth-child(1) { animation-delay: 0.5s; }
-  .quicklinks a:nth-child(2) { animation-delay: 0.56s; }
-  .quicklinks a:nth-child(3) { animation-delay: 0.62s; }
+  /* ---- table becomes a stack of cards: one card per order, one line per
+     field, using the same data-label attribute the row already carries so
+     no rendering logic has to change between desktop and mobile. */
+  .tablewrap{overflow:visible}
+  table,thead,tbody,tr{display:block;width:100%;min-width:0}
+  colgroup{display:none}
+  thead{display:none}
+  tbody tr{display:block;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;
+    margin:0 0 10px;padding:4px 12px;box-shadow:var(--shadow)}
+  /* Cards inherit the same banding tints as the desktop rows. */
+  tbody tr:nth-child(odd),tbody tr:nth-child(even){background:var(--row-a)}
+  tbody tr.row-code:nth-child(odd),tbody tr.row-code:nth-child(even){background:var(--row-code-a)}
+  tbody tr.row-go:nth-child(odd),tbody tr.row-go:nth-child(even){background:var(--row-go-a)}
+  tbody tr.row-warn:nth-child(odd),tbody tr.row-warn:nth-child(even){background:var(--row-warn-a)}
+  tbody tr.row-hot:nth-child(odd),tbody tr.row-hot:nth-child(even){background:var(--row-hot-a)}
+  tbody tr:hover{box-shadow:var(--shadow)}
+  tbody tr:has(td.seq.k-code){border-left-color:var(--code)}
+  tbody tr:has(td.seq.k-go){border-left-color:var(--go)}
+  tbody tr:has(td.seq.k-warn){border-left-color:var(--hold)}
+  tbody tr:has(td.seq.k-hot){border-left-color:var(--stop)}
+  tbody tr.editing{padding:10px 12px;border-color:var(--code)}
+  /* Every field stacks as its own label-then-value line, so short and long
+     values (a time versus a paragraph of notes) read the same consistent way. */
+  tbody td{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px dotted var(--line)}
+  tbody tr>td:last-child{border-bottom:none}
+  tbody td::before{content:attr(data-label);font-size:10.5px;font-weight:700;color:var(--muted);
+    letter-spacing:.03em;text-transform:uppercase}
+  tbody td:empty::before{content:none}
+  tbody td[data-label=""]::before{content:none}
+  td.seq{border-left:none;padding-left:0}
+  td.seq::before{content:"No."}
+  td.seq{font-size:15px;font-weight:700;color:var(--text)}
+  td.rowacts{flex-direction:row;justify-content:flex-end;gap:8px;border-bottom:none;padding-top:10px}
+  td.rowacts::before{content:none}
+  .rowacts .btn{min-height:36px;padding:0 14px}
+  .cellinput{font-size:16px}
+  textarea.cellinput{width:100%}
 
-  .quicklink {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.42rem 0.85rem; border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--ql-color) 35%, var(--line));
-    background: color-mix(in srgb, var(--ql-color) 8%, rgba(255,255,255,0.02));
-    color: var(--ql-color); text-decoration: none; font-size: 0.73rem; font-weight: 500;
-    transition: all 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
-  }
-  .quicklink:hover {
-    transform: translateY(-3px); border-color: var(--ql-color); color: var(--ql-color);
-    box-shadow: 0 10px 24px color-mix(in srgb, var(--ql-color) 18%, rgba(0,0,0,0.35));
-  }
-  .quicklink-blue { --ql-color: var(--c3); }
-  .quicklink-green { --ql-color: var(--c1); }
-  .quicklink-pink { --ql-color: var(--c2); }
+  .empty{padding:36px 16px}
+  .appfoot{flex-wrap:wrap;row-gap:6px;padding:14px 14px calc(22px + env(safe-area-inset-bottom,0px))}
+  .appfoot .spacer{flex:1 1 100%}
+  .tablefoot-buffer{height:20px}
 
-  .socials { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-  .socials a { opacity: 0; animation: fadeUp 0.5s ease forwards; }
-  .socials a:nth-child(1) { animation-delay: 0.72s; }
-  .socials a:nth-child(2) { animation-delay: 0.76s; }
-  .socials a:nth-child(3) { animation-delay: 0.8s; }
-  .socials a:nth-child(4) { animation-delay: 0.84s; }
-  .socials a:nth-child(5) { animation-delay: 0.88s; }
+  .menu{left:10px;right:10px;top:auto;min-width:auto}
+  .modal{padding:18px;max-width:calc(100vw - 32px)}
+  .modal-actions{flex-wrap:wrap}
+  .modal-actions .btn{flex:1 1 auto}
+  .sum-grid{grid-template-columns:repeat(2,1fr)}
+  .auth-brand .foot{display:none}
+}
+@media (max-width:420px){
+  .auth-brand{padding:26px 20px}
+  .auth-brand h1{font-size:27px}
+  .auth-panel{padding:28px 18px}
+  .day{padding:7px 10px 5px}
+  .entry-actions{flex-direction:column}
+}
 
-  .social-btn {
-    width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--line); background: rgba(255,255,255,0.02); color: var(--muted);
-    transition: all 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
+@media print{
+  .console,.weekbar,.entrybar,.splitter,.ribbon,.ledger-bar,.rowacts,.toasts,.appfoot,.tablefoot-buffer{display:none!important}
+  body,.shell{height:auto;overflow:visible}
+  .tablewrap{overflow:visible}
+  thead th{background:#fff;border-bottom:2px solid #000}
+  .tag,.pill{border:1px solid #999;background:#fff!important;color:#000!important}
+}
+</style>
+<style>
+  /* Shared return-to-hub control — scoped so it won't collide with app styles */
+  .cm-hub-btn {
+    position: fixed;
+    z-index: 80;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px 0 10px;
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.86);
+    color: #f0ede8;
+    border: 1px solid rgba(200, 240, 74, 0.5);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    line-height: 1;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.28);
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
   }
-  .social-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .social-btn:hover {
-    transform: translateY(-3px); color: var(--soc-color); border-color: var(--soc-color);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  .cm-hub-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(10, 10, 10, 0.96);
+    border-color: #c8f04a;
+    color: #c8f04a;
   }
-  .social-btn:nth-of-type(5n+1) { --soc-color: var(--c1); }
-  .social-btn:nth-of-type(5n+2) { --soc-color: var(--c2); }
-  .social-btn:nth-of-type(5n+3) { --soc-color: var(--c3); }
-  .social-btn:nth-of-type(5n+4) { --soc-color: var(--c1); }
-  .social-btn:nth-of-type(5n+5) { --soc-color: var(--c2); }
-
-  footer {
-    padding: 0.65rem 5vw 0.85rem; display: flex; justify-content: space-between;
-    font-size: 0.7rem; color: var(--muted); flex-shrink: 0;
+  .cm-hub-btn:focus-visible {
+    outline: 2px solid #c8f04a;
+    outline-offset: 3px;
   }
-  footer a { color: inherit; text-decoration: none; }
-  footer a:hover { color: var(--text); }
-
-  .contact-main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 2rem 5vw 4rem; }
-  .contact-headline {
-    font-family: var(--serif); font-size: clamp(2rem, 5vw, 3.75rem); font-weight: 400;
-    letter-spacing: -0.02em; line-height: 1.06; color: var(--text); margin-bottom: 3rem;
-    opacity: 0; animation: fadeUp 0.6s ease 0.1s forwards;
-  }
-  .contact-links { display: flex; flex-direction: column; gap: 0; max-width: 560px; }
-  .contact-row {
-    display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 0;
-    border-top: 1px solid var(--line); text-decoration: none; color: var(--text);
-    transition: color 0.2s; gap: 1rem; opacity: 0; animation: fadeUp 0.5s ease forwards;
-  }
-  .contact-row:nth-child(1) { animation-delay: 0.2s; }
-  .contact-row:nth-child(2) { animation-delay: 0.28s; }
-  .contact-row:nth-child(3) { animation-delay: 0.36s; }
-  .contact-row:nth-child(4) { animation-delay: 0.44s; }
-  .contact-row:last-child { border-bottom: 1px solid var(--line); }
-  .contact-row:hover { color: var(--row-color); }
-  .contact-row:hover .contact-arrow { transform: translateX(4px); }
-  .contact-row-1 { --row-color: var(--c1); }
-  .contact-row-2 { --row-color: var(--c2); }
-  .contact-row-3 { --row-color: var(--c3); }
-  .contact-row-4 { --row-color: var(--c1); }
-  .contact-label {
-    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); min-width: 72px;
-  }
-  .contact-value { font-family: var(--serif); font-size: clamp(1rem, 2.5vw, 1.5rem); font-weight: 400; letter-spacing: -0.01em; flex: 1; }
-  .contact-arrow { color: var(--muted); font-size: 1rem; transition: transform 0.25s ease; flex-shrink: 0; }
-
-  @media (min-width: 960px) {
-    body { height: 100svh; overflow: hidden; }
-    .page.active { height: 100svh; overflow: hidden; }
-  }
-
-  @media (max-width: 959px) {
-    body { height: auto; overflow: auto; }
-    .page.active { height: auto; min-height: 100svh; overflow: visible; }
-    .headline {
-      white-space: normal;
-      font-size: clamp(1.55rem, 7vw, 2.35rem);
-      line-height: 1.12;
-    }
-    nav { padding: 1rem 5vw 0.4rem; }
-    main { gap: 1.15rem; padding: 0.6rem 5vw 1.6rem; }
-    .cards { gap: 0.7rem; }
-  }
-
-  @media (max-width: 820px) {
-    .cards { grid-template-columns: 1fr; }
-    .card { min-height: 0; padding: 1.15rem 1.15rem 1rem; }
-    .card-title { font-size: 1.2rem; }
-    .card-desc { font-size: 0.82rem; }
-    .split-half { padding: 1rem 1.15rem; }
-    .quicklink { min-height: 40px; }
-    .social-btn { width: 40px; height: 40px; }
-  }
-
+  .cm-hub-btn svg { width: 13px; height: 13px; flex: 0 0 auto; }
   @media (max-width: 640px) {
-    nav { padding: 0.85rem 5vw 0.25rem; gap: 0.75rem; }
-    .nav-logo { font-size: 0.92rem; }
-    .headline { font-size: clamp(1.45rem, 8.2vw, 2rem); margin-bottom: 10px; }
-    main { gap: 1.35rem; padding: 0.5rem 5vw 1.75rem; }
-    .cards { gap: 0.7rem; }
-    .card, .split-half { min-height: 132px; }
-    .contact-main { padding: 1.25rem 5vw 2.5rem; }
-    .contact-headline { margin-bottom: 1.5rem; }
-    .contact-row { flex-wrap: wrap; padding: 1.15rem 0; gap: 0.35rem 1rem; }
-    .contact-label { min-width: 0; width: 100%; }
-    .contact-value { font-size: 1.05rem; }
-    footer { padding: 0.7rem 5vw 1.1rem; gap: 0.5rem; flex-wrap: wrap; }
+    .cm-hub-btn { height: 36px; padding: 0 13px 0 11px; }
   }
 </style>
 </head>
 <body>
 
-  <div id="loader">
-    <div class="loader-inner">
-      <div class="loader-name">Conor McCutcheon</div>
-      <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+<div class="auth" id="authView">
+  <div class="auth-brand">
+    <div class="plate">
+      <h1>Award Order<br>Tracker</h1>
+      <div class="owner">Conor McCutcheon / Crown Awards, International HQ</div>
+      <p>Every order of the day in one ledger: proof status, start and finish times, time taken, and what is still sitting on the drive.</p>
+    </div>
+    <div class="foot">Accounts and orders are stored in this browser only. Passwords are salted and hashed with PBKDF2-SHA256 before they are written to storage — the password itself is never saved.</div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-card">
+      <section id="paneSignin">
+        <h2>Sign in</h2>
+        <p class="sub">Pick up where the last shift left off.</p>
+        <div class="alert err" id="signinErr" hidden></div>
+        <div class="alert ok" id="signinOk" hidden></div>
+        <form id="formSignin" novalidate>
+          <div class="field">
+            <label class="fl" for="siUser">Username</label>
+            <input id="siUser" type="text" autocomplete="username" spellcheck="false" required>
+          </div>
+          <div class="field">
+            <label class="fl" for="siPass">Password</label>
+            <div class="pw-wrap">
+              <input id="siPass" type="password" autocomplete="current-password" required>
+              <button type="button" class="pw-peek" data-peek="siPass">Show</button>
+            </div>
+          </div>
+          <div class="field" style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="siRemember" style="width:auto">
+            <label for="siRemember" style="font-size:13.5px;color:var(--text-2)">Keep me signed in on this computer for 30 days</label>
+          </div>
+          <button class="btn wide" type="submit" id="siSubmit">Sign in</button>
+        </form>
+        <div class="auth-alt">
+          <button class="link" data-go="forgot">Forgot your password?</button>
+          <button class="link" data-go="register">Create an account</button>
+        </div>
+      </section>
+
+      <section id="paneRegister" hidden>
+        <h2>Create an account</h2>
+        <p class="sub">Your orders stay private to this login.</p>
+        <div class="alert err" id="regErr" hidden></div>
+        <form id="formRegister" novalidate>
+          <div class="field">
+            <label class="fl" for="rgUser">Username</label>
+            <input id="rgUser" type="text" autocomplete="username" spellcheck="false" required>
+            <div class="hint">3–20 characters. Letters, numbers, dot, dash, underscore.</div>
+          </div>
+          <div class="field">
+            <label class="fl" for="rgEmail">Email for password resets</label>
+            <input id="rgEmail" type="email" autocomplete="email" spellcheck="false" required>
+          </div>
+          <div class="field">
+            <label class="fl" for="rgPass">Password</label>
+            <div class="pw-wrap">
+              <input id="rgPass" type="password" autocomplete="new-password" required>
+              <button type="button" class="pw-peek" data-peek="rgPass">Show</button>
+            </div>
+            <div class="meter"><i id="rgMeter"></i></div>
+            <ul class="rules" id="rgRules">
+              <li data-rule="len">At least 10 characters</li>
+              <li data-rule="upper">An uppercase letter</li>
+              <li data-rule="lower">A lowercase letter</li>
+              <li data-rule="digit">A number</li>
+              <li data-rule="symbol">A symbol</li>
+            </ul>
+          </div>
+          <div class="field">
+            <label class="fl" for="rgPass2">Confirm password</label>
+            <input id="rgPass2" type="password" autocomplete="new-password" required>
+          </div>
+          <button class="btn wide" type="submit" id="rgSubmit">Create account</button>
+        </form>
+        <div class="auth-alt"><span>Already have one?</span><button class="link" data-go="signin">Sign in</button></div>
+      </section>
+
+      <section id="paneForgot" hidden>
+        <h2>Reset your password</h2>
+        <p class="sub">We'll check the email on your account.</p>
+        <div class="steps"><span id="stepA" class="on"></span><span id="stepB"></span><span id="stepC"></span></div>
+        <div class="alert err" id="fgErr" hidden></div>
+        <form id="formForgot1" novalidate>
+          <div class="field">
+            <label class="fl" for="fgId">Username or email</label>
+            <input id="fgId" type="text" spellcheck="false" required>
+          </div>
+          <button class="btn wide" type="submit">Send reset code</button>
+        </form>
+        <form id="formForgot2" novalidate hidden>
+          <div class="code-drop">
+            <div class="lbl">Reset code for <b id="fgMasked"></b></div>
+            <div class="code" id="fgCode"></div>
+            <div class="lbl">Shown here because this tracker runs entirely in your browser with no mail server attached. Expires in 15 minutes.</div>
+          </div>
+          <div class="field">
+            <label class="fl" for="fgCodeIn">Enter the 6-digit code</label>
+            <input id="fgCodeIn" type="text" inputmode="numeric" maxlength="6" style="font-family:var(--mono);font-size:19px;letter-spacing:.2em" required>
+          </div>
+          <button class="btn wide" type="submit">Check code</button>
+        </form>
+        <form id="formForgot3" novalidate hidden>
+          <div class="field">
+            <label class="fl" for="fgNew">New password</label>
+            <div class="pw-wrap">
+              <input id="fgNew" type="password" autocomplete="new-password" required>
+              <button type="button" class="pw-peek" data-peek="fgNew">Show</button>
+            </div>
+            <div class="meter"><i id="fgMeter"></i></div>
+            <ul class="rules" id="fgRules">
+              <li data-rule="len">At least 10 characters</li>
+              <li data-rule="upper">An uppercase letter</li>
+              <li data-rule="lower">A lowercase letter</li>
+              <li data-rule="digit">A number</li>
+              <li data-rule="symbol">A symbol</li>
+            </ul>
+          </div>
+          <div class="field">
+            <label class="fl" for="fgNew2">Confirm new password</label>
+            <input id="fgNew2" type="password" autocomplete="new-password" required>
+          </div>
+          <button class="btn wide" type="submit">Save new password</button>
+        </form>
+        <div class="auth-alt"><button class="link" data-go="signin">Back to sign in</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="shell" id="appView" hidden>
+  <div class="console">
+    <div class="mark">
+      <svg class="crest" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M4 22 L4 12 L10 17 L16 8 L22 17 L28 12 L28 22 Z" fill="#D9B45F"/>
+        <rect x="4" y="24" width="24" height="4" rx="1" fill="#D9B45F"/>
+      </svg>
+      <div class="marktext">
+        <b>Award Order Tracker</b>
+        <span>Crown Awards, International HQ</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="searchbox">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C7D8F0" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.4-3.4"/></svg>
+      <input type="text" id="search" placeholder="Search orders, customers, notes" aria-label="Search orders">
+    </div>
+    <button class="icon-btn" id="btnSummary">Day summary</button>
+    <button class="icon-btn accent" id="btnPanel" aria-expanded="true" aria-controls="entrybar" title="Show or hide the entry row"><span class="caret">▼</span><span id="btnPanelLabel">Hide entry row</span></button>
+    <button class="icon-btn" id="btnTheme" title="Switch theme">Dark</button>
+    <div class="who">
+      <div class="avatar" id="avatar">--</div>
+      <button class="icon-btn" id="btnMenu" aria-haspopup="true" aria-expanded="false">Account ▾</button>
     </div>
   </div>
 
-  <div class="page active" id="page-home">
-    <nav>
-      <button class="nav-contact" onclick="show('contact')">Contact</button>
-      <a class="nav-logo" href="https://consistency.ink/windows-xp">
-        <span class="logo-default">Conor McCutcheon</span>
-        <span class="logo-home">View my work →</span>
-      </a>
-    </nav>
-
-    <main>
-      <h1 class="headline">What brings you <em>here today?</em></h1>
-
-      <div class="cards">
-        <a class="card card-1" href="https://consistency.ink/windows-xp/">
-          <span class="card-num">i.</span>
-          <h2 class="card-title">View My Work</h2>
-          <p class="card-desc">Jump into the retro desktop portfolio — brand, video, and design work.</p>
-          <span class="card-arrow">→</span>
-        </a>
-
-        <a class="card card-2" href="design.html">
-          <span class="card-num">ii.</span>
-          <h2 class="card-title">Graphic Design Services</h2>
-          <p class="card-desc">Hire me for a project — services, pricing, and contact all in one place.</p>
-          <span class="card-arrow">→</span>
-        </a>
-
-        <div class="card card-3 card-split">
-          <a href="https://consistency.ink/windows-xp/notary" class="split-half split-notary">
-            <span class="card-num">iii.</span>
-            <h2 class="card-title">Mobile Notary</h2>
-            <p class="card-desc">Licensed mobile notary for loan signings and legal documents — I come to you.</p>
-            <span class="card-arrow">→</span>
-          </a>
-          <div class="split-divider"><span class="split-badge">OR</span></div>
-          <a href="https://mccutcheon.myportfolio.com" class="split-half split-photo">
-            <span class="card-num">iv.</span>
-            <h2 class="card-title">Photography &amp; Booking</h2>
-            <p class="card-desc">Portraits, sessions, and booking — see the work and lock a date.</p>
-            <span class="card-arrow">→</span>
-          </a>
-        </div>
-      </div>
-
-      <div>
-        <span class="section-label">More tools</span>
-        <div class="quicklinks">
-          <a class="quicklink quicklink-blue" href="https://conorcrownawardproofs-star.github.io/ordertracker/">🏆 Crown Awards Tracker</a>
-          <a class="quicklink quicklink-green" href="https://conorcrownawardproofs-star.github.io/budgeter/">💰 Private Budgeter</a>
-          <a class="quicklink quicklink-pink" href="https://conorcrownawardproofs-star.github.io/bingo/">🎲 Friday Bingo Player</a>
-        </div>
-      </div>
-
-      <div>
-        <span class="section-label">Find me elsewhere</span>
-        <div class="socials">
-          <a class="social-btn" href="https://www.youtube.com/@ConsistencyFilms" title="YouTube — Consistency Films">
-            <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
-          </a>
-          <a class="social-btn" href="https://www.instagram.com/conormccutcheon_" title="Instagram">
-            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          </a>
-          <a class="social-btn" href="#" title="Facebook">
-            <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </a>
-          <a class="social-btn" href="https://github.com/conorcrownawardproofs-star" title="GitHub">
-            <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-          </a>
-          <a class="social-btn" href="#" title="TikTok">
-            <svg viewBox="0 0 24 24"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
-          </a>
-        </div>
-      </div>
-    </main>
-
-    <footer>
-      <span>© 2026 Conor McCutcheon</span>
-      <button class="nav-contact" onclick="show('contact')" style="font-size:0.75rem;">conormcc.edits@gmail.com</button>
-    </footer>
-  </div>
-
-  <div class="page" id="page-contact">
-    <nav>
-      <button class="nav-contact" onclick="show('home')">← Back</button>
-      <a class="nav-logo" href="https://consistency.ink/windows-xp">
-        <span class="logo-default">Conor McCutcheon</span>
-        <span class="logo-home">View my work →</span>
-      </a>
-    </nav>
-
-    <div class="contact-main">
-      <h1 class="contact-headline">Get in touch.</h1>
-      <div class="contact-links">
-        <a href="tel:+19144322249" class="contact-row contact-row-1">
-          <span class="contact-label">Phone</span>
-          <span class="contact-value">(914) 432-2249</span>
-          <span class="contact-arrow">→</span>
-        </a>
-        <a href="mailto:conormcc.edits@gmail.com" class="contact-row contact-row-2">
-          <span class="contact-label">Email</span>
-          <span class="contact-value">conormcc.edits@gmail.com</span>
-          <span class="contact-arrow">→</span>
-        </a>
-        <a href="https://youtube.com/@Consistencyy" class="contact-row contact-row-3">
-          <span class="contact-label">YouTube</span>
-          <span class="contact-value">@Consistencyy</span>
-          <span class="contact-arrow">→</span>
-        </a>
-        <a href="https://github.com/consistencyy" class="contact-row contact-row-4">
-          <span class="contact-label">GitHub</span>
-          <span class="contact-value">@consistencyy</span>
-          <span class="contact-arrow">→</span>
-        </a>
-      </div>
+  <div class="weekbar">
+    <div class="left">
+      <span class="weeklabel" id="weekLabel"></span>
+      <button class="btn ghost sm" id="btnThisWeek">This week</button>
     </div>
-
-    <footer>
-      <span>© 2026 Conor McCutcheon</span>
-    </footer>
+    <div class="weeknav">
+      <button class="wk" id="weekPrev" title="Previous week" aria-label="Previous week">‹</button>
+      <div class="days" id="days" role="tablist"></div>
+      <button class="wk" id="weekNext" title="Next week" aria-label="Next week">›</button>
+    </div>
+    <div class="right">
+      <select id="scopeSel" aria-label="Date scope" style="width:auto">
+        <option value="day">One day</option>
+        <option value="week">Whole week</option>
+        <option value="all">Everything</option>
+      </select>
+    </div>
   </div>
 
-  <script>
-    function show(page) {
-      const current = document.querySelector('.page.active');
-      const next = document.getElementById('page-' + page);
-      if (current === next) return;
-      current.classList.remove('active');
-      next.classList.add('active');
-      window.scrollTo(0, 0);
+  <div class="entrybar" id="entrybar">
+    <div class="entryhead">
+      <h3 id="entryTitle">Add an order</h3>
+      <span class="eyebrow" id="entryEyebrow"></span>
+      <span class="edit-banner" id="editBanner" hidden></span>
+      <div class="spacer"></div>
+      <span class="eyebrow">Leave anything blank and fill it in later.</span>
+    </div>
+    <form id="formOrder" novalidate>
+      <div class="entrygrid" id="entrygrid"></div>
+    </form>
+  </div>
+
+  <div class="splitter" id="splitbar" title="Drag to resize the entry row vs the log"></div>
+
+  <div class="ribbon" id="ribbon"></div>
+
+  <div class="ledger-bar">
+    <div class="chips" id="chips"></div>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" id="btnExportCsv">Export CSV</button>
+    <button class="btn ghost sm" id="btnBackup">Back up</button>
+    <button class="btn ghost sm" id="btnRestore">Restore</button>
+    <button class="btn ghost sm" id="btnPrint">Print</button>
+    <input type="file" id="fileRestore" accept="application/json" hidden>
+  </div>
+
+  <div class="tablewrap" id="tablewrap">
+    <table id="ledgerTable">
+      <colgroup id="cols"></colgroup>
+      <thead><tr id="headRow"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" hidden></div>
+    <div class="tablefoot-buffer"></div>
+  </div>
+
+  <footer class="appfoot" id="appfoot">
+    <span id="footCount"></span>
+    <span class="spacer"></span>
+    <span class="muted" id="footHint"></span>
+  </footer>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<div id="modalHost"></div>
+<div id="menuHost"></div>
+
+<script>
+/* =========================================================================
+   Award Order Tracker — Crown Awards International HQ
+   Single-file, browser-local. No network calls, no dependencies.
+   ========================================================================= */
+(function () {
+"use strict";
+
+/* ---------------------------------------------------------------- utility */
+var $ = function (id) { return document.getElementById(id); };
+var enc = new TextEncoder();
+
+function pad2(n) { return (n < 10 ? "0" : "") + n; }
+function nowIso() { return new Date().toISOString(); }
+function todayKey(d) {
+  d = d || new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+function dateFromKey(key) {
+  var p = String(key || "").split("-");
+  return new Date(+p[0], +p[1] - 1, +p[2]);
+}
+function uid() {
+  var b = randomBytes(9), s = "";
+  for (var i = 0; i < b.length; i++) s += b[i].toString(16).padStart(2, "0");
+  return s;
+}
+function concatBytes(a, b) {
+  var out = new Uint8Array(a.length + b.length);
+  out.set(a, 0); out.set(b, a.length);
+  return out;
+}
+function toB64(bytes) {
+  var s = "";
+  for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+function fromB64(str) {
+  var bin = atob(str), out = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function randomBytes(n) {
+  var a = new Uint8Array(n);
+  if (window.crypto && window.crypto.getRandomValues) { window.crypto.getRandomValues(a); return a; }
+  for (var i = 0; i < n; i++) a[i] = Math.floor(Math.random() * 256);
+  return a;
+}
+function sameSecret(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  var diff = a.length ^ b.length;
+  for (var i = 0; i < Math.max(a.length, b.length); i++) {
+    diff |= (a.charCodeAt(i % (a.length || 1)) ^ b.charCodeAt(i % (b.length || 1)));
+  }
+  return diff === 0 && a.length === b.length;
+}
+
+/* ------------------------------------------------------- SHA-256 fallback */
+/* Used only when crypto.subtle is unavailable (e.g. an http:// intranet host).
+   Output is byte-identical to WebCrypto PBKDF2-HMAC-SHA256. */
+var K256 = new Uint32Array([
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+]);
+function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+function sha256(bytes) {
+  var H = new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  var l = bytes.length, total = ((l + 9 + 63) >> 6) << 6;
+  var buf = new Uint8Array(total);
+  buf.set(bytes); buf[l] = 0x80;
+  var dv = new DataView(buf.buffer);
+  var bits = l * 8;
+  dv.setUint32(total - 8, Math.floor(bits / 4294967296));
+  dv.setUint32(total - 4, bits >>> 0);
+  var w = new Uint32Array(64);
+  for (var off = 0; off < total; off += 64) {
+    for (var i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+    for (i = 16; i < 64; i++) {
+      var s0 = rotr(w[i-15],7) ^ rotr(w[i-15],18) ^ (w[i-15] >>> 3);
+      var s1 = rotr(w[i-2],17) ^ rotr(w[i-2],19) ^ (w[i-2] >>> 10);
+      w[i] = (w[i-16] + s0 + w[i-7] + s1) >>> 0;
     }
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for (i = 0; i < 64; i++) {
+      var S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+      var ch = (e & f) ^ (~e & g);
+      var t1 = (h + S1 + ch + K256[i] + w[i]) >>> 0;
+      var S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+      var maj = (a & b) ^ (a & c) ^ (b & c);
+      var t2 = (S0 + maj) >>> 0;
+      h=g; g=f; f=e; e=(d + t1) >>> 0; d=c; c=b; b=a; a=(t1 + t2) >>> 0;
+    }
+    H[0]=(H[0]+a)>>>0; H[1]=(H[1]+b)>>>0; H[2]=(H[2]+c)>>>0; H[3]=(H[3]+d)>>>0;
+    H[4]=(H[4]+e)>>>0; H[5]=(H[5]+f)>>>0; H[6]=(H[6]+g)>>>0; H[7]=(H[7]+h)>>>0;
+  }
+  var out = new Uint8Array(32), odv = new DataView(out.buffer);
+  for (var j = 0; j < 8; j++) odv.setUint32(j * 4, H[j]);
+  return out;
+}
+function hmacSha256(key, msg) {
+  if (key.length > 64) key = sha256(key);
+  var k = new Uint8Array(64); k.set(key);
+  var ok = new Uint8Array(64), ik = new Uint8Array(64);
+  for (var i = 0; i < 64; i++) { ok[i] = k[i] ^ 0x5c; ik[i] = k[i] ^ 0x36; }
+  return sha256(concatBytes(ok, sha256(concatBytes(ik, msg))));
+}
+function pbkdf2Js(password, salt, iterations, dkLen) {
+  var pw = enc.encode(password);
+  var blocks = Math.ceil(dkLen / 32);
+  var out = new Uint8Array(blocks * 32);
+  for (var b = 1; b <= blocks; b++) {
+    var idx = new Uint8Array([(b >>> 24) & 255, (b >>> 16) & 255, (b >>> 8) & 255, b & 255]);
+    var u = hmacSha256(pw, concatBytes(salt, idx));
+    var t = u.slice();
+    for (var i = 1; i < iterations; i++) {
+      u = hmacSha256(pw, u);
+      for (var j = 0; j < 32; j++) t[j] ^= u[j];
+    }
+    out.set(t, (b - 1) * 32);
+  }
+  return out.slice(0, dkLen);
+}
+var PBKDF2_ITERATIONS = 120000;
+function pbkdf2(password, salt, iterations, dkLen) {
+  dkLen = dkLen || 32;
+  if (window.crypto && window.crypto.subtle && window.crypto.subtle.importKey) {
+    return window.crypto.subtle
+      .importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"])
+      .then(function (key) {
+        return window.crypto.subtle.deriveBits(
+          { name: "PBKDF2", salt: salt, iterations: iterations, hash: "SHA-256" }, key, dkLen * 8);
+      })
+      .then(function (bits) { return new Uint8Array(bits); })
+      .catch(function () { return pbkdf2Js(password, salt, iterations, dkLen); });
+  }
+  return Promise.resolve(pbkdf2Js(password, salt, iterations, dkLen));
+}
+function hashSecret(secret, saltB64, iterations) {
+  return pbkdf2(secret, fromB64(saltB64), iterations).then(toB64);
+}
 
-    (function () {
-      const loader = document.getElementById('loader');
-      const seen = document.documentElement.classList.contains('seen-intro');
-      const hide = () => {
-        if (!loader) return;
-        loader.classList.add('hidden');
-        setTimeout(() => loader.remove(), 400);
-        try { localStorage.setItem('cm_seen_intro', '1'); } catch (e) {}
-      };
-      if (seen) hide();
-      else setTimeout(hide, 900);
-    })();
-  </script>
+/* ---------------------------------------------------------------- storage */
+var KEY_USERS = "caot_users_v1";
+var KEY_SESSION = "caot_session_v1";
+var KEY_PREFS = "caot_prefs_v1";
+var ordersKey = function (u) { return "caot_orders_" + u; };
+
+function readJson(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    var val = JSON.parse(raw);
+    return (val === null || val === undefined) ? fallback : val;
+  } catch (e) { return fallback; }
+}
+function writeJson(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch (e) {
+    toast("Storage is full or blocked, so that change was not saved. Back up and free some space.", null, 8000);
+    return false;
+  }
+}
+function getUsers() { return readJson(KEY_USERS, {}); }
+function saveUsers(u) { return writeJson(KEY_USERS, u); }
+function getUser(name) {
+  var users = getUsers();
+  return users[String(name || "").trim().toLowerCase()] || null;
+}
+function putUser(rec) {
+  var users = getUsers();
+  users[rec.key] = rec;
+  return saveUsers(users);
+}
+function findByEmail(email) {
+  var users = getUsers(), e = String(email || "").trim().toLowerCase();
+  for (var k in users) if (users[k].email && users[k].email.toLowerCase() === e) return users[k];
+  return null;
+}
+
+/* ------------------------------------------------------------- bootstrap */
+/* Conor's account. The password is NOT in this file — only the PBKDF2 salt
+   and derived hash, which cannot be reversed back into the password. */
+var SEED_VERSION = 2;
+var BOOTSTRAP_USER = {
+  key: "cm16",
+  username: "CM16",
+  email: "conormcc.edits@gmail.com",
+  salt: "7+EozYEXnLjwv2lkFHFusA==",
+  hash: "DMbclG/3dTEX1Uo9TGXPvWYctN1gQ0BLcVXQ+40sAw8=",
+  iterations: 120000,
+  createdAt: "2026-09-14T08:00:00.000Z",
+  passwordChangedAt: "2026-09-14T08:00:00.000Z",
+  tokenVersion: 1,
+  seedVersion: SEED_VERSION,
+  failedAttempts: 0,
+  lockUntil: 0,
+  reset: null
+};
+var BOOTSTRAP_ORDERS = [
+  {
+    "date": "2026-09-14",
+    "seq": 1,
+    "orderId": "16248803",
+    "customer": "laurieann.taylor@cartercenter.org",
+    "proof": "TRUE",
+    "status": "Proof Sent!",
+    "startTime": "",
+    "completionTime": "09:35:00",
+    "proofRcvdTime": "09:39:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 2,
+    "orderId": "16251618",
+    "customer": "HFE WOMAN Awards Committee",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "09:48:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 3,
+    "orderId": "16251690",
+    "customer": "LINDA SANCHEZ",
+    "proof": "TRUE",
+    "status": "Proof Requested\nProof Sent!",
+    "startTime": "",
+    "completionTime": "10:20:00",
+    "proofRcvdTime": "10:21:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "PLACED ON WEE AT 9:56 AM\nENG RCVD @ 10:11 AM\nPROOF REQUESTED"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 4,
+    "orderId": "16231894",
+    "customer": "Joseph Myers",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "10:01:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": "Copied Format from XEM#\n16007102 in CDL2026"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 5,
+    "orderId": "16248798",
+    "customer": "LAUREN@POWER2WORKERS.ORG",
+    "proof": "TRUE",
+    "status": "Proof Sent!\nAPPROVED",
+    "startTime": "",
+    "completionTime": "10:09:00",
+    "proofRcvdTime": "10:10:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Customer has Previous XEM#\n1420017601 (2024)\n\nLogo Path from:\nG:\\CORPORATE 2025\\\n70227925"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 6,
+    "orderId": "16250411",
+    "customer": "SHRIDEVI KARIKIHALLI",
+    "proof": "TRUE",
+    "status": "Proof Required",
+    "startTime": "",
+    "completionTime": "10:33:00",
+    "proofRcvdTime": "10:36:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 7,
+    "orderId": "16251743",
+    "customer": "SARAH.BERG@ISD728.ORG",
+    "proof": "TRUE",
+    "status": "Proof Required",
+    "startTime": "",
+    "completionTime": "10:55:00",
+    "proofRcvdTime": "10:56:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Copied from Previous XEM#\n1614701101 (2026)"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 8,
+    "orderId": "16249579",
+    "customer": "BELINDAVINES@GMAIL.COM",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "10:49:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 9,
+    "orderId": "16245090",
+    "customer": "EC-Council",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "12:15:00",
+    "proofRcvdTime": "12:17:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "HELD UP:\nLogo Clarification Requested\nfrom OrderEdit @ 11:52 AM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 10,
+    "orderId": "16251777",
+    "customer": "STORE SUPPLY WAREHOUSE",
+    "proof": "TRUE",
+    "status": "Proof Requested\n(CC JOEL) — SENT!",
+    "startTime": "",
+    "completionTime": "11:20:00",
+    "proofRcvdTime": "11:23:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Referencng logo and\nformat from 16177206"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 11,
+    "orderId": "COR - 16215786",
+    "customer": "Cowan.T.SmithSr@uscis.dhs.gov",
+    "proof": "X",
+    "status": "N/A",
+    "startTime": "",
+    "completionTime": "N/A",
+    "proofRcvdTime": "N/A",
+    "fin": "X",
+    "savedToDrive": "X",
+    "notes": "Correction Confirmation sent by Rep @ 11:49 AM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 12,
+    "orderId": "16252243",
+    "customer": "DHL Supply Chain",
+    "proof": "TRUE",
+    "status": "Judgement: Proof Sent",
+    "startTime": "",
+    "completionTime": "12:10:00",
+    "proofRcvdTime": "12:10:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 13,
+    "orderId": "16249562",
+    "customer": "VICKI KIRKPATRICK\nKnights of Peter Claver Ladies Auxiliary",
+    "proof": "TRUE",
+    "status": "Logo PGroup3\n24HR Proof",
+    "startTime": "",
+    "completionTime": "12:26:00",
+    "proofRcvdTime": "12:27:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 14,
+    "orderId": "16251995",
+    "customer": "LISA TAGLIARINO",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "12:32:00",
+    "proofRcvdTime": "12:33:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 15,
+    "orderId": "16248716",
+    "customer": "Arthritis Foundation",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "12:36:00",
+    "proofRcvdTime": "12:37:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 16,
+    "orderId": "16252537",
+    "customer": "ALFA MUTUAL INSURANCE COMPANY",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "13:17:00",
+    "proofRcvdTime": "13:19:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Placed on WEE @ 12:48 PM\n(No Info in Email)\nBack @ 1:14 PM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 17,
+    "orderId": "16252183",
+    "customer": "HULTEEN.KASEY@GMAIL.COM",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "13:21:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 18,
+    "orderId": "16252871",
+    "customer": "ZULEMA@DRYASMININSTITUTE.COM",
+    "proof": "TRUE",
+    "status": "LEC",
+    "startTime": "",
+    "completionTime": "",
+    "proofRcvdTime": "",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "LOF - WLE status @ 2:12 PM\nWaiting on Logo from CX\n\nPlaced on ILS as Logo is still waiting\nReturn from India @ 2:45 PM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 19,
+    "orderId": "16253018",
+    "customer": "CONNOR MULHERIN",
+    "proof": "X",
+    "status": "",
+    "startTime": "",
+    "completionTime": "",
+    "proofRcvdTime": "",
+    "fin": "FALSE",
+    "savedToDrive": "FALSE",
+    "notes": "WEE Status @ 2:13 PM\nWaiting on ENG Info from CX"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 20,
+    "orderId": "16248122",
+    "customer": "JODI GRAHNE",
+    "proof": "TRUE",
+    "status": "Logo PGroup3\n24HR Proof Sent",
+    "startTime": "",
+    "completionTime": "14:34:00",
+    "proofRcvdTime": "14:35:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 21,
+    "orderId": "16253230",
+    "customer": "BKELLY@700CREDIT.COM",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "14:54:00",
+    "proofRcvdTime": "",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 22,
+    "orderId": "16252858",
+    "customer": "ZULEMA@DRYASMININSTITUTE.COM",
+    "proof": "TRUE",
+    "status": "LEC",
+    "startTime": "",
+    "completionTime": "15:11:00",
+    "proofRcvdTime": "",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 23,
+    "orderId": "16253414",
+    "customer": "DBYRNE@GLSAUTO.COM",
+    "proof": "TRUE",
+    "status": "Logo PGroup7\n24HR Proof Sent",
+    "startTime": "",
+    "completionTime": "16:01:00",
+    "proofRcvdTime": "16:02:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Proof Req. by Rep\n4:16 PM APPROVED"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 24,
+    "orderId": "16253613",
+    "customer": "JENNIFERD@EMPIREHOMEREMODELING.COM",
+    "proof": "TRUE",
+    "status": "Logo PGroup3\n24HR Proof Sent",
+    "startTime": "",
+    "completionTime": "16:25:00",
+    "proofRcvdTime": "16:26:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 25,
+    "orderId": "16253552",
+    "customer": "ROBERT SEDAGHATPOUR",
+    "proof": "FALSE",
+    "status": "",
+    "startTime": "",
+    "completionTime": "",
+    "proofRcvdTime": "",
+    "fin": "FALSE",
+    "savedToDrive": "FALSE",
+    "notes": "ILS - 4:29 PM"
+  }
+];
+
+function seedRecord(o) {
+  var copy = JSON.parse(JSON.stringify(o));
+  copy.id = uid();
+  copy.createdAt = BOOTSTRAP_USER.createdAt;
+  copy.updatedAt = BOOTSTRAP_USER.createdAt;   /* untouched marker */
+  return copy;
+}
+function installBootstrap() {
+  var users = getUsers();
+  if (!users[BOOTSTRAP_USER.key]) {
+    users[BOOTSTRAP_USER.key] = JSON.parse(JSON.stringify(BOOTSTRAP_USER));
+    saveUsers(users);
+    if (localStorage.getItem(ordersKey(BOOTSTRAP_USER.key)) === null) {
+      writeOrdersRaw(BOOTSTRAP_USER.key, BOOTSTRAP_ORDERS.map(seedRecord), 1);
+    }
+    return { added: 0, updated: 0, fresh: true };
+  }
+  /* Existing install from an earlier version: fold in the newer sheet without
+     stepping on anything that has been edited since it was seeded. */
+  var user = users[BOOTSTRAP_USER.key];
+  if ((user.seedVersion || 1) >= SEED_VERSION) return { added: 0, updated: 0, fresh: false };
+  var existing = readOrdersRaw(BOOTSTRAP_USER.key);
+  var current = existing.orders;
+  var index = {};
+  current.forEach(function (o) { index[o.date + "|" + String(o.orderId).toLowerCase()] = o; });
+  var added = 0, updated = 0;
+  BOOTSTRAP_ORDERS.forEach(function (s) {
+    var hit = index[s.date + "|" + String(s.orderId).toLowerCase()];
+    if (!hit) { current.push(seedRecord(s)); added++; return; }
+    if (hit.updatedAt && hit.createdAt && hit.updatedAt === hit.createdAt) {
+      ["customer","proof","status","startTime","completionTime","proofRcvdTime","fin","savedToDrive","notes","seq"]
+        .forEach(function (f) { hit[f] = s[f]; });
+      updated++;
+    }
+  });
+  writeOrdersRaw(BOOTSTRAP_USER.key, current, existing.rev + 1);
+  user.seedVersion = SEED_VERSION;
+  putUser(user);
+  return { added: added, updated: updated, fresh: false };
+}
+var bootstrapReport = null;
+
+/* --------------------------------------------------------------- session */
+var SESSION_MS = 8 * 60 * 60 * 1000;
+var REMEMBER_MS = 30 * 24 * 60 * 60 * 1000;
+var state = {
+  user: null, orders: [], byId: {},
+  scopeDate: todayKey(), weekStart: null, scope: "day",
+  query: "", filter: "all", sortKey: "seq", sortDir: 1, flashId: null,
+  inlineId: null, inlineFields: null,
+  /* save bookkeeping — see persistOrders() */
+  rev: 0, lastSaved: null, saveFailed: false, deleted: {}
+};
+
+function startSession(userRec, remember) {
+  var session = {
+    key: userRec.key, token: toB64(randomBytes(24)),
+    tokenVersion: userRec.tokenVersion,
+    expires: Date.now() + (remember ? REMEMBER_MS : SESSION_MS),
+    remember: !!remember
+  };
+  writeJson(KEY_SESSION, session);
+  return session;
+}
+function restoreSession() {
+  var s = readJson(KEY_SESSION, null);
+  if (!s || !s.key || !s.token) return null;
+  if (!s.expires || s.expires < Date.now()) { localStorage.removeItem(KEY_SESSION); return null; }
+  var user = getUsers()[s.key];
+  if (!user) { localStorage.removeItem(KEY_SESSION); return null; }
+  if (user.tokenVersion !== s.tokenVersion) { localStorage.removeItem(KEY_SESSION); return null; }
+  s.expires = Date.now() + (s.remember ? REMEMBER_MS : SESSION_MS);
+  writeJson(KEY_SESSION, s);
+  return user;
+}
+function endSession() { localStorage.removeItem(KEY_SESSION); }
+
+/* ------------------------------------------------------------ validation */
+function validUsername(u) { return /^[A-Za-z0-9._-]{3,20}$/.test(u); }
+function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+function passwordChecks(p) {
+  return { len: p.length >= 10, upper: /[A-Z]/.test(p), lower: /[a-z]/.test(p),
+           digit: /[0-9]/.test(p), symbol: /[^A-Za-z0-9]/.test(p) };
+}
+function passwordOk(p) {
+  var c = passwordChecks(p), extras = [c.upper, c.lower, c.digit, c.symbol].filter(Boolean).length;
+  return c.len && extras >= 3;
+}
+function passwordScore(p) {
+  if (!p) return 0;
+  var c = passwordChecks(p);
+  var score = Math.min(50, p.length * 3.2);
+  score += (c.upper ? 12 : 0) + (c.lower ? 8 : 0) + (c.digit ? 12 : 0) + (c.symbol ? 18 : 0);
+  if (/^[A-Za-z]+$/.test(p) || /^[0-9]+$/.test(p)) score -= 20;
+  if (/(.)\1{2,}/.test(p)) score -= 10;
+  if (/^(password|qwerty|letmein|welcome|crown|admin)/i.test(p)) score -= 35;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+function wirePasswordMeter(inputId, meterId, rulesId) {
+  var input = $(inputId), meter = $(meterId), rules = $(rulesId);
+  if (!input) return;
+  input.addEventListener("input", function () {
+    var v = input.value, c = passwordChecks(v), score = passwordScore(v);
+    meter.style.width = score + "%";
+    meter.style.background = score < 40 ? "var(--stop)" : score < 70 ? "var(--hold)" : "var(--go)";
+    Array.prototype.forEach.call(rules.querySelectorAll("li"), function (li) {
+      li.classList.toggle("ok", !!c[li.getAttribute("data-rule")]);
+    });
+  });
+}
+
+/* ------------------------------------------------------------ time logic */
+function parseTime(raw) {
+  var s = String(raw == null ? "" : raw).trim();
+  if (!s) return { ok: true, value: "" };
+  if (/^(n\/?a|x|-|—|–)$/i.test(s)) return { ok: true, value: "N/A" };
+  var m = s.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?\s*([ap])\.?m?\.?$/i);
+  if (!m) m = s.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?$/);
+  if (!m) {
+    var short = s.match(/^(\d{1,2})\s*([ap])\.?m?\.?$/i);
+    if (short) m = [short[0], short[1], "00", undefined, short[2]];
+  }
+  if (!m) return { ok: false, value: "" };
+  var h = parseInt(m[1], 10), mi = parseInt(m[2], 10), se = m[3] ? parseInt(m[3], 10) : 0;
+  var ap = m[4] ? m[4].toLowerCase() : null;
+  if (ap) {
+    if (h < 1 || h > 12) return { ok: false, value: "" };
+    if (ap === "p" && h !== 12) h += 12;
+    if (ap === "a" && h === 12) h = 0;
+  }
+  if (h > 23 || mi > 59 || se > 59) return { ok: false, value: "" };
+  return { ok: true, value: pad2(h) + ":" + pad2(mi) + ":" + pad2(se) };
+}
+function isClock(v) { return /^\d{2}:\d{2}:\d{2}$/.test(v || ""); }
+function minutesOf(v) {
+  if (!isClock(v)) return null;
+  var p = v.split(":");
+  return (+p[0]) * 60 + (+p[1]) + (+p[2]) / 60;
+}
+function prettyTime(v) {
+  if (!isClock(v)) return v || "";
+  var p = v.split(":"), h = +p[0], ap = h >= 12 ? "PM" : "AM";
+  var hh = h % 12; if (hh === 0) hh = 12;
+  return hh + ":" + p[1] + " " + ap;
+}
+function spanMinutes(a, b) {
+  var x = minutesOf(a), y = minutesOf(b);
+  if (x === null || y === null) return null;
+  return Math.round(y - x);
+}
+function timeTaken(o) { return spanMinutes(o.startTime, o.completionTime); }
+function turnaround(o) { return spanMinutes(o.completionTime, o.proofRcvdTime); }
+function durationText(min) {
+  if (min === null || min === undefined) return "";
+  if (min < 0) return "—";
+  if (min < 60) return min + "m";
+  return Math.floor(min / 60) + "h " + pad2(min % 60) + "m";
+}
+function nowClock() {
+  var d = new Date();
+  return pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+}
+var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function prettyDate(key) {
+  var d = dateFromKey(key);
+  if (isNaN(d.getTime())) return key || "";
+  return DAY_NAMES[d.getDay()] + ", " + MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+}
+function shortDate(key) {
+  var d = dateFromKey(key);
+  return isNaN(d.getTime()) ? key : (MONTHS[d.getMonth()].slice(0, 3) + " " + d.getDate());
+}
+function parseDay(v) {
+  var s = String(v == null ? "" : v).trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    var year = m[3].length === 2 ? ("20" + m[3]) : m[3];
+    return year + "-" + pad2(+m[1]) + "-" + pad2(+m[2]);
+  }
+  return s;
+}
+/* The shop is closed at weekends, so every date the app works with is Mon-Fri. */
+function mondayOf(key) {
+  var d = dateFromKey(key);
+  var dow = d.getDay();                       /* 0 Sun .. 6 Sat */
+  var delta = dow === 0 ? -6 : 1 - dow;
+  d.setDate(d.getDate() + delta);
+  return todayKey(d);
+}
+function weekdayKeys(monday) {
+  var out = [], d = dateFromKey(monday);
+  for (var i = 0; i < 5; i++) {
+    out.push(todayKey(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
+function snapToWeekday(key, forward) {
+  var d = dateFromKey(key);
+  if (isNaN(d.getTime())) return todayKey();
+  var dow = d.getDay();
+  if (dow === 6) d.setDate(d.getDate() + (forward === false ? -1 : 2));
+  else if (dow === 0) d.setDate(d.getDate() + (forward === false ? -2 : 1));
+  return todayKey(d);
+}
+
+/* ------------------------------------------------------- status colouring */
+var RX_CODE = /\b(CLC|LEC)\b/;
+var RX_GO   = /\b(APPROVED|APPROVAL|SENT|COMPLETE[D]?|DONE|CONFIRMED|OK(?:'D|AYED)?|SHIPPED|CLOSED)\b|SENT!/;
+var RX_HOT  = /\b(HELD ?UP|\bHOLD\b|WAITING|WAIT|RUSH|URGENT|ISSUE|PROBLEM|REJECTED|CANCELL?ED|REDO|ERROR|MISSING|CLARIFICATION)\b/;
+var RX_WARN = /\b(PROOF|REQUIRED|REQUESTED|24 ?HR|PENDING|REVIEW|JUDGE?MENT|LOGO|STANDARD)\b/;
+function classifyStatus(line) {
+  var s = String(line || "").trim();
+  if (!s) return null;
+  var u = s.toUpperCase();
+  if (RX_HOT.test(u)) return "t-hot";
+  if (RX_CODE.test(u)) return "t-code";
+  if (RX_GO.test(u)) return "t-go";
+  if (RX_WARN.test(u)) return "t-warn";
+  return "t-plain";
+}
+function statusParts(status) {
+  return String(status || "").split("\n")
+    .map(function (l) { return l.trim(); })
+    .filter(Boolean)
+    .map(function (l) { return { text: l, cls: classifyStatus(l) }; });
+}
+function isCompletedOrder(o) {
+  return !!(o && (o.fin === "TRUE" || isClock(o.completionTime)));
+}
+function isCorOrder(o) {
+  if (!o) return false;
+  if (normType(o.otype) === "COR") return true;
+  return /^\s*COR\b/i.test(o.orderId || "");
+}
+function isHoldFlag(o) {
+  return !!(o && (o.held === "TRUE" || o.held === true));
+}
+function rowAccent(order) {
+  /* Priority: HOLD (red) > COR type (green) > completed CLC/LEC (blue)
+     > gold note/status > plain grey. CLC/LEC on an open job no longer
+     paints the whole row blue. */
+  if (isHoldFlag(order) || isHeld(order)) return "k-hot";
+  if (isCorOrder(order)) return "k-go";
+  if ((isCode(order, "CLC") || isCode(order, "LEC")) && isCompletedOrder(order)) return "k-code";
+  var parts = statusParts(order.status).concat(statusParts(order.notes));
+  var i;
+  for (i = 0; i < parts.length; i++) if (parts[i].cls === "t-warn") return "k-warn";
+  return "";
+}
+
+/* --------------------------------------------------------------- orders */
+/* Orders used to be written as a bare array. They are now wrapped in an
+   envelope carrying a revision number, so a second tab writing the same key
+   can be detected and merged instead of silently clobbering this one. Both
+   shapes are still read, so nothing already in storage is lost. */
+function unwrapOrders(v) {
+  if (Array.isArray(v)) return { orders: v, rev: 0, savedAt: null };
+  if (v && Array.isArray(v.orders)) {
+    return { orders: v.orders, rev: Number(v.rev) || 0, savedAt: v.savedAt || null };
+  }
+  return { orders: [], rev: 0, savedAt: null };
+}
+function readOrdersRaw(userKey) { return unwrapOrders(readJson(ordersKey(userKey), [])); }
+function writeOrdersRaw(userKey, orders, rev) {
+  return writeJson(ordersKey(userKey), { v: 2, rev: rev, savedAt: nowIso(), orders: orders });
+}
+/* The search index is cached on each order as __hay. It must never be written
+   to storage — it roughly doubled the size of the payload, which is the fast
+   way to hit the 5 MB localStorage ceiling and start failing writes. */
+function stripInternal(o) {
+  var c = {};
+  for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k) && k.slice(0, 2) !== "__") c[k] = o[k];
+  return c;
+}
+function loadOrders() {
+  if (!state.user) { state.orders = []; state.rev = 0; reindex(); return; }
+  var raw = readOrdersRaw(state.user.key);
+  state.orders = raw.orders.map(normalizeOrder);
+  state.rev = raw.rev;
+  state.deleted = {};
+  reindex();
+}
+function reindex() {
+  state.byId = {};
+  for (var i = 0; i < state.orders.length; i++) state.byId[state.orders[i].id] = state.orders[i];
+}
+function byId(id) { return state.byId[id] || null; }
+/* Pulls in anything a second tab added since this tab last read, so two open
+   windows can't erase each other's orders. Rows deleted in this tab stay
+   deleted. */
+function mergeForeign(foreign) {
+  var merged = 0;
+  for (var i = 0; i < foreign.length; i++) {
+    var f = normalizeOrder(foreign[i]);
+    if (state.deleted[f.id]) continue;
+    var mine = state.byId[f.id];
+    if (!mine) { state.orders.push(f); merged++; continue; }
+    if (f.updatedAt && mine.updatedAt && f.updatedAt > mine.updatedAt) {
+      for (var k in f) if (k.slice(0, 2) !== "__") mine[k] = f[k];
+      merged++;
+    }
+  }
+  if (merged) reindex();
+  return merged;
+}
+/* Returns true only when the change is actually on disk. Every caller that
+   can lose data on a false is expected to check it. */
+function persistOrders() {
+  if (!state.user) return false;
+  var key = state.user.key;
+  var stored = readOrdersRaw(key);
+  var merged = 0;
+  if (stored.rev !== state.rev) merged = mergeForeign(stored.orders);
+  var rev = Math.max(stored.rev, state.rev) + 1;
+  var payload = state.orders.map(stripInternal);
+  var ok = writeOrdersRaw(key, payload, rev);
+  if (ok) {
+    /* Read it straight back. A write can be accepted and then dropped by
+       storage pressure or an extension, and a silent drop is exactly the
+       failure that looks like "I entered it and it vanished". */
+    var back = readOrdersRaw(key);
+    if (back.rev !== rev || back.orders.length !== payload.length) ok = false;
+  }
+  if (ok) { state.rev = rev; state.lastSaved = new Date(); state.saveFailed = false; }
+  else { state.saveFailed = true; }
+  reindex();
+  if (merged) {
+    toast("Picked up " + merged + " change" + (merged === 1 ? "" : "s") +
+          " made in another tab.", null, 6000);
+    scheduleRender();
+  }
+  return ok;
+}
+/* One place to shout when a save does not land, instead of a toast that
+   scrolls away while you carry on typing. */
+function saveFailedModal(what) {
+  confirmModal("That " + what + " was not saved",
+    "The browser refused to write to local storage. This is almost always a full quota or " +
+    "private-browsing mode. Your work is still on screen — use Back up to write a JSON file " +
+    "before you reload or close this tab.",
+    "Back up now", backupJson, "Ignore", function () {});
+}
+/* ------------------------------------------------- order type / qty / money */
+var ORDER_TYPES = ["RTR", "INT", "SAM", "COR"];
+function normType(v) {
+  var t = String(v == null ? "" : v).trim().toUpperCase().replace(/\s+/g, " ");
+  return t.slice(0, 14);
+}
+function typeClass(t) {
+  return ORDER_TYPES.indexOf(normType(t)) !== -1 ? "t-" + normType(t).toLowerCase() : "";
+}
+function parseQty(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  var digits = String(v).replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  var n = parseInt(digits, 10);
+  return isFinite(n) ? n : "";
+}
+function parseMoney(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  var clean = String(v).replace(/[^0-9.]/g, "");
+  if (!clean) return "";
+  var n = parseFloat(clean);
+  if (!isFinite(n)) return "";
+  return Math.round(n * 100) / 100;
+}
+function money(n) {
+  if (n === "" || n === null || n === undefined) return "";
+  return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function sumQty(list) {
+  return list.reduce(function (t, o) { return t + (o.qty === "" ? 0 : Number(o.qty)); }, 0);
+}
+function sumAmount(list) {
+  return Math.round(list.reduce(function (t, o) {
+    return t + (o.amount === "" ? 0 : Number(o.amount));
+  }, 0) * 100) / 100;
+}
+
+function normalizeOrder(o) {
+  o = o || {};
+  var tri = function (v) {
+    var s = String(v == null ? "" : v).trim().toUpperCase();
+    if (s === "TRUE" || s === "YES" || s === "T") return "TRUE";
+    if (s === "FALSE" || s === "NO" || s === "F") return "FALSE";
+    return "X";
+  };
+  var txt = function (v) { return String(v == null ? "" : v); };
+  return {
+    id: o.id || uid(),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(o.date || "") ? o.date : todayKey(),
+    seq: Number(o.seq) > 0 ? Number(o.seq) : 0,
+    orderId: txt(o.orderId).trim(),
+    customer: txt(o.customer).trim(),
+    reqShipDate: parseDay(o.reqShipDate),
+    eventDate: parseDay(o.eventDate),
+    otype: normType(o.otype),
+    qty: parseQty(o.qty),
+    amount: parseMoney(o.amount),
+    proof: tri(o.proof),
+    status: txt(o.status),
+    startTime: txt(o.startTime),
+    completionTime: txt(o.completionTime),
+    proofRcvdTime: txt(o.proofRcvdTime),
+    fin: tri(o.fin),
+    savedToDrive: tri(o.savedToDrive),
+    held: o.held === "TRUE" || o.held === true ? "TRUE" : "FALSE",
+    notes: txt(o.notes),
+    createdAt: o.createdAt || nowIso(),
+    updatedAt: o.updatedAt || nowIso()
+  };
+}
+function nextSeq(dateKey) {
+  var max = 0;
+  for (var i = 0; i < state.orders.length; i++) {
+    var o = state.orders[i];
+    if (o.date === dateKey && o.seq > max) max = o.seq;
+  }
+  return max + 1;
+}
+function renumberDate(dateKey) {
+  var rows = state.orders.filter(function (o) { return o.date === dateKey; })
+    .sort(function (a, b) { return (a.seq - b.seq) || a.createdAt.localeCompare(b.createdAt); });
+  rows.forEach(function (o, i) { o.seq = i + 1; o.updatedAt = nowIso(); });
+  if (!persistOrders()) saveFailedModal("renumber");
+  scheduleRender();
+}
+function weekKeysSet() {
+  var set = {};
+  weekdayKeys(state.weekStart).forEach(function (k) { set[k] = true; });
+  return set;
+}
+function inScope(o) {
+  if (state.scope === "all") return true;
+  if (state.scope === "week") return weekKeysSet()[o.date] === true;
+  return o.date === state.scopeDate;
+}
+function isLive(o) { return isClock(o.startTime) && !isClock(o.completionTime); }
+function awaitingProof(o) { return o.proof === "TRUE" && !isClock(o.proofRcvdTime); }
+function isCode(o, code) { return new RegExp("\\b" + code + "\\b", "i").test(o.status || ""); }
+function isHeld(o) {
+  if (isHoldFlag(o)) return true;
+  var lines = String(o.status || "").split("\n").concat(String(o.notes || "").split("\n"));
+  return lines.some(function (l) { return classifyStatus(l) === "t-hot"; });
+}
+function matchesFilter(o) {
+  switch (state.filter) {
+    case "await": return awaitingProof(o);
+    case "unfin": return o.fin !== "TRUE";
+    case "drive": return o.savedToDrive === "FALSE";
+    case "codes": return isCode(o, "CLC") || isCode(o, "LEC");
+    case "live":  return isLive(o);
+    case "held":  return isHeld(o);
+    default: return true;
+  }
+}
+function searchText(o) {
+  if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
+    o.__hay = [o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+               o.amount === "" ? "" : money(o.amount), o.status, o.notes,
+               o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
+    o.__hayStamp = o.updatedAt;
+  }
+  return o.__hay;
+}
+function matchesQuery(o, terms) {
+  if (!terms.length) return true;
+  var hay = searchText(o);
+  for (var i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) === -1) return false;
+  return true;
+}
+function visibleOrders() {
+  var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  var rows = [];
+  for (var i = 0; i < state.orders.length; i++) {
+    var o = state.orders[i];
+    if (inScope(o) && matchesFilter(o) && matchesQuery(o, terms)) rows.push(o);
+  }
+  var k = state.sortKey, dir = state.sortDir;
+  var num = function (o) {
+    if (k === "taken") return timeTaken(o);
+    return minutesOf(o[k]);
+  };
+  rows.sort(function (a, b) {
+    var r = 0;
+    if (k === "seq") r = (a.date === b.date) ? a.seq - b.seq : a.date.localeCompare(b.date);
+    else if (k === "date") r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    else if (k === "taken" || k === "startTime" || k === "completionTime") {
+      var x = num(a), y = num(b);
+      /* Blank times sink to the bottom whichever direction the column is sorted. */
+      if (x === null && y !== null) return 1;
+      if (y === null && x !== null) return -1;
+      r = (x === null && y === null) ? 0 : x - y;
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    } else if (k === "qty" || k === "amount") {
+      var qa = a[k] === "" ? null : Number(a[k]), qb = b[k] === "" ? null : Number(b[k]);
+      if (qa === null && qb !== null) return 1;
+      if (qb === null && qa !== null) return -1;
+      r = (qa === null && qb === null) ? 0 : qa - qb;
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    } else {
+      r = String(a[k] || "").localeCompare(String(b[k] || ""), undefined, { numeric: true, sensitivity: "base" });
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    }
+    return r * dir;
+  });
+  return rows;
+}
+
+/* ------------------------------------------------------------------ view */
+function el(tag, cls, text) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = String(text);
+  return n;
+}
+var renderQueued = false;
+function scheduleRender() {
+  if (renderQueued) return;
+  renderQueued = true;
+  var run = function () { renderQueued = false; render(); };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+  else setTimeout(run, 16);
+}
+var tableQueued = false;
+function scheduleTable() {
+  if (tableQueued) return;
+  tableQueued = true;
+  var run = function () { tableQueued = false; renderTable(); renderFooter(); };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+  else setTimeout(run, 16);
+}
+
+/* ---------------------------------------------------- columns & chrome */
+/* One definition drives the colgroup, the header, and the entry row above
+   the table, so the fields you type into sit over the columns they fill. */
+var COLUMNS = [
+  { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 3.5,  wd: 3.5,  sort: "seq",  entry: "new" },
+  { key: "date",   label: "Date",     entryLabel: "Date", hint: "Uses the selected day", w: 0,    wd: 4.5,  sort: "date", entry: "date", dateOnly: true },
+  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 7,    wd: 7,    sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
+  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 8.5,   wd: 8,  sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
+  { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 6.5, wd: 6, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
+  { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 6.5, wd: 6, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
+  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
+  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
+  { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
+  { key: "proof",  label: "Proof",    entryLabel: "Proof sent?", hint: "Yes / No / N/A", w: 4,    wd: 4,    entry: "tri", field: "segProof" },
+  { key: "status", label: "Status",   entryLabel: "Status", hint: "Where this job is right now", w: 10,   wd: 9.5,  entry: "area", field: "fStatus", ph: "CLC, LEC, Proof Sent!" },
+  { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 6,    wd: 5.5,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
+  { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 6, wd: 5.5,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
+  { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 4.5,  wd: 4.5,  sort: "taken", entry: "calc", field: "calcTaken" },
+  { key: "proofRcvdTime", label: "Back", entryLabel: "Proof back", hint: "When the proof returned", w: 6, wd: 5.5,  entry: "time", field: "fBack", ph: "9:39" },
+  { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 4.5,  wd: 4.5,  entry: "calc", field: "calcTurn" },
+  { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.5,  wd: 4,    entry: "tri", field: "segFin" },
+  { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 5,  wd: 4.5,  entry: "tri", field: "segDrive" },
+  { key: "notes",  label: "Notes",    entryLabel: "Notes", hint: "Anything worth remembering", w: 8.5,  wd: 9,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 5.5,  wd: 5.5,  entry: "acts" }
+];
+function activeColumns() {
+  var showDate = state.scope !== "day";
+  return COLUMNS.filter(function (c) { return !c.dateOnly || showDate; });
+}
+function columnWidth(c) { return (state.scope !== "day" ? c.wd : c.w) + "%"; }
+
+/* Rebuilding the entry row throws away whatever is half-typed in it. The row
+   only needs rebuilding when the set of columns changes (the Date column comes
+   and goes with the scope), so everything else — a pill toggled in the table,
+   a day change, an undo — now leaves your typing exactly where it was. */
+var entrySig = "";
+function buildChrome() {
+  var cols = activeColumns();
+  var colgroup = $("cols");
+  colgroup.textContent = "";
+  var head = $("headRow");
+  head.textContent = "";
+  cols.forEach(function (c) {
+    var col = document.createElement("col");
+    col.style.width = columnWidth(c);
+    colgroup.appendChild(col);
+    var th = el("th", c.sort ? "sortable" : "", c.label);
+    if (c.sort) {
+      th.setAttribute("data-sort", c.sort);
+      th.appendChild(el("span", "arrow", "↕"));
+    }
+    if (c.key === "acts") th.className = "rowacts";
+    head.appendChild(th);
+  });
+  var sig = cols.map(function (c) { return c.key; }).join("|");
+  if (sig !== entrySig || !$("fOrderId")) {
+    cacheFormValues();
+    entrySig = sig;
+    buildEntryRow(cols);
+    restoreFormValues();
+  }
+  refreshEntryMeta();
+}
+/* How many of the 12 grid columns each field gets. Mirroring the table's own
+   widths here squeezed several fields to ~4.5% of the screen, so the entry row
+   keeps the table's field ORDER but sizes each one to be readable. */
+var ENTRY_SPAN = {
+  seq: "", date: "", orderId: "s3", customer: "s3", reqShipDate: "", eventDate: "", otype: "", qty: "", amount: "",
+  proof: "", status: "s4",
+  startTime: "", completionTime: "", taken: "", proofRcvdTime: "", turn: "",
+  fin: "", savedToDrive: "", notes: "s4", acts: ""
+};
+/* Every text-ish field in the entry row, in one place, so caching, clearing
+   and draft-saving can never drift out of sync with the fields on screen. */
+var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
+                      "fStatus", "fStart", "fDone", "fBack", "fNotes"];
+var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive"];
+function buildEntryRow(cols) {
+  var grid = $("entrygrid");
+  grid.textContent = "";
+  grid.style.gridTemplateColumns = "";        /* the stylesheet owns the grid now */
+  cols.forEach(function (c) {
+    var cell = el("div", "ecell" + (ENTRY_SPAN[c.key] ? " " + ENTRY_SPAN[c.key] : ""));
+    if (c.entry !== "new" && c.entry !== "date" && c.entry !== "acts") {
+      cell.appendChild(el("label", null, c.entryLabel || c.label || " "));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+    }
+    if (c.entry === "new") {
+      cell.appendChild(el("label", null, c.entryLabel || "#"));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+      var n = el("div", "calcbox", "new");
+      n.id = "calcSeq";
+      cell.appendChild(n);
+    } else if (c.entry === "date") {
+      cell.appendChild(el("label", null, c.entryLabel || "Date"));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+      var dv = el("div", "calcbox", "");
+      dv.id = "calcDate";
+      cell.appendChild(dv);
+    } else if (c.entry === "type") {
+      /* A datalist, not a select: RTR / INT / SAM are one keystroke away and
+         anything else can still just be typed in. */
+      var ti = document.createElement("input");
+      ti.type = "text"; ti.id = c.field; ti.placeholder = c.ph || "";
+      ti.spellcheck = false; ti.autocomplete = "off";
+      ti.className = "mono";
+      ti.setAttribute("list", "orderTypeList");
+      ti.addEventListener("input", function () {
+        var at = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        try { this.setSelectionRange(at, at); } catch (e) {}
+      });
+      cell.appendChild(ti);
+      if (!document.getElementById("orderTypeList")) {
+        var dl = document.createElement("datalist");
+        dl.id = "orderTypeList";
+        ORDER_TYPES.concat(["OTHER"]).forEach(function (t) {
+          var op = document.createElement("option");
+          op.value = t;
+          dl.appendChild(op);
+        });
+        cell.appendChild(dl);
+      }
+    } else if (c.entry === "dayfield") {
+      var di = document.createElement("input");
+      di.type = "date";
+      di.id = c.field;
+      di.className = "mono";
+      cell.appendChild(di);
+    } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
+      var input = document.createElement("input");
+      input.type = "text"; input.id = c.field; input.placeholder = c.ph || "";
+      input.spellcheck = false;
+      input.className = c.entry === "text" ? "" : "mono";
+      if (c.entry === "num") { input.className += " qty"; input.inputMode = "numeric"; }
+      if (c.entry === "money") { input.className += " money"; input.inputMode = "decimal"; }
+      if (c.entry === "time") {
+        var wrap = el("div", "timefield");
+        var stamp = el("button", "stamp", "now");
+        stamp.type = "button";
+        stamp.title = "Stamp the current time";
+        stamp.setAttribute("data-now", c.field);
+        wrap.appendChild(input); wrap.appendChild(stamp);
+        cell.appendChild(wrap);
+      } else {
+        cell.appendChild(input);
+      }
+    } else if (c.entry === "area") {
+      var ta = document.createElement("textarea");
+      ta.id = c.field; ta.rows = 2; ta.placeholder = c.ph || "";
+      cell.appendChild(ta);
+    } else if (c.entry === "tri") {
+      var tri = el("div", "tri" + (c.key === "fin" || c.key === "savedToDrive" ? " go" : "") +
+                            (c.key === "proof" ? " stopno" : ""));
+      tri.id = c.field;
+      tri.setAttribute("role", "group");
+      tri.setAttribute("aria-label", c.label);
+      [["TRUE", "Yes"], ["FALSE", "No"], ["X", "N/A"]].forEach(function (pair) {
+        var b = el("button", null, pair[1]);
+        b.type = "button";
+        b.setAttribute("data-v", pair[0]);
+        tri.appendChild(b);
+      });
+      cell.appendChild(tri);
+    } else if (c.entry === "calc") {
+      var box = el("div", "calcbox", "—");
+      box.id = c.field;
+      cell.appendChild(box);
+    } else if (c.entry === "acts") {
+      var acts = el("div", "entry-actions");
+      var save = el("button", "btn", "Add");
+      save.type = "submit"; save.id = "btnSaveOrder";
+      var cancel = el("button", "btn ghost", "Clear");
+      cancel.type = "button"; cancel.id = "btnCancelEdit";
+      acts.appendChild(save); acts.appendChild(cancel);
+      cell.appendChild(acts);
+    }
+    grid.appendChild(cell);
+  });
+  wireEntryRow();
+}
+function wireEntryRow() {
+  ["segProof", "segFin", "segDrive"].forEach(function (id) {
+    var seg = $(id);
+    if (!seg) return;
+    seg.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]");
+      if (b) setSeg(id, b.getAttribute("data-v"));
+    });
+  });
+  $("fStart").addEventListener("input", updateCalcs);
+  $("fDone").addEventListener("input", updateCalcs);
+  $("fBack").addEventListener("input", updateCalcs);
+  Array.prototype.forEach.call(document.querySelectorAll("[data-now]"), function (b) {
+    b.addEventListener("click", function () {
+      var input = $(b.getAttribute("data-now"));
+      input.value = prettyTime(nowClock());
+      updateCalcs();
+      input.focus();
+    });
+  });
+  $("btnCancelEdit").addEventListener("click", function () { clearForm(); });
+  /* Anything typed in the entry row is mirrored to a draft, so a refresh, a
+     crash or an accidental tab close does not take the half-entered order
+     with it. Restored on the next sign-in. */
+  var grid = $("entrygrid");
+  grid.addEventListener("input", queueDraft);
+  grid.addEventListener("click", function (e) {
+    if (e.target.closest("[data-v]")) queueDraft();
+  });
+}
+var draftTimer = null;
+function queueDraft() {
+  if (draftTimer) clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 400);
+}
+function draftKey() { return state.user ? "caot_draft_" + state.user.key : null; }
+function collectForm() {
+  if (!$("fOrderId")) return null;
+  var d = {};
+  ENTRY_TEXT_IDS.forEach(function (id) { d[id] = $(id) ? $(id).value : ""; });
+  ENTRY_SEG_IDS.forEach(function (id) { d[id] = segValue(id); });
+  return d;
+}
+function draftIsEmpty(d) {
+  if (!d) return true;
+  for (var i = 0; i < ENTRY_TEXT_IDS.length; i++) {
+    if (String(d[ENTRY_TEXT_IDS[i]] || "").trim()) return false;
+  }
+  return true;
+}
+function saveDraft() {
+  var k = draftKey();
+  if (!k) return;
+  var d = collectForm();
+  if (draftIsEmpty(d)) { clearDraft(); return; }
+  writeJson(k, { savedAt: nowIso(), date: state.scopeDate, form: d });
+}
+function clearDraft() {
+  var k = draftKey();
+  if (!k) return;
+  try { localStorage.removeItem(k); } catch (e) {}
+}
+function restoreDraft() {
+  var k = draftKey();
+  if (!k) return;
+  var d = readJson(k, null);
+  if (!d || !d.form || draftIsEmpty(d.form)) return;
+  formCache = d.form;
+  restoreFormValues();
+  toast("Restored the order you were part-way through typing.", {
+    label: "Discard", run: function () { clearForm(); }
+  }, 9000);
+}
+
+function render() {
+  buildChrome();
+  renderWeek();
+  renderRibbon();
+  renderChips();
+  renderTable();
+  renderFooter();
+  $("scopeSel").value = state.scope;
+  $("entryEyebrow").textContent = prettyDate(state.scopeDate);
+  updateCalcs();
+}
+/* buildChrome() rebuilds the inputs, so anything half-typed is carried over. */
+var formCache = null;
+function cacheFormValues() {
+  if (!$("fOrderId")) return;
+  formCache = collectForm();
+}
+function restoreFormValues() {
+  if (!$("fOrderId")) return;
+  if (!formCache) { setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); }
+  else {
+    ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = formCache[id] || ""; });
+    setSeg("segProof", formCache.segProof || "TRUE");
+    setSeg("segFin", formCache.segFin || "FALSE");
+    setSeg("segDrive", formCache.segDrive || "FALSE");
+  }
+  refreshEntryMeta();
+}
+/* The read-only bits of the entry row (which date it will file under, which
+   number it will take) refresh on every render; the fields themselves do not. */
+function refreshEntryMeta() {
+  if ($("calcDate")) $("calcDate").textContent = shortDate(state.scopeDate);
+  if ($("calcSeq")) $("calcSeq").textContent = "#" + nextSeq(state.scopeDate);
+}
+function renderFooter() {
+  var scoped = state.orders.filter(inScope);
+  var shown = visibleOrders().length;
+  var live = scoped.filter(isLive).length;
+  var count = $("footCount");
+  count.textContent = "";
+  var scopeName = state.scope === "day" ? prettyDate(state.scopeDate)
+    : state.scope === "week" ? "week of " + shortDate(state.weekStart)
+    : "all dates";
+  var visible = visibleOrders();
+  var q = sumQty(visible), amt = sumAmount(visible);
+  count.appendChild(el("b", null, shown));
+  count.appendChild(document.createTextNode(
+    (shown === 1 ? " order" : " orders") + (shown !== scoped.length ? " of " + scoped.length : "") +
+    " shown for " + scopeName + (live ? " · " + live + " in progress" : "") +
+    (q ? " · " + q + " pc" + (q === 1 ? "" : "s") : "") +
+    (amt ? " · " + money(amt) : "")));
+  /* A visible, running confirmation that writes are actually landing. */
+  var hint = state.user ? "Signed in as " + state.user.username : "";
+  if (state.saveFailed) hint += " · NOT SAVED — back up now";
+  else if (state.lastSaved) hint += " · saved " + prettyTime(pad2(state.lastSaved.getHours()) + ":" +
+    pad2(state.lastSaved.getMinutes()) + ":" + pad2(state.lastSaved.getSeconds()));
+  var hintEl = $("footHint");
+  hintEl.textContent = hint;
+  hintEl.style.color = state.saveFailed ? "var(--stop)" : "";
+  hintEl.style.fontWeight = state.saveFailed ? "700" : "";
+}
+function renderWeek() {
+  var host = $("days");
+  var keys = weekdayKeys(state.weekStart);
+  var counts = {};
+  for (var i = 0; i < state.orders.length; i++) {
+    counts[state.orders[i].date] = (counts[state.orders[i].date] || 0) + 1;
+  }
+  var today = todayKey();
+  var frag = document.createDocumentFragment();
+  keys.forEach(function (key) {
+    var d = dateFromKey(key);
+    var b = el("button", "day" + (key === today ? " today" : ""));
+    b.type = "button";
+    b.setAttribute("role", "tab");
+    b.setAttribute("data-day", key);
+    b.setAttribute("aria-current", key === state.scopeDate ? "true" : "false");
+    b.appendChild(el("b", null, DAY_NAMES[d.getDay()].slice(0, 3)));
+    b.appendChild(el("span", "d", shortDate(key)));
+    if (counts[key]) b.appendChild(el("span", "cnt", counts[key]));
+    frag.appendChild(b);
+  });
+  host.textContent = "";
+  host.appendChild(frag);
+  var last = keys[4];
+  $("weekLabel").textContent = shortDate(state.weekStart) + " – " + shortDate(last) + ", " + dateFromKey(last).getFullYear();
+}
+function renderRibbon() {
+  var scoped = state.orders.filter(inScope);
+  var med = function (list) {
+    var v = list.filter(function (n) { return n !== null && n >= 0; }).sort(function (a, b) { return a - b; });
+    return v.length ? v[Math.floor(v.length / 2)] : null;
+  };
+  var medTaken = med(scoped.map(timeTaken));
+  var medTurn = med(scoped.map(turnaround));
+  var codes = scoped.filter(function (o) { return isCode(o, "CLC") || isCode(o, "LEC"); }).length;
+  var stats = [
+    { n: scoped.length, l: scoped.length === 1 ? "order logged" : "orders logged", cls: "" },
+    { n: scoped.filter(isLive).length, l: "in progress now", cls: "cool" },
+    { n: scoped.filter(function (o) { return o.fin !== "TRUE"; }).length, l: "not finished", cls: "flag" },
+    { n: scoped.filter(awaitingProof).length, l: "waiting on a proof", cls: "flag" },
+    { n: scoped.filter(function (o) { return o.savedToDrive === "FALSE"; }).length, l: "not on the drive", cls: "flag" },
+    { n: codes, l: "CLC or LEC", cls: "cool" },
+    { n: medTaken === null ? "—" : durationText(medTaken), l: "median time taken", cls: "good" },
+    { n: medTurn === null ? "—" : durationText(medTurn), l: "median proof turnaround", cls: "good" }
+  ];
+  var frag = document.createDocumentFragment();
+  stats.forEach(function (s) {
+    var d = el("div", "stat " + (s.n === 0 && s.cls === "flag" ? "good" : s.cls));
+    d.appendChild(el("b", null, s.n));
+    d.appendChild(el("span", null, s.l));
+    frag.appendChild(d);
+  });
+  var host = $("ribbon");
+  host.textContent = "";
+  host.appendChild(frag);
+}
+function renderChips() {
+  var scoped = state.orders.filter(inScope);
+  var defs = [
+    { k: "all", label: "Everything", n: scoped.length },
+    { k: "live", label: "In progress", n: scoped.filter(isLive).length },
+    { k: "await", label: "Waiting on a proof", n: scoped.filter(awaitingProof).length },
+    { k: "unfin", label: "Not finished", n: scoped.filter(function (o) { return o.fin !== "TRUE"; }).length },
+    { k: "drive", label: "Not on the drive", n: scoped.filter(function (o) { return o.savedToDrive === "FALSE"; }).length },
+    { k: "codes", label: "CLC / LEC", n: scoped.filter(function (o) { return isCode(o, "CLC") || isCode(o, "LEC"); }).length },
+    { k: "held", label: "Held up", n: scoped.filter(isHeld).length }
+  ];
+  var frag = document.createDocumentFragment();
+  defs.forEach(function (d) {
+    var b = el("button", "chip");
+    b.type = "button";
+    b.setAttribute("data-filter", d.k);
+    b.setAttribute("aria-pressed", state.filter === d.k ? "true" : "false");
+    b.appendChild(document.createTextNode(d.label));
+    b.appendChild(el("span", "n", d.n));
+    frag.appendChild(b);
+  });
+  var host = $("chips");
+  host.textContent = "";
+  host.appendChild(frag);
+}
+function triPill(value, field, id) {
+  var b = el("button", "pill " + (value === "TRUE" ? "yes" : value === "FALSE" ? "no" : "na"),
+             value === "TRUE" ? "Yes" : value === "FALSE" ? "No" : "N/A");
+  b.type = "button";
+  b.setAttribute("data-cycle", field);
+  b.setAttribute("data-id", id);
+  b.title = "Click to change";
+  return b;
+}
+function renderTable() {
+  var rows = visibleOrders();
+  var cols = activeColumns();
+
+  Array.prototype.forEach.call(document.querySelectorAll("thead th[data-sort]"), function (th) {
+    var arrow = th.querySelector(".arrow");
+    if (!arrow) return;
+    if (th.getAttribute("data-sort") === state.sortKey) {
+      th.setAttribute("aria-sort", state.sortDir === 1 ? "ascending" : "descending");
+      arrow.textContent = state.sortDir === 1 ? "↑" : "↓";
+    } else {
+      th.removeAttribute("aria-sort");
+      arrow.textContent = "↕";
+    }
+  });
+
+  var empty = $("emptyState");
+  if (!rows.length) {
+    empty.textContent = "";
+    var scopedCount = state.orders.filter(inScope).length;
+    var title, sub;
+    if (!state.orders.length) { title = "No orders yet"; sub = "Add the first one from the row above."; }
+    else if (!scopedCount) { title = "Nothing logged for " + prettyDate(state.scopeDate); sub = "Pick another day, or start an order above."; }
+    else { title = "No orders match"; sub = "Clear the search or pick a different filter."; }
+    empty.appendChild(el("b", null, title));
+    empty.appendChild(document.createTextNode(sub));
+    empty.hidden = false;
+    $("ledgerTable").hidden = true;
+    $("tbody").textContent = "";
+    return;
+  }
+  empty.hidden = true;
+  $("ledgerTable").hidden = false;
+
+  var frag = document.createDocumentFragment();
+  rows.forEach(function (o) {
+    frag.appendChild(o.id === state.inlineId ? inlineRow(o, cols) : readRow(o, cols));
+  });
+  var body = $("tbody");
+  body.textContent = "";
+  body.appendChild(frag);
+  state.flashId = null;
+}
+function timeCell(o, field) {
+  var td = el("td", "tm");
+  if (isClock(o[field]) || o[field]) {
+    td.textContent = prettyTime(o[field]);
+    if (field === "startTime" && isLive(o)) td.className = "tm running";
+  } else {
+    var b = el("button", "nowbtn", "now");
+    b.type = "button";
+    b.setAttribute("data-stamp", field);
+    b.setAttribute("data-id", o.id);
+    b.title = "Stamp the current time";
+    td.appendChild(b);
+  }
+  return td;
+}
+function rowBand(o) {
+  var accent = rowAccent(o);                 /* k-code | k-go | k-warn | k-hot | "" */
+  return accent ? "row-" + accent.slice(2) : "";
+}
+function readRow(o, cols) {
+  var tr = el("tr", rowBand(o));
+  if (o.id === state.flashId) tr.className += " flash";
+  cols.forEach(function (c) {
+    var td;
+    switch (c.key) {
+      case "seq":
+        td = el("td", "seq " + rowAccent(o), o.seq || "");
+        break;
+      case "date": td = el("td", "tm", shortDate(o.date)); break;
+      case "orderId": td = el("td", "oid", o.orderId); break;
+      case "customer": td = el("td", "cust", o.customer); break;
+      case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
+      case "eventDate": td = el("td", "tm", o.eventDate ? shortDate(o.eventDate) : "—"); break;
+      case "otype":
+        td = el("td");
+        if (o.otype) td.appendChild(el("span", "otype " + typeClass(o.otype), o.otype));
+        break;
+      case "qty":
+        td = el("td", "num" + (o.qty === "" ? " zero" : ""), o.qty === "" ? "—" : o.qty);
+        break;
+      case "amount":
+        td = el("td", "num" + (o.amount === "" ? " zero" : ""), o.amount === "" ? "—" : money(o.amount));
+        break;
+      case "proof": case "fin": case "savedToDrive":
+        td = el("td");
+        td.appendChild(triPill(o[c.key], c.key, o.id));
+        break;
+      case "status":
+        td = el("td");
+        var tags = el("div", "tags");
+        statusParts(o.status).forEach(function (p) {
+          var tag = el("span", "tag " + p.cls, p.text);
+          tag.title = p.text;
+          tags.appendChild(tag);
+        });
+        td.appendChild(tags);
+        break;
+      case "startTime": td = timeCell(o, "startTime"); break;
+      case "completionTime": td = timeCell(o, "completionTime"); break;
+      case "proofRcvdTime": td = timeCell(o, "proofRcvdTime"); break;
+      case "taken":
+        var taken = timeTaken(o);
+        td = el("td", "dur" + (taken !== null && taken >= 45 ? " slow" : ""),
+                taken === null && isLive(o) ? "running" : durationText(taken));
+        if (taken === null && isLive(o)) td.className = "dur running";
+        break;
+      case "turn":
+        var turn = turnaround(o);
+        td = el("td", "dur" + (turn !== null && turn >= 60 ? " slow" : ""), durationText(turn));
+        break;
+      case "notes": td = el("td", "notes", o.notes); break;
+      default:
+        td = el("td", "rowacts");
+        var edit = el("button", "btn quiet xs", "Edit");
+        edit.type = "button"; edit.setAttribute("data-inline", o.id); edit.title = "Edit every field in place";
+        var del = el("button", "btn quiet xs", "✕");
+        del.type = "button"; del.setAttribute("data-del", o.id);
+        del.title = "Delete this order";
+        del.setAttribute("aria-label", "Delete order");
+        del.style.color = "var(--stop)";
+        var hold = el("button", "btn quiet xs", isHoldFlag(o) ? "Held" : "Hold");
+        hold.type = "button";
+        hold.setAttribute("data-hold", o.id);
+        hold.title = isHoldFlag(o) ? "Release this hold" : "Hold this order (red)";
+        if (isHoldFlag(o)) hold.style.color = "var(--stop)";
+        td.appendChild(edit); td.appendChild(hold); td.appendChild(del);
+    }
+    /* Feeds the mobile card layout's ::before label — unused, and harmless,
+       on the desktop table where the header row already labels the column. */
+    td.setAttribute("data-label", c.label || "");
+    tr.appendChild(td);
+  });
+  return tr;
+}
+/* Every field of a logged order is editable right in its own row. */
+function inlineRow(o, cols) {
+  var tr = el("tr", ("editing " + rowBand(o)).trim());
+  var mk = function (tag, cls, value, ph) {
+    var n = document.createElement(tag);
+    n.className = "cellinput" + (cls ? " " + cls : "");
+    n.value = value == null ? "" : value;
+    if (ph) n.placeholder = ph;
+    if (tag === "textarea") n.rows = 2;
+    n.setAttribute("data-edit-field", "");
+    return n;
+  };
+  var fields = {};
+  cols.forEach(function (c) {
+    var td = el("td");
+    switch (c.key) {
+      case "seq":
+        td.className = "seq " + rowAccent(o);
+        fields.seq = mk("input", "mono", o.seq);
+        fields.seq.style.textAlign = "right";
+        td.appendChild(fields.seq);
+        break;
+      case "date":
+        fields.date = document.createElement("input");
+        fields.date.type = "date";
+        fields.date.className = "cellinput mono";
+        fields.date.value = o.date;
+        td.appendChild(fields.date);
+        break;
+      case "orderId": fields.orderId = mk("input", "mono", o.orderId, "Order #"); td.appendChild(fields.orderId); break;
+      case "otype":
+        fields.otype = mk("input", "mono", o.otype, "RTR");
+        fields.otype.setAttribute("list", "orderTypeList");
+        fields.otype.addEventListener("input", function () { this.value = this.value.toUpperCase(); });
+        td.appendChild(fields.otype);
+        break;
+      case "qty":
+        fields.qty = mk("input", "mono", o.qty, "Qty");
+        fields.qty.style.textAlign = "right";
+        fields.qty.inputMode = "numeric";
+        td.appendChild(fields.qty);
+        break;
+      case "amount":
+        fields.amount = mk("input", "mono", o.amount === "" ? "" : Number(o.amount).toFixed(2), "0.00");
+        fields.amount.style.textAlign = "right";
+        fields.amount.inputMode = "decimal";
+        td.appendChild(fields.amount);
+        break;
+      case "customer": fields.customer = mk("textarea", "", o.customer, "Customer"); td.appendChild(fields.customer); break;
+      case "reqShipDate":
+        fields.reqShipDate = mk("input", "mono", o.reqShipDate || "", "YYYY-MM-DD");
+        fields.reqShipDate.type = "date";
+        td.appendChild(fields.reqShipDate);
+        break;
+      case "eventDate":
+        fields.eventDate = mk("input", "mono", o.eventDate || "", "YYYY-MM-DD");
+        fields.eventDate.type = "date";
+        td.appendChild(fields.eventDate);
+        break;
+      case "status": fields.status = mk("textarea", "", o.status, "Status"); td.appendChild(fields.status); break;
+      case "notes": fields.notes = mk("textarea", "", o.notes, "Notes"); td.appendChild(fields.notes); break;
+      case "startTime": case "completionTime": case "proofRcvdTime":
+        fields[c.key] = mk("input", "mono", isClock(o[c.key]) ? prettyTime(o[c.key]) : o[c.key], "h:mm");
+        td.appendChild(fields[c.key]);
+        break;
+      case "proof": case "fin": case "savedToDrive":
+        var sel = document.createElement("select");
+        sel.className = "cellinput";
+        [["TRUE", "Yes"], ["FALSE", "No"], ["X", "N/A"]].forEach(function (pair) {
+          var opt = document.createElement("option");
+          opt.value = pair[0]; opt.textContent = pair[1];
+          if (o[c.key] === pair[0]) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        fields[c.key] = sel;
+        td.appendChild(sel);
+        break;
+      case "taken": case "turn":
+        td.className = "dur";
+        td.textContent = durationText(c.key === "taken" ? timeTaken(o) : turnaround(o));
+        td.setAttribute("data-calc", c.key);
+        break;
+      default:
+        td.className = "rowacts";
+        var save = el("button", "btn xs", "Save");
+        save.type = "button"; save.setAttribute("data-inline-save", o.id);
+        var cancel = el("button", "btn ghost xs", "✕");
+        cancel.type = "button"; cancel.setAttribute("data-inline-cancel", "1");
+        cancel.title = "Discard these changes";
+        cancel.setAttribute("aria-label", "Cancel editing");
+        td.appendChild(save); td.appendChild(cancel);
+    }
+    td.setAttribute("data-label", c.label || "");
+    tr.appendChild(td);
+  });
+  state.inlineFields = fields;
+
+  var recalc = function () {
+    var a = parseTime(fields.startTime.value), b = parseTime(fields.completionTime.value),
+        c2 = parseTime(fields.proofRcvdTime.value);
+    var takenCell = tr.querySelector('[data-calc="taken"]'), turnCell = tr.querySelector('[data-calc="turn"]');
+    if (takenCell) takenCell.textContent = (a.ok && b.ok) ? durationText(spanMinutes(a.value, b.value)) : "?";
+    if (turnCell) turnCell.textContent = (b.ok && c2.ok) ? durationText(spanMinutes(b.value, c2.value)) : "?";
+  };
+  ["startTime", "completionTime", "proofRcvdTime"].forEach(function (k) {
+    fields[k].addEventListener("input", recalc);
+  });
+  tr.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault(); saveInline(o.id);
+    } else if (e.key === "Escape") { e.preventDefault(); cancelInline(); }
+  });
+  setTimeout(function () { if (fields.orderId) fields.orderId.focus(); }, 0);
+  return tr;
+}
+function startInline(id) {
+  var o = byId(id);
+  if (!o) { toast("That order is no longer in the list."); return; }
+  state.inlineId = id;
+  var banner = $("editBanner");
+  banner.textContent = "Editing #" + o.seq + (o.orderId ? " · " + o.orderId : "") + " in the table below";
+  banner.hidden = false;
+  renderTable();
+}
+function cancelInline() {
+  state.inlineId = null;
+  state.inlineFields = null;
+  $("editBanner").hidden = true;
+  renderTable();
+}
+function saveInline(id) {
+  var o = byId(id), f = state.inlineFields;
+  if (!o || !f) { cancelInline(); return; }
+  var start = parseTime(f.startTime.value), done = parseTime(f.completionTime.value), back = parseTime(f.proofRcvdTime.value);
+  if (!start.ok) { toast("Start time should look like 9:20, 1:14 PM, or N/A."); f.startTime.focus(); return; }
+  if (!done.ok) { toast("End time should look like 9:35, 1:14 PM, or N/A."); f.completionTime.focus(); return; }
+  if (!back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); f.proofRcvdTime.focus(); return; }
+  var seq = parseInt(f.seq.value, 10);
+  var before = JSON.parse(JSON.stringify(o));
+  o.seq = seq > 0 ? seq : o.seq;
+  if (f.date && /^\d{4}-\d{2}-\d{2}$/.test(f.date.value)) o.date = snapToWeekday(f.date.value);
+  o.orderId = f.orderId.value.trim();
+  o.customer = f.customer.value.trim();
+  if (f.reqShipDate) o.reqShipDate = parseDay(f.reqShipDate.value);
+  if (f.eventDate) o.eventDate = parseDay(f.eventDate.value);
+  if (f.otype) o.otype = normType(f.otype.value);
+  if (f.qty) o.qty = parseQty(f.qty.value);
+  if (f.amount) o.amount = parseMoney(f.amount.value);
+  o.status = f.status.value.trim();
+  o.notes = f.notes.value.trim();
+  o.startTime = start.value;
+  o.completionTime = done.value;
+  o.proofRcvdTime = back.value;
+  o.proof = f.proof.value;
+  o.fin = f.fin.value;
+  o.savedToDrive = f.savedToDrive.value;
+  o.updatedAt = nowIso();
+  if (!persistOrders()) {
+    /* Put the row back the way it was rather than leave the screen and the
+       storage disagreeing about what is saved. */
+    for (var rk in before) o[rk] = before[rk];
+    scheduleRender();
+    saveFailedModal("edit");
+    return;
+  }
+  state.inlineId = null;
+  state.inlineFields = null;
+  $("editBanner").hidden = true;
+  state.flashId = o.id;
+  toast("Saved #" + o.seq + (o.orderId ? " · " + o.orderId : "") + ".", {
+    label: "Undo",
+    run: function () {
+      var cur = byId(id);
+      if (!cur) return;
+      for (var k in before) cur[k] = before[k];
+      persistOrders(); scheduleRender();
+    }
+  }, 6000);
+  scheduleRender();
+}
+function stampNow(id, field) {
+  var o = byId(id);
+  if (!o) return;
+  var prev = o[field];
+  o[field] = nowClock();
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("time stamp"); return; }
+  scheduleRender();
+  var names = { startTime: "Started", completionTime: "Ended", proofRcvdTime: "Proof back" };
+  toast(names[field] + " on #" + o.seq + " set to " + prettyTime(o[field]) + ".", {
+    label: "Undo",
+    run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
+  }, 5000);
+}
+/* --------------------------------------------------------- entry panel */
+function segValue(id) {
+  var on = $(id).querySelector('[aria-pressed="true"]');
+  return on ? on.getAttribute("data-v") : "X";
+}
+function setSeg(id, value) {
+  Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) {
+    b.setAttribute("aria-pressed", b.getAttribute("data-v") === value ? "true" : "false");
+  });
+}
+function updateCalcs() {
+  var a = parseTime($("fStart").value), b = parseTime($("fDone").value), c = parseTime($("fBack").value);
+  var taken = $("calcTaken"), turn = $("calcTurn");
+  if (!taken || !turn) return;
+  var show = function (box, from, to) {
+    if (!from.ok || !to.ok) { box.textContent = "?"; box.className = "calcbox warn"; return; }
+    if (!isClock(from.value) || !isClock(to.value)) { box.textContent = "—"; box.className = "calcbox"; return; }
+    var mins = spanMinutes(from.value, to.value);
+    box.textContent = mins < 0 ? "backwards" : durationText(mins);
+    box.className = "calcbox" + (mins < 0 ? " warn" : "");
+  };
+  show(taken, a, b);
+  show(turn, b, c);
+}
+function clearForm() {
+  ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = ""; });
+  setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE");
+  formCache = null;
+  clearDraft();
+  $("entryTitle").textContent = "Add an order";
+  $("btnSaveOrder").textContent = "Add";
+  refreshEntryMeta();
+  updateCalcs();
+  scheduleTable();
+}
+function submitOrder(e) {
+  e.preventDefault();
+  var start = parseTime($("fStart").value);
+  var done = parseTime($("fDone").value);
+  var back = parseTime($("fBack").value);
+  if (!start.ok) { toast("Start time should look like 9:20, 1:14 PM, or N/A."); $("fStart").focus(); return; }
+  if (!done.ok) { toast("End time should look like 9:35, 1:14 PM, or N/A."); $("fDone").focus(); return; }
+  if (!back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); $("fBack").focus(); return; }
+
+  var orderId = $("fOrderId").value.trim();
+  var customer = $("fCustomer").value.trim();
+  if (!orderId && !customer) { toast("Add an order number or a customer before saving."); $("fOrderId").focus(); return; }
+
+  var rawAmount = $("fAmount") ? $("fAmount").value.trim() : "";
+  var rawQty = $("fQty") ? $("fQty").value.trim() : "";
+  if (rawAmount && parseMoney(rawAmount) === "") {
+    toast("The amount should be a number, like 48 or 48.50."); $("fAmount").focus(); return;
+  }
+  if (rawQty && parseQty(rawQty) === "") {
+    toast("The quantity should be a whole number."); $("fQty").focus(); return;
+  }
+
+  var fields = {
+    orderId: orderId, customer: customer,
+    reqShipDate: parseDay($("fShipDate") ? $("fShipDate").value : ""),
+    eventDate: parseDay($("fEventDate") ? $("fEventDate").value : ""),
+    otype: normType($("fType") ? $("fType").value : ""),
+    qty: parseQty(rawQty),
+    amount: parseMoney(rawAmount),
+    proof: segValue("segProof"),
+    status: $("fStatus").value.trim(),
+    startTime: start.value,
+    completionTime: done.value,
+    proofRcvdTime: back.value,
+    fin: segValue("segFin"),
+    savedToDrive: segValue("segDrive"),
+    held: "FALSE",
+    notes: $("fNotes").value.trim(),
+    updatedAt: nowIso()
+  };
+
+  var dupe = null;
+  if (orderId) {
+    dupe = state.orders.filter(function (o) {
+      return o.orderId && o.orderId.toLowerCase() === orderId.toLowerCase() && o.date === state.scopeDate;
+    })[0] || null;
+  }
+  var write = function () {
+    var rec = normalizeOrder(fields);
+    rec.date = state.scopeDate;
+    rec.seq = nextSeq(state.scopeDate);
+    rec.createdAt = nowIso();
+    state.orders.push(rec);
+    if (!persistOrders()) {
+      /* Leave the typed values in the form so nothing has to be re-keyed. */
+      state.orders.pop();
+      reindex();
+      saveFailedModal("order");
+      return;
+    }
+    state.flashId = rec.id;
+    clearForm();
+    render();
+    setPanel(true, true);
+    var prefsHide = readJson(KEY_PREFS, {});
+    prefsHide.panelHidden = true;
+    writeJson(KEY_PREFS, prefsHide);
+
+    /* An order added while a filter or a search is active lands in the ledger
+       but not on screen, which reads exactly like a failed save. Say so, and
+       offer one click back to it. */
+    var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    var visible = inScope(rec) && matchesFilter(rec) && matchesQuery(rec, terms);
+    if (visible) {
+      toast("Added #" + rec.seq + (rec.orderId ? " · " + rec.orderId : "") + ".");
+    } else {
+      toast("Saved #" + rec.seq + " on " + prettyDate(rec.date) +
+            ", but the current filter or search is hiding it.", {
+        label: "Show it",
+        run: function () {
+          state.filter = "all";
+          state.query = ""; $("search").value = "";
+          state.scopeDate = rec.date;
+          state.weekStart = mondayOf(rec.date);
+          state.flashId = rec.id;
+          render();
+        }
+      }, 9000);
+    }
+  };
+  if (dupe) {
+    confirmModal("Order " + orderId + " is already on this date",
+      "It is logged as #" + dupe.seq + ". Add it again anyway?", "Add anyway", write);
+    return;
+  }
+  write();
+}
+function cyclePill(id, field) {
+  var o = byId(id);
+  if (!o) return;
+  var order = ["TRUE", "FALSE", "X"];
+  var prev = o[field];
+  var next = order[(order.indexOf(prev) + 1) % 3];
+  o[field] = next;
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("change"); return; }
+  scheduleRender();
+  var names = { proof: "Proof", fin: "Finished", savedToDrive: "Saved to drive" };
+  var shown = { TRUE: "Yes", FALSE: "No", X: "N/A" };
+  toast(names[field] + " on #" + o.seq + " set to " + shown[next] + ".", {
+    label: "Undo",
+    run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
+  }, 5000);
+}
+function deleteOrder(id) {
+  var idx = -1;
+  for (var i = 0; i < state.orders.length; i++) if (state.orders[i].id === id) idx = i;
+  if (idx === -1) return;
+  var removed = state.orders[idx];
+  state.orders.splice(idx, 1);
+  state.deleted[id] = true;
+  if (state.inlineId === id) { state.inlineId = null; state.inlineFields = null; }
+  if (!persistOrders()) {
+    state.orders.splice(idx, 0, removed);
+    delete state.deleted[id];
+    reindex();
+    scheduleRender();
+    saveFailedModal("deletion");
+    return;
+  }
+  scheduleRender();
+  toast("Deleted #" + removed.seq + (removed.orderId ? " · " + removed.orderId : "") + ".", {
+    label: "Undo",
+    run: function () {
+      state.orders.splice(idx, 0, removed);
+      delete state.deleted[removed.id];
+      persistOrders();
+      state.flashId = removed.id;
+      scheduleRender();
+    }
+  }, 8000);
+}
+
+/* --------------------------------------------------------------- summary */
+function summarize(orders) {
+  var med = function (list) {
+    var v = list.filter(function (n) { return n !== null && n >= 0; }).sort(function (a, b) { return a - b; });
+    return v.length ? v[Math.floor(v.length / 2)] : null;
+  };
+  var takens = orders.map(timeTaken), turns = orders.map(turnaround);
+  var totalTaken = takens.reduce(function (s, n) { return s + (n !== null && n > 0 ? n : 0); }, 0);
+  var ends = orders.map(function (o) { return minutesOf(o.completionTime); })
+                   .filter(function (n) { return n !== null; });
+  var starts = orders.map(function (o) { return minutesOf(o.startTime) ; })
+                     .filter(function (n) { return n !== null; });
+  var firstMark = starts.concat(ends).length ? Math.min.apply(null, starts.concat(ends)) : null;
+  var buckets = {};
+  orders.forEach(function (o) {
+    var m = minutesOf(o.completionTime);
+    if (m === null) return;
+    var h = Math.floor(m / 60);
+    buckets[h] = (buckets[h] || 0) + 1;
+  });
+  var tally = { "t-code": 0, "t-go": 0, "t-warn": 0, "t-hot": 0, "t-plain": 0 };
+  orders.forEach(function (o) {
+    var seen = {};
+    statusParts(o.status).forEach(function (p) {
+      if (!seen[p.cls]) { tally[p.cls]++; seen[p.cls] = true; }
+    });
+  });
+  return {
+    count: orders.length,
+    finished: orders.filter(function (o) { return o.fin === "TRUE"; }).length,
+    open: orders.filter(function (o) { return o.fin !== "TRUE"; }).length,
+    proofs: orders.filter(function (o) { return o.proof === "TRUE"; }).length,
+    awaiting: orders.filter(awaitingProof).length,
+    clc: orders.filter(function (o) { return isCode(o, "CLC"); }).length,
+    lec: orders.filter(function (o) { return isCode(o, "LEC"); }).length,
+    held: orders.filter(isHeld).length,
+    notDrive: orders.filter(function (o) { return o.savedToDrive === "FALSE"; }).length,
+    qty: sumQty(orders), amount: sumAmount(orders),
+    types: (function () {
+      var t = {};
+      orders.forEach(function (o) { if (o.otype) t[o.otype] = (t[o.otype] || 0) + 1; });
+      return t;
+    })(),
+    medTaken: med(takens), medTurn: med(turns), totalTaken: totalTaken,
+    timed: takens.filter(function (n) { return n !== null && n >= 0; }).length,
+    first: firstMark, last: ends.length ? Math.max.apply(null, ends) : null,
+    buckets: buckets, tally: tally
+  };
+}
+function clockFromMinutes(m) {
+  if (m === null || m === undefined) return "—";
+  return prettyTime(pad2(Math.floor(m / 60)) + ":" + pad2(Math.round(m % 60)) + ":00");
+}
+function summaryText(dateKey, s) {
+  var lines = [
+    "Award Order Tracker — " + prettyDate(dateKey),
+    "Orders: " + s.count + " (" + s.finished + " finished, " + s.open + " open)",
+    "Proofs: " + s.proofs + " sent out, " + s.awaiting + " still waiting to come back",
+    "CLC: " + s.clc + "   LEC: " + s.lec + "   Held up: " + s.held,
+    "Not saved to drive: " + s.notDrive,
+    "Median time taken: " + (s.medTaken === null ? "—" : durationText(s.medTaken)) +
+      "   Median proof turnaround: " + (s.medTurn === null ? "—" : durationText(s.medTurn)),
+    "Tracked working time: " + durationText(s.totalTaken) + " across " + s.timed + " timed orders",
+    "Pieces: " + (s.qty || 0) + "   Order value: " + (s.amount ? money(s.amount) : "$0.00"),
+    "First activity: " + clockFromMinutes(s.first) + "   Last completion: " + clockFromMinutes(s.last)
+  ];
+  return lines.join("\n");
+}
+function openSummary() {
+  var dateKey = state.scopeDate;
+  var dayOrders = state.orders.filter(function (o) { return o.date === dateKey; });
+  var s = summarize(dayOrders);
+
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal lg");
+  box.appendChild(el("h3", null, "Summary for " + prettyDate(dateKey)));
+  box.appendChild(el("p", "sub", s.count
+    ? s.finished + " of " + s.count + " orders finished."
+    : "Nothing logged on this day yet."));
+
+  var grid = el("div", "sum-grid");
+  [
+    [s.count, "orders"], [s.finished, "finished"], [s.open, "still open"],
+    [s.proofs, "proofs sent"], [s.awaiting, "proofs outstanding"], [s.notDrive, "not on the drive"],
+    [s.medTaken === null ? "—" : durationText(s.medTaken), "median time taken"],
+    [s.medTurn === null ? "—" : durationText(s.medTurn), "median proof turnaround"],
+    [durationText(s.totalTaken), "tracked working time"],
+    [s.qty || "—", "pieces"],
+    [s.amount ? money(s.amount) : "—", "order value"]
+  ].forEach(function (pair) {
+    var c = el("div", "sum-cell");
+    c.appendChild(el("b", null, pair[0]));
+    c.appendChild(el("span", null, pair[1]));
+    grid.appendChild(c);
+  });
+  box.appendChild(grid);
+
+  box.appendChild(el("div", "sum-h", "Orders completed by hour"));
+  var wrap = el("div", "barwrap");
+  var bars = el("div", "bars");
+  var hours = [], max = 1;
+  for (var h = 7; h <= 18; h++) {
+    var n = s.buckets[h] || 0;
+    hours.push([h, n]);
+    if (n > max) max = n;
+  }
+  hours.forEach(function (pair) {
+    var bar = el("div", pair[1] ? "on" : "");
+    bar.style.height = Math.round((pair[1] / max) * 100) + "%";
+    bar.title = pair[1] + " completed between " + (pair[0] % 12 === 0 ? 12 : pair[0] % 12) +
+                (pair[0] < 12 ? "am" : "pm") + " and the next hour";
+    var lbl = el("span", null, pair[0] % 12 === 0 ? 12 : pair[0] % 12);
+    bar.appendChild(lbl);
+    bars.appendChild(bar);
+  });
+  wrap.appendChild(bars);
+  box.appendChild(wrap);
+
+  var typeKeys = Object.keys(s.types).sort();
+  if (typeKeys.length) {
+    box.appendChild(el("div", "sum-h", "Order types"));
+    typeKeys.forEach(function (t) {
+      var row = el("div", "sum-row");
+      row.appendChild(el("span", null, t));
+      row.appendChild(el("span", null, s.types[t]));
+      box.appendChild(row);
+    });
+  }
+
+  box.appendChild(el("div", "sum-h", "Status mix"));
+  [["Routing codes (CLC, LEC, WEE, ILS)", s.tally["t-code"]],
+   ["Approved or sent", s.tally["t-go"]],
+   ["Proof required or requested", s.tally["t-warn"]],
+   ["Held up or waiting", s.tally["t-hot"]],
+   ["CLC", s.clc], ["LEC", s.lec]].forEach(function (pair) {
+    var row = el("div", "sum-row");
+    row.appendChild(el("span", null, pair[0]));
+    row.appendChild(el("span", null, pair[1]));
+    box.appendChild(row);
+  });
+
+  box.appendChild(el("div", "sum-h", "This week"));
+  var weekTotal = 0;
+  weekdayKeys(state.weekStart).forEach(function (key) {
+    var n = state.orders.filter(function (o) { return o.date === key; }).length;
+    weekTotal += n;
+    var row = el("div", "sum-row");
+    row.appendChild(el("span", null, DAY_NAMES[dateFromKey(key).getDay()] + ", " + shortDate(key)));
+    row.appendChild(el("span", null, n));
+    box.appendChild(row);
+  });
+  var totalRow = el("div", "sum-row");
+  totalRow.appendChild(el("span", null, "Week total"));
+  totalRow.appendChild(el("span", null, weekTotal));
+  box.appendChild(totalRow);
+
+  var acts = el("div", "modal-actions");
+  var copy = el("button", "btn ghost", "Copy as text");
+  copy.type = "button";
+  copy.addEventListener("click", function () {
+    var text = summaryText(dateKey, s);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast("Summary copied."); },
+        function () { toast("Copying is blocked in this browser."); });
+    } else toast("Copying is blocked in this browser.");
+  });
+  var close = el("button", "btn", "Close");
+  close.type = "button";
+  close.addEventListener("click", closeModal);
+  acts.appendChild(copy); acts.appendChild(close);
+  box.appendChild(acts);
+
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  close.focus();
+}
+
+/* ------------------------------------------------------- export / import */
+function csvCell(v) {
+  var s = String(v == null ? "" : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportCsv() {
+  var rows = visibleOrders();
+  if (!rows.length) { toast("There is nothing in view to export."); return; }
+  var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
+              "PROOF?", "Status",
+              "Time Started", "Time of Completion", "Time Taken (min)",
+              "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
+  var lines = [head.map(csvCell).join(",")];
+  rows.forEach(function (o) {
+    var taken = timeTaken(o), turn = turnaround(o);
+    lines.push([o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+                o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.status,
+                o.startTime, o.completionTime, taken === null ? "" : taken,
+                o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
+               .map(csvCell).join(","));
+  });
+  /* Totals row, so the export matches what the footer says. */
+  lines.push(["", "", "", "TOTALS", "", sumQty(rows), sumAmount(rows).toFixed(2)]
+             .map(csvCell).join(","));
+  var name = "crown-orders-" + (state.scope === "day" ? state.scopeDate :
+             state.scope === "week" ? "week-of-" + state.weekStart : "all-dates") + ".csv";
+  download(name, "\ufeff" + lines.join("\r\n"), "text/csv;charset=utf-8");
+  toast("Exported " + rows.length + " row" + (rows.length === 1 ? "" : "s") + ".");
+}
+function backupJson() {
+  var payload = {
+    app: "Award Order Tracker", version: 3, exportedAt: nowIso(),
+    username: state.user.username, orders: state.orders.map(stripInternal)
+  };
+  download("crown-orders-backup-" + todayKey() + ".json", JSON.stringify(payload, null, 2), "application/json");
+  toast("Backed up " + state.orders.length + " orders.");
+}
+function restoreJson(file) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    var data;
+    try { data = JSON.parse(reader.result); }
+    catch (e) { toast("That file is not readable JSON."); return; }
+    var incoming = Array.isArray(data) ? data : (data && Array.isArray(data.orders) ? data.orders : null);
+    if (!incoming) { toast("No orders found in that file."); return; }
+    var clean = incoming.map(normalizeOrder);
+    confirmModal("Restore " + clean.length + " orders",
+      "Merge keeps what you have and adds anything missing. Replace wipes this account's ledger first.",
+      "Merge", function () {
+        var seen = {};
+        state.orders.forEach(function (o) { seen[o.id] = true; });
+        var added = 0;
+        clean.forEach(function (o) { if (!seen[o.id]) { state.orders.push(o); added++; } });
+        if (!persistOrders()) { saveFailedModal("restore"); return; }
+        scheduleRender();
+        toast("Merged " + added + " order" + (added === 1 ? "" : "s") + ".");
+      }, "Replace", function () {
+        state.orders = clean;
+        if (!persistOrders()) { saveFailedModal("restore"); return; }
+        scheduleRender();
+        toast("Replaced the ledger with " + clean.length + " orders.");
+      });
+  };
+  reader.onerror = function () { toast("That file could not be read."); };
+  reader.readAsText(file);
+}
+function download(filename, text, mime) {
+  var blob = new Blob([text], { type: mime });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+/* ------------------------------------------------------- toasts / modals */
+function toast(message, action, ms) {
+  var host = $("toasts");
+  var t = el("div", "toast");
+  t.appendChild(document.createTextNode(message));
+  if (action) {
+    var b = el("button", "link", action.label);
+    b.type = "button";
+    b.addEventListener("click", function () { action.run(); dismiss(); });
+    t.appendChild(b);
+  }
+  function dismiss() {
+    if (!t.parentNode) return;
+    t.classList.add("out");
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 200);
+  }
+  host.appendChild(t);
+  setTimeout(dismiss, ms || 3600);
+}
+function closeModal() { $("modalHost").textContent = ""; }
+function confirmModal(title, body, okLabel, onOk, altLabel, onAlt) {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, title));
+  box.appendChild(el("p", "sub", body));
+  var acts = el("div", "modal-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", closeModal);
+  acts.appendChild(cancel);
+  if (altLabel) {
+    var alt = el("button", "btn ghost", altLabel);
+    alt.type = "button";
+    alt.addEventListener("click", function () { closeModal(); onAlt(); });
+    acts.appendChild(alt);
+  }
+  var ok = el("button", "btn", okLabel);
+  ok.type = "button";
+  ok.addEventListener("click", function () { closeModal(); onOk(); });
+  acts.appendChild(ok);
+  box.appendChild(acts);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  ok.focus();
+}
+
+/* ------------------------------------------------------------ auth views */
+function showPane(which) {
+  ["paneSignin", "paneRegister", "paneForgot"].forEach(function (p) { $(p).hidden = true; });
+  var id = "pane" + which.charAt(0).toUpperCase() + which.slice(1);
+  $(id).hidden = false;
+  ["signinErr", "signinOk", "regErr", "fgErr"].forEach(function (i) { if ($(i)) $(i).hidden = true; });
+  if (which === "forgot") resetForgot();
+  var first = $(id).querySelector("input");
+  if (first) first.focus();
+}
+function showAlert(id, message, kind) {
+  var n = $(id);
+  n.textContent = message;
+  n.className = "alert " + (kind || "err");
+  n.hidden = false;
+}
+function lockMessage(until) {
+  var secs = Math.ceil((until - Date.now()) / 1000);
+  if (secs > 90) return "Too many failed attempts. Try again in " + Math.ceil(secs / 60) + " minutes.";
+  return "Too many failed attempts. Try again in " + secs + " seconds.";
+}
+function doSignin(e) {
+  e.preventDefault();
+  var name = $("siUser").value.trim();
+  var pass = $("siPass").value;
+  var btn = $("siSubmit");
+  if (!name || !pass) { showAlert("signinErr", "Enter your username and password."); return; }
+  var user = getUser(name);
+  if (user && user.lockUntil && user.lockUntil > Date.now()) {
+    showAlert("signinErr", lockMessage(user.lockUntil)); return;
+  }
+  btn.disabled = true; btn.textContent = "Checking…";
+  var t0 = Date.now();
+  var work = user
+    ? hashSecret(pass, user.salt, user.iterations || PBKDF2_ITERATIONS)
+    : hashSecret(pass, toB64(randomBytes(16)), PBKDF2_ITERATIONS);
+  work.then(function (hash) {
+    var wait = Math.max(0, 260 - (Date.now() - t0));
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "Sign in";
+      if (!user || !sameSecret(hash, user.hash)) {
+        if (user) {
+          user.failedAttempts = (user.failedAttempts || 0) + 1;
+          if (user.failedAttempts >= 5) {
+            var step = Math.min(user.failedAttempts - 4, 3);
+            user.lockUntil = Date.now() + [5, 15, 60][step - 1] * 60 * 1000;
+          }
+          putUser(user);
+          if (user.lockUntil > Date.now()) { showAlert("signinErr", lockMessage(user.lockUntil)); return; }
+          var left = 5 - user.failedAttempts;
+          showAlert("signinErr", "That username and password do not match." +
+            (left > 0 && left <= 2 ? " " + left + " attempt" + (left === 1 ? "" : "s") + " left before a lockout." : ""));
+        } else {
+          showAlert("signinErr", "That username and password do not match.");
+        }
+        return;
+      }
+      user.failedAttempts = 0; user.lockUntil = 0;
+      putUser(user);
+      startSession(user, $("siRemember").checked);
+      $("siPass").value = "";
+      enterApp(user);
+    }, wait);
+  });
+}
+function doRegister(e) {
+  e.preventDefault();
+  var name = $("rgUser").value.trim();
+  var email = $("rgEmail").value.trim();
+  var p1 = $("rgPass").value, p2 = $("rgPass2").value;
+  if (!validUsername(name)) { showAlert("regErr", "Usernames are 3 to 20 characters: letters, numbers, dot, dash, underscore."); return; }
+  if (!validEmail(email)) { showAlert("regErr", "That email address does not look right."); return; }
+  if (!passwordOk(p1)) { showAlert("regErr", "Use at least 10 characters with three of: uppercase, lowercase, number, symbol."); return; }
+  if (p1 !== p2) { showAlert("regErr", "The two passwords do not match."); return; }
+  if (getUser(name)) { showAlert("regErr", "That username is taken."); return; }
+  if (findByEmail(email)) { showAlert("regErr", "That email is already on another account."); return; }
+  var btn = $("rgSubmit");
+  btn.disabled = true; btn.textContent = "Creating…";
+  var salt = toB64(randomBytes(16));
+  hashSecret(p1, salt, PBKDF2_ITERATIONS).then(function (hash) {
+    var rec = {
+      key: name.toLowerCase(), username: name, email: email,
+      salt: salt, hash: hash, iterations: PBKDF2_ITERATIONS,
+      createdAt: nowIso(), passwordChangedAt: nowIso(), tokenVersion: 1,
+      seedVersion: SEED_VERSION, failedAttempts: 0, lockUntil: 0, reset: null
+    };
+    putUser(rec);
+    writeOrdersRaw(rec.key, [], 1);
+    startSession(rec, false);
+    btn.disabled = false; btn.textContent = "Create account";
+    $("rgPass").value = ""; $("rgPass2").value = "";
+    enterApp(rec);
+  });
+}
+
+/* ------------------------------------------------------- password reset */
+var forgotCtx = { key: null, code: null };
+function resetForgot() {
+  forgotCtx = { key: null, code: null };
+  $("formForgot1").hidden = false;
+  $("formForgot2").hidden = true;
+  $("formForgot3").hidden = true;
+  $("stepA").className = "on"; $("stepB").className = ""; $("stepC").className = "";
+  $("fgId").value = ""; $("fgCodeIn").value = ""; $("fgNew").value = ""; $("fgNew2").value = "";
+}
+function maskEmail(e) {
+  var at = e.indexOf("@");
+  if (at < 1) return e;
+  var name = e.slice(0, at), dom = e.slice(at);
+  var keep = name.slice(0, Math.min(2, name.length));
+  return keep + new Array(Math.max(3, name.length - keep.length + 1)).join("•") + dom;
+}
+function doForgot1(e) {
+  e.preventDefault();
+  var id = $("fgId").value.trim();
+  if (!id) { showAlert("fgErr", "Enter the username or email on the account."); return; }
+  var user = getUser(id) || findByEmail(id);
+  if (!user) { showAlert("fgErr", "No account matches that username or email."); return; }
+  $("fgErr").hidden = true;
+  var code = String(Math.floor(100000 + (randomBytes(4)[0] / 256) * 900000));
+  var salt = toB64(randomBytes(16));
+  hashSecret(code, salt, 20000).then(function (hash) {
+    user.reset = { salt: salt, hash: hash, iterations: 20000, expires: Date.now() + 15 * 60 * 1000, attempts: 0 };
+    putUser(user);
+    forgotCtx.key = user.key;
+    $("fgMasked").textContent = maskEmail(user.email || "");
+    $("fgCode").textContent = code.slice(0, 3) + " " + code.slice(3);
+    $("formForgot1").hidden = true;
+    $("formForgot2").hidden = false;
+    $("stepB").className = "on";
+    $("fgCodeIn").focus();
+  });
+}
+function doForgot2(e) {
+  e.preventDefault();
+  var entered = $("fgCodeIn").value.replace(/\D/g, "");
+  var user = getUsers()[forgotCtx.key];
+  if (!user || !user.reset) { showAlert("fgErr", "That reset expired. Start again."); resetForgot(); return; }
+  if (user.reset.expires < Date.now()) {
+    user.reset = null; putUser(user);
+    showAlert("fgErr", "That code expired. Request a new one."); resetForgot(); return;
+  }
+  if (user.reset.attempts >= 5) {
+    user.reset = null; putUser(user);
+    showAlert("fgErr", "Too many wrong codes. Request a new one."); resetForgot(); return;
+  }
+  if (entered.length !== 6) { showAlert("fgErr", "The code is six digits."); return; }
+  hashSecret(entered, user.reset.salt, user.reset.iterations).then(function (hash) {
+    if (!sameSecret(hash, user.reset.hash)) {
+      user.reset.attempts++;
+      putUser(user);
+      showAlert("fgErr", "That code is not right. " + (5 - user.reset.attempts) + " tries left.");
+      return;
+    }
+    $("fgErr").hidden = true;
+    forgotCtx.code = entered;
+    $("formForgot2").hidden = true;
+    $("formForgot3").hidden = false;
+    $("stepC").className = "on";
+    $("fgNew").focus();
+  });
+}
+function doForgot3(e) {
+  e.preventDefault();
+  var p1 = $("fgNew").value, p2 = $("fgNew2").value;
+  var user = getUsers()[forgotCtx.key];
+  if (!user || !user.reset || !forgotCtx.code) { showAlert("fgErr", "That reset expired. Start again."); resetForgot(); return; }
+  if (user.reset.expires < Date.now()) { user.reset = null; putUser(user); showAlert("fgErr", "That code expired. Request a new one."); resetForgot(); return; }
+  if (!passwordOk(p1)) { showAlert("fgErr", "Use at least 10 characters with three of: uppercase, lowercase, number, symbol."); return; }
+  if (p1 !== p2) { showAlert("fgErr", "The two passwords do not match."); return; }
+  var salt = toB64(randomBytes(16));
+  hashSecret(p1, salt, PBKDF2_ITERATIONS).then(function (hash) {
+    user.salt = salt; user.hash = hash; user.iterations = PBKDF2_ITERATIONS;
+    user.passwordChangedAt = nowIso();
+    user.tokenVersion = (user.tokenVersion || 1) + 1;
+    user.failedAttempts = 0; user.lockUntil = 0; user.reset = null;
+    putUser(user);
+    endSession();
+    resetForgot();
+    showPane("signin");
+    $("siUser").value = user.username;
+    showAlert("signinOk", "Password updated. Sign in with the new one.", "ok");
+    $("siPass").focus();
+  });
+}
+
+/* ------------------------------------------------------- account actions */
+function changePasswordModal() {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, "Change your password"));
+  box.appendChild(el("p", "sub", "Everywhere else you are signed in will be signed out."));
+  var err = el("div", "alert err"); err.hidden = true;
+  box.appendChild(err);
+  function field(labelText, id) {
+    var f = el("div", "field");
+    var l = el("label", "fl", labelText); l.setAttribute("for", id);
+    var i = document.createElement("input");
+    i.type = "password"; i.id = id; i.autocomplete = "off";
+    f.appendChild(l); f.appendChild(i);
+    box.appendChild(f);
+    return i;
+  }
+  var cur = field("Current password", "cpCur");
+  var nw = field("New password", "cpNew");
+  var cf = field("Confirm new password", "cpCf");
+  var acts = el("div", "modal-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button"; cancel.addEventListener("click", closeModal);
+  var save = el("button", "btn", "Change password");
+  save.type = "button";
+  save.addEventListener("click", function () {
+    var user = getUsers()[state.user.key];
+    if (!passwordOk(nw.value)) {
+      err.textContent = "Use at least 10 characters with three of: uppercase, lowercase, number, symbol.";
+      err.hidden = false; return;
+    }
+    if (nw.value !== cf.value) { err.textContent = "The two new passwords do not match."; err.hidden = false; return; }
+    save.disabled = true; save.textContent = "Checking…";
+    hashSecret(cur.value, user.salt, user.iterations).then(function (h) {
+      if (!sameSecret(h, user.hash)) {
+        save.disabled = false; save.textContent = "Change password";
+        err.textContent = "That is not your current password."; err.hidden = false; return;
+      }
+      var salt = toB64(randomBytes(16));
+      hashSecret(nw.value, salt, PBKDF2_ITERATIONS).then(function (hash) {
+        user.salt = salt; user.hash = hash; user.iterations = PBKDF2_ITERATIONS;
+        user.passwordChangedAt = nowIso();
+        user.tokenVersion = (user.tokenVersion || 1) + 1;
+        putUser(user);
+        state.user = user;
+        startSession(user, false);
+        closeModal();
+        toast("Password changed.");
+      });
+    });
+  });
+  acts.appendChild(cancel); acts.appendChild(save);
+  box.appendChild(acts);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  cur.focus();
+}
+function closeMenu() { $("menuHost").textContent = ""; $("btnMenu").setAttribute("aria-expanded", "false"); }
+function openMenu() {
+  var host = $("menuHost");
+  if (host.children.length) { closeMenu(); return; }
+  var menu = el("div", "menu");
+  var head = el("div", "head");
+  head.appendChild(el("b", null, state.user.username));
+  head.appendChild(el("span", null, state.user.email || ""));
+  menu.appendChild(head);
+  function item(label, kbd, run) {
+    var b = el("button", null, label);
+    b.type = "button";
+    if (kbd) b.appendChild(el("kbd", null, kbd));
+    b.addEventListener("click", function () { closeMenu(); run(); });
+    menu.appendChild(b);
+  }
+  item("Day summary", "Ctrl+D", openSummary);
+  item("Change password", null, changePasswordModal);
+  item("Renumber this date", null, function () {
+    confirmModal("Renumber " + prettyDate(state.scopeDate),
+      "Orders on this date will be numbered 1 upward in their current order.",
+      "Renumber", function () { renumberDate(state.scopeDate); toast("Renumbered."); });
+  });
+  item("Keyboard shortcuts", null, function () {
+    confirmModal("Keyboard shortcuts",
+      "Ctrl+K focuses search. Ctrl+Enter saves the entry form. Ctrl+D opens the day summary. " +
+      "Alt+Left and Alt+Right step through weekdays. Esc cancels an edit or closes a dialog.",
+      "Got it", function () {});
+  });
+  menu.appendChild(el("hr"));
+  item("Sign out", null, signOut);
+  host.appendChild(menu);
+  $("btnMenu").setAttribute("aria-expanded", "true");
+  setTimeout(function () { document.addEventListener("click", outsideMenu); }, 0);
+}
+function outsideMenu(e) {
+  if (!e.target.closest(".menu") && e.target.id !== "btnMenu") {
+    closeMenu();
+    document.removeEventListener("click", outsideMenu);
+  }
+}
+function signOut() {
+  endSession();
+  state.user = null; state.orders = []; state.byId = {}; state.inlineId = null;
+  $("appView").hidden = true;
+  $("authView").hidden = false;
+  $("siPass").value = "";
+  showPane("signin");
+  toast("Signed out.");
+}
+
+/* ------------------------------------------------------------ app entry */
+function enterApp(user) {
+  state.user = user;
+  state.query = ""; $("search").value = "";
+  state.filter = "all";
+  state.sortKey = "seq"; state.sortDir = 1;
+  loadOrders();
+  var prefs = readJson(KEY_PREFS, {});
+  applyTheme(prefs.theme === "dark" ? "dark" : "light");
+  setPanel(!!prefs.panelHidden, false);
+  var dates = state.orders.map(function (o) { return o.date; }).sort();
+  var today = snapToWeekday(todayKey());
+  state.scopeDate = dates.indexOf(today) !== -1 ? today : (dates.length ? dates[dates.length - 1] : today);
+  state.scopeDate = snapToWeekday(state.scopeDate);
+  state.weekStart = mondayOf(state.scopeDate);
+  $("authView").hidden = true;
+  $("appView").hidden = false;
+  $("avatar").textContent = (user.username || "?").slice(0, 2).toUpperCase();
+  formCache = null;
+  state.inlineId = null;
+  state.saveFailed = false;
+  state.lastSaved = null;
+  entrySig = "";
+  buildChrome();
+  clearForm();
+  render();
+  restoreDraft();
+  if (bootstrapReport && bootstrapReport.added && user.key === BOOTSTRAP_USER.key) {
+    toast("Added " + bootstrapReport.added + " new orders from your updated sheet.", null, 6000);
+    bootstrapReport = null;
+  }
+}
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  $("btnTheme").textContent = theme === "dark" ? "Light" : "Dark";
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.theme = theme;
+  writeJson(KEY_PREFS, prefs);
+}
+function toggleHold(id) {
+  var o = byId(id);
+  if (!o) return;
+  o.held = isHoldFlag(o) ? "FALSE" : "TRUE";
+  o.updatedAt = nowIso();
+  if (!persistOrders()) {
+    o.held = o.held === "TRUE" ? "FALSE" : "TRUE";
+    saveFailedModal("hold");
+    return;
+  }
+  toast(o.held === "TRUE" ? "Held #" + o.seq + "." : "Released #" + o.seq + ".");
+  scheduleRender();
+}
+function applyEntryHeight(px) {
+  var bar = $("entrybar");
+  if (!bar || bar.classList.contains("collapsed")) return;
+  var min = 120, max = Math.max(180, Math.floor(window.innerHeight * 0.72));
+  var h = Math.max(min, Math.min(max, px));
+  bar.style.height = h + "px";
+  bar.style.maxHeight = h + "px";
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.entryHeight = h;
+  writeJson(KEY_PREFS, prefs);
+}
+function bindSplitter() {
+  var split = $("splitbar");
+  var bar = $("entrybar");
+  if (!split || !bar || split._bound) return;
+  split._bound = true;
+  var startY = 0, startH = 0;
+  var move = function (e) {
+    var y = e.touches ? e.touches[0].clientY : e.clientY;
+    applyEntryHeight(startH + (y - startY));
+  };
+  var up = function () {
+    document.removeEventListener("mousemove", move);
+    document.removeEventListener("mouseup", up);
+    document.removeEventListener("touchmove", move);
+    document.removeEventListener("touchend", up);
+    split.classList.remove("dragging");
+    bar.classList.remove("dragging");
+    document.querySelector(".shell").classList.remove("dragging");
+  };
+  var down = function (e) {
+    if (bar.classList.contains("collapsed")) return;
+    e.preventDefault();
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    startH = bar.getBoundingClientRect().height;
+    split.classList.add("dragging");
+    bar.classList.add("dragging");
+    document.querySelector(".shell").classList.add("dragging");
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+    document.addEventListener("touchmove", move, { passive: false });
+    document.addEventListener("touchend", up);
+  };
+  split.addEventListener("mousedown", down);
+  split.addEventListener("touchstart", down, { passive: false });
+}
+function setPanel(collapsed, animate) {
+  var bar = $("entrybar");
+  var btn = $("btnPanel");
+  /* Animate from a real pixel height. max-height:none cannot ease down to 0,
+     which is why Hide entry row used to snap shut. */
+  if (collapsed) bar.style.height = "";
+  if (!animate) {
+    var prev = bar.style.transition;
+    bar.style.transition = "none";
+    bar.classList.toggle("collapsed", collapsed);
+    bar.style.maxHeight = collapsed ? "0px" : "";
+    void bar.offsetWidth;
+    bar.style.transition = prev;
+  } else if (collapsed) {
+    var from = bar.scrollHeight;
+    bar.style.maxHeight = from + "px";
+    bar.classList.remove("collapsed");
+    void bar.offsetHeight;
+    bar.classList.add("collapsed");
+    bar.style.maxHeight = "0px";
+  } else {
+    bar.classList.remove("collapsed");
+    bar.style.maxHeight = "0px";
+    void bar.offsetHeight;
+    bar.style.maxHeight = Math.max(bar.scrollHeight, 120) + "px";
+    var done = function (e) {
+      if (e && e.propertyName && e.propertyName !== "max-height") return;
+      bar.removeEventListener("transitionend", done);
+      if (!bar.classList.contains("collapsed")) bar.style.maxHeight = "";
+    };
+    bar.addEventListener("transitionend", done);
+  }
+  document.documentElement.classList.toggle("page-flow", !collapsed);
+  document.documentElement.classList.remove("page-scroll");
+  bar.setAttribute("aria-hidden", collapsed ? "true" : "false");
+  btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  $("btnPanelLabel").textContent = collapsed ? "Show entry row" : "Hide entry row";
+  btn.title = collapsed ? "Show the entry row" : "Hide the entry row";
+  var split = $("splitbar");
+  if (split) split.hidden = !!collapsed;
+  if (collapsed) {
+    bar.style.height = "";
+    bar.style.maxHeight = "0px";
+  } else {
+    var prefs = readJson(KEY_PREFS, {});
+    if (prefs.entryHeight) applyEntryHeight(prefs.entryHeight);
+    else bar.style.maxHeight = "";
+  }
+}
+function panelCollapsed() { return $("entrybar").classList.contains("collapsed"); }
+function togglePanel() {
+  var collapsed = !panelCollapsed();
+  setPanel(collapsed, true);
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.panelHidden = collapsed;
+  writeJson(KEY_PREFS, prefs);
+}
+function swipe(direction) {
+  var wrap = $("tablewrap");
+  if (!wrap || !direction) return;
+  wrap.classList.remove("in-left", "in-right");
+  void wrap.offsetWidth;                       /* restart the animation */
+  wrap.classList.add(direction > 0 ? "in-right" : "in-left");
+}
+function selectDay(key) {
+  var next = snapToWeekday(key);
+  var direction = next === state.scopeDate ? 0 : (next > state.scopeDate ? 1 : -1);
+  state.scopeDate = next;
+  state.weekStart = mondayOf(state.scopeDate);
+  state.inlineId = null;
+  render();
+  swipe(direction);
+}
+function stepWeekday(delta) {
+  var keys = weekdayKeys(state.weekStart);
+  var i = keys.indexOf(state.scopeDate);
+  if (i === -1) { selectDay(state.scopeDate); return; }
+  var next = i + delta;
+  if (next < 0) { shiftWeek(-1); selectDay(weekdayKeys(state.weekStart)[4]); return; }
+  if (next > 4) { shiftWeek(1); selectDay(weekdayKeys(state.weekStart)[0]); return; }
+  selectDay(keys[next]);
+}
+function shiftWeek(delta) {
+  state.inlineId = null;
+  var d = dateFromKey(state.weekStart);
+  d.setDate(d.getDate() + delta * 7);
+  state.weekStart = todayKey(d);
+  var keys = weekdayKeys(state.weekStart);
+  var idx = weekdayKeys(mondayOf(state.scopeDate)).indexOf(state.scopeDate);
+  state.scopeDate = keys[idx === -1 ? 0 : idx];
+  render();
+  swipe(delta);
+}
+
+/* ------------------------------------------------------------ listeners */
+function wire() {
+  /* Two tabs open on the same ledger used to overwrite each other silently.
+     This one notices the other's write and folds it in. */
+  window.addEventListener("storage", function (e) {
+    if (!state.user || !e.key || e.key !== ordersKey(state.user.key)) return;
+    var stored = readOrdersRaw(state.user.key);
+    if (stored.rev === state.rev) return;
+    var before = state.orders.length;
+    var merged = mergeForeign(stored.orders);
+    state.rev = Math.max(state.rev, stored.rev);
+    if (merged || state.orders.length !== before) {
+      scheduleRender();
+      toast("This ledger changed in another tab — the new rows are here too.", null, 6000);
+    }
+  });
+  /* Last chance to flush a half-typed order before the tab goes away. */
+  window.addEventListener("beforeunload", function () {
+    if (draftTimer) clearTimeout(draftTimer);
+    saveDraft();
+  });
+  document.addEventListener("click", function (e) {
+    var go = e.target.closest("[data-go]");
+    if (go) { showPane(go.getAttribute("data-go")); return; }
+    var peek = e.target.closest("[data-peek]");
+    if (peek) {
+      var input = $(peek.getAttribute("data-peek"));
+      var showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      peek.textContent = showing ? "Show" : "Hide";
+    }
+  });
+  $("formSignin").addEventListener("submit", doSignin);
+  $("formRegister").addEventListener("submit", doRegister);
+  $("formForgot1").addEventListener("submit", doForgot1);
+  $("formForgot2").addEventListener("submit", doForgot2);
+  $("formForgot3").addEventListener("submit", doForgot3);
+  wirePasswordMeter("rgPass", "rgMeter", "rgRules");
+  wirePasswordMeter("fgNew", "fgMeter", "fgRules");
+
+  $("days").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-day]");
+    if (b) selectDay(b.getAttribute("data-day"));
+  });
+  $("weekPrev").addEventListener("click", function () { shiftWeek(-1); });
+  $("weekNext").addEventListener("click", function () { shiftWeek(1); });
+  $("btnThisWeek").addEventListener("click", function () { selectDay(todayKey()); render(); });
+  $("scopeSel").addEventListener("change", function () {
+    state.scope = this.value;
+    state.inlineId = null;
+    cacheFormValues();
+    render();
+  });
+
+  var searchTimer = null;
+  $("search").addEventListener("input", function () {
+    var v = this.value;
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () { state.query = v; scheduleTable(); }, 90);
+  });
+  $("btnTheme").addEventListener("click", function () {
+    applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  });
+  $("btnPanel").addEventListener("click", togglePanel);
+  bindSplitter();
+  $("btnSummary").addEventListener("click", openSummary);
+  $("btnMenu").addEventListener("click", function (e) { e.stopPropagation(); openMenu(); });
+
+  $("formOrder").addEventListener("submit", submitOrder);
+
+  $("chips").addEventListener("click", function (e) {
+    var c = e.target.closest("[data-filter]");
+    if (!c) return;
+    state.filter = c.getAttribute("data-filter");
+    scheduleRender();
+  });
+  $("headRow").addEventListener("click", function (e) {
+    var th = e.target.closest("th[data-sort]");
+    if (!th) return;
+    var key = th.getAttribute("data-sort");
+    if (state.sortKey === key) state.sortDir *= -1;
+    else { state.sortKey = key; state.sortDir = 1; }
+    scheduleTable();
+  });
+  $("tbody").addEventListener("click", function (e) {
+    var save = e.target.closest("[data-inline-save]");
+    if (save) { saveInline(save.getAttribute("data-inline-save")); return; }
+    if (e.target.closest("[data-inline-cancel]")) { cancelInline(); return; }
+    var stamp = e.target.closest("[data-stamp]");
+    if (stamp) { stampNow(stamp.getAttribute("data-id"), stamp.getAttribute("data-stamp")); return; }
+    var cyc = e.target.closest("[data-cycle]");
+    if (cyc) { cyclePill(cyc.getAttribute("data-id"), cyc.getAttribute("data-cycle")); return; }
+    var inl = e.target.closest("[data-inline]");
+    if (inl) { startInline(inl.getAttribute("data-inline")); return; }
+
+    var hd = e.target.closest("[data-hold]");
+    if (hd) { toggleHold(hd.getAttribute("data-hold")); return; }
+    var dl = e.target.closest("[data-del]");
+    if (dl) {
+      var id = dl.getAttribute("data-del");
+      var o = byId(id);
+      if (!o) return;
+      confirmModal("Delete #" + o.seq + (o.orderId ? " · " + o.orderId : "") + "?",
+        "You can undo this from the toast for a few seconds.", "Delete",
+        function () { deleteOrder(id); });
+    }
+  });
+  $("tbody").addEventListener("dblclick", function (e) {
+    if (state.inlineId) return;
+    var tr = e.target.closest("tr");
+    if (!tr) return;
+    var btn = tr.querySelector("[data-inline]");
+    if (btn) startInline(btn.getAttribute("data-inline"));
+  });
+  $("btnExportCsv").addEventListener("click", exportCsv);
+  $("btnBackup").addEventListener("click", backupJson);
+  $("btnRestore").addEventListener("click", function () { $("fileRestore").click(); });
+  $("fileRestore").addEventListener("change", function () {
+    if (this.files && this.files[0]) restoreJson(this.files[0]);
+    this.value = "";
+  });
+  $("btnPrint").addEventListener("click", function () { window.print(); });
+
+  document.addEventListener("keydown", function (e) {
+    var meta = e.ctrlKey || e.metaKey;
+    var inApp = !$("appView").hidden;
+    if (!inApp) return;
+    if (meta && e.key.toLowerCase() === "k") {
+      e.preventDefault(); $("search").focus(); $("search").select();
+    } else if (meta && e.key === "Enter") {
+      e.preventDefault();
+      $("formOrder").dispatchEvent(new Event("submit", { cancelable: true }));
+    } else if (meta && e.key.toLowerCase() === "d") {
+      e.preventDefault(); openSummary();
+    } else if (e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      e.preventDefault(); stepWeekday(e.key === "ArrowRight" ? 1 : -1);
+    } else if (e.key === "Escape") {
+      if ($("modalHost").children.length) { closeModal(); return; }
+      if ($("menuHost").children.length) { closeMenu(); return; }
+      if (state.inlineId) { cancelInline(); return; }
+      clearForm();
+    }
+  });
+}
+
+/* ---------------------------------------------------------------- start */
+function boot() {
+  try { localStorage.setItem("caot_probe", "1"); localStorage.removeItem("caot_probe"); }
+  catch (e) {
+    alert("This browser is blocking local storage, so accounts and orders cannot be saved. Turn off private browsing or allow site data, then reload.");
+  }
+  bootstrapReport = installBootstrap();
+  wire();
+  var user = restoreSession();
+  if (user) enterApp(user);
+  else { $("authView").hidden = false; $("appView").hidden = true; showPane("signin"); }
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();
+
+/* test hook — harmless in the browser, used by the headless debug pass */
+window.__CAOT__ = {
+  state: state, parseTime: parseTime, passwordOk: passwordOk, sha256: sha256,
+  pbkdf2Js: pbkdf2Js, hashSecret: hashSecret, turnaround: turnaround, timeTaken: timeTaken,
+  normalizeOrder: normalizeOrder, visibleOrders: visibleOrders, getUsers: getUsers,
+  toB64: toB64, fromB64: fromB64, maskEmail: maskEmail, csvCell: csvCell,
+  nextSeq: nextSeq, prettyTime: prettyTime, classifyStatus: classifyStatus,
+  statusParts: statusParts, rowAccent: rowAccent, mondayOf: mondayOf,
+  weekdayKeys: weekdayKeys, snapToWeekday: snapToWeekday, durationText: durationText,
+  summarize: summarize, summaryText: summaryText, installBootstrap: installBootstrap,
+  renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
+  setPanel: setPanel, panelCollapsed: panelCollapsed,
+  isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
+  startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
+  BOOTSTRAP_ORDERS: BOOTSTRAP_ORDERS,
+  persistOrders: persistOrders, loadOrders: loadOrders, mergeForeign: mergeForeign,
+  parseQty: parseQty, parseMoney: parseMoney, money: money, normType: normType,
+  sumQty: sumQty, sumAmount: sumAmount, readOrdersRaw: readOrdersRaw,
+  writeOrdersRaw: writeOrdersRaw, stripInternal: stripInternal,
+  collectForm: collectForm, clearForm: clearForm, submitOrderForm: function () {
+    $("formOrder").dispatchEvent(new Event("submit", { cancelable: true }));
+  },
+  deleteOrder: deleteOrder, cyclePill: cyclePill, exportCsv: exportCsv,
+  enterApp: enterApp, buildChrome: buildChrome, render: render
+};
+})();
+
+</script>
+
+<a class="cm-hub-btn" href="https://consistency.ink/" title="Back to landing page">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4 11.5L12 4l8 7.5"/>
+    <path d="M7 10.5V20h10v-9.5"/>
+  </svg>
+  Hub
+</a>
 
 </body>
 </html>
