@@ -260,6 +260,29 @@ html[data-theme="dark"] .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{
   .ecell.s3,.ecell.s4,.ecell.s5,.ecell.s6{grid-column:span 3}
 }
 
+/* ---------------- page scrolling with the entry row open ----------------
+   With the entry panel open the app no longer has to fit inside one screen.
+   The whole page scrolls instead, the entry row shows every field at full
+   height, and the ledger continues below it — so reaching the table is just
+   a scroll down rather than a fight for vertical space. The scrollbar only
+   appears once the content actually outgrows the window, so on a tall screen
+   nothing changes. Collapsing the entry row snaps back to the fixed
+   single-screen shell where the table owns its own scroll area. */
+@media (min-width:761px){
+  html.page-scroll,html.page-scroll body{height:auto;overflow-y:auto;overflow-x:hidden}
+  html.page-scroll .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
+  html.page-scroll .entrybar:not(.collapsed){max-height:none;height:auto!important;
+    overflow:visible;resize:none}
+  html.page-scroll .entryhead{position:static;margin-top:0;padding-top:0!important}
+  html.page-scroll .tablewrap{overflow:visible;min-height:0}
+  /* The masthead and the column headers stay put while the rest scrolls,
+     so you never lose the search box or the column you are reading. */
+  html.page-scroll .console{position:sticky;top:0;z-index:30}
+  html.page-scroll thead th{top:68px;z-index:6}
+  /* Counts, totals and the save indicator stay in view at the bottom. */
+  html.page-scroll .appfoot{position:sticky;bottom:0;z-index:20;box-shadow:0 -1px 0 var(--line)}
+}
+
 /* ---------------- ribbon + toolbar ---------------- */
 .ribbon{display:flex;background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;overflow:hidden}
 .stat{padding:12px 20px;border-right:1px solid var(--line);flex:1;min-width:0}
@@ -3390,6 +3413,11 @@ function setPanel(collapsed, animate) {
   /* A drag-resized panel carries an inline height, which would fight the
      collapse animation, so it is dropped when the panel closes. */
   if (collapsed) bar.style.height = "";
+  /* Open panel: let the page scroll as one document (see the page-scroll
+     block in the stylesheet). Closed: back to the fixed one-screen shell,
+     and back to the top, since there is nothing above the table any more. */
+  document.documentElement.classList.toggle("page-scroll", !collapsed);
+  if (collapsed && window.scrollTo) window.scrollTo(0, 0);
   bar.setAttribute("aria-hidden", collapsed ? "true" : "false");
   btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
   $("btnPanelLabel").textContent = collapsed ? "Show entry row" : "Hide entry row";
