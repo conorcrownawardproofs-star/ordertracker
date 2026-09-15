@@ -3,8 +3,8 @@
   "use strict";
   var cfg = w.CAOT_SUPABASE || {};
   var enabled = !!(w.supabase && cfg.url && cfg.anonKey &&
-    cfg.url.indexOf("YOUR-PROJECT") === -1 &&
-    cfg.anonKey.indexOf("YOUR-ANON") === -1);
+    cfg.url.indexOf("https://gytzjasacoixnyilcyeq.supabase.co") === -1 &&
+    cfg.anonKey.indexOf("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5dHpqYXNhY29peG55aWxjeWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MDE2NjcsImV4cCI6MjEwNTA3NzY2N30.TLfdXOjv4uZNyy3lJIzEIdilo4IU6MfR2hqxEZH6200") === -1);
   var client = null;
   if (enabled) {
     client = w.supabase.createClient(cfg.url, cfg.anonKey, {
@@ -78,28 +78,64 @@
     };
   }
 
+  function authUrl(path) {
+    return String(cfg.url).replace(/\/+$/, "") + path;
+  }
+  function authHeaders() {
+    return {
+      apikey: cfg.anonKey,
+      Authorization: "Bearer " + cfg.anonKey,
+      "Content-Type": "application/json"
+    };
+  }
+  function parseAuthError(data, status) {
+    if (!data) return "Auth failed (" + status + ")";
+    return data.error_description || data.msg || data.error || data.message || ("Auth failed (" + status + ")");
+  }
+  function applySession(data, username) {
+    if (!data || !data.access_token) {
+      throw new Error("Check your email to confirm the account, then sign in.");
+    }
+    var session = {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token
+    };
+    return client.auth.setSession(session).then(function (res) {
+      if (res.error) throw new Error(res.error.message);
+      var packed = { data: { session: res.data.session || { user: data.user, access_token: data.access_token } } };
+      return asUser(packed.data.session, username);
+    }).catch(function () {
+      return asUser({ user: data.user }, username);
+    });
+  }
+  function postAuth(path, body) {
+    return fetch(authUrl(path), {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { message: text }; }
+        if (!res.ok) throw new Error(parseAuthError(data, res.status));
+        return data;
+      });
+    });
+  }
+
   w.CAOTCloud = {
     enabled: function () { return enabled; },
     client: function () { return client; },
     signIn: function (email, password) {
-      return client.auth.signInWithPassword({ email: email, password: password })
-        .then(function (res) {
-          if (res.error) throw new Error(res.error.message);
-          return asUser(res.data.session);
-        });
+      return postAuth("/auth/v1/token?grant_type=password", { email: email, password: password })
+        .then(function (data) { return applySession(data); });
     },
     signUp: function (email, password, username) {
-      return client.auth.signUp({
+      return postAuth("/auth/v1/signup", {
         email: email,
         password: password,
-        options: { data: { username: username } }
-      }).then(function (res) {
-        if (res.error) throw new Error(res.error.message);
-        if (!res.data.session) {
-          throw new Error("Check your email to confirm the account, then sign in.");
-        }
-        return asUser(res.data.session, username);
-      });
+        data: { username: username }
+      }).then(function (data) { return applySession(data, username); });
     },
     sessionUser: function () {
       return client.auth.getSession().then(function (res) {
