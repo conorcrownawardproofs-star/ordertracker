@@ -184,8 +184,8 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
    cramped and hard to read. Fields keep the same ORDER as the table columns,
    but are laid out on a 12-column grid at sizes you can actually read. */
 .entrybar{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;padding:16px 20px 18px;
-  max-height:min(52vh,520px);opacity:1;overflow:hidden;position:relative;
-  transition:max-height .34s var(--ease),opacity .22s var(--ease),padding .3s var(--ease),border-bottom-color .3s var(--ease)}
+  max-height:min(48vh,560px);opacity:1;overflow:hidden;position:relative;
+  transition:max-height .58s cubic-bezier(.22,.7,.2,1),opacity .4s ease,padding .5s ease,border-bottom-color .5s ease}
 /* Open state scrolls inside itself and can be dragged shorter, so the entry
    fields and the ledger are both usable at once instead of one pushing the
    other off the screen. */
@@ -273,17 +273,10 @@ html[data-theme="dark"] .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{
    nothing changes. Collapsing the entry row snaps back to the fixed
    single-screen shell where the table owns its own scroll area. */
 @media (min-width:761px){
-  html.page-scroll,html.page-scroll body{height:auto;overflow-y:auto;overflow-x:hidden}
-  html.page-scroll .shell{height:auto;min-height:100vh;min-height:100dvh;overflow:visible}
-  html.page-scroll .entrybar:not(.collapsed){max-height:none;height:auto!important;
-    overflow:visible;resize:none}
-  html.page-scroll .entryhead{position:static;margin-top:0;padding-top:0!important}
-  html.page-scroll .tablewrap{overflow:visible;min-height:0}
-  /* Masthead + column titles stay on screen after you scroll past the
-     Add-an-order fields, so you can still see Order # / Customer / etc. */
-  html.page-scroll .console{position:sticky;top:0;z-index:30}
-  html.page-scroll thead{position:sticky;top:56px;z-index:8}
-  html.page-scroll thead th{top:56px;z-index:8;box-shadow:0 1px 0 var(--line)}
+  /* page-scroll used to grow the whole document and kill sticky headers.
+     The shell stays one screen; the table is the thing that scrolls. */
+  html.page-scroll .tablewrap{overflow-y:auto;min-height:200px}
+  html.page-scroll thead,html.page-scroll thead th{top:0}
   /* Counts, totals and the save indicator stay in view at the bottom. */
   html.page-scroll .appfoot{position:sticky;bottom:0;z-index:20;box-shadow:0 -1px 0 var(--line)}
 }
@@ -313,11 +306,11 @@ html[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--code);color:
 @keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
 @keyframes slideFromLeft{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px}
-thead{position:sticky;top:0;z-index:5}
-thead th{position:sticky;top:0;z-index:5;background:var(--surface-2);text-align:left;padding:8px 8px;
+thead{position:sticky;top:0;z-index:8}
+thead th{position:sticky;top:0;z-index:8;background:var(--surface-2);text-align:left;padding:8px 8px;
   font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--line);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  box-shadow:0 1px 0 var(--line)}
+  box-shadow:0 6px 10px -8px rgba(18,22,28,.45)}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--text)}
 thead th .arrow{opacity:.3;margin-left:3px}
@@ -1589,6 +1582,17 @@ function shortDate(key) {
   var d = dateFromKey(key);
   return isNaN(d.getTime()) ? key : (MONTHS[d.getMonth()].slice(0, 3) + " " + d.getDate());
 }
+function parseDay(v) {
+  var s = String(v == null ? "" : v).trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    var year = m[3].length === 2 ? ("20" + m[3]) : m[3];
+    return year + "-" + pad2(+m[1]) + "-" + pad2(+m[2]);
+  }
+  return s;
+}
 /* The shop is closed at weekends, so every date the app works with is Mon-Fri. */
 function mondayOf(key) {
   var d = dateFromKey(key);
@@ -1791,6 +1795,8 @@ function normalizeOrder(o) {
     seq: Number(o.seq) > 0 ? Number(o.seq) : 0,
     orderId: txt(o.orderId).trim(),
     customer: txt(o.customer).trim(),
+    reqShipDate: parseDay(o.reqShipDate),
+    eventDate: parseDay(o.eventDate),
     otype: normType(o.otype),
     qty: parseQty(o.qty),
     amount: parseMoney(o.amount),
@@ -1852,7 +1858,7 @@ function matchesFilter(o) {
 }
 function searchText(o) {
   if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
-    o.__hay = [o.seq, o.date, o.orderId, o.customer, o.otype, o.qty,
+    o.__hay = [o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
                o.amount === "" ? "" : money(o.amount), o.status, o.notes,
                o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
     o.__hayStamp = o.updatedAt;
@@ -1934,7 +1940,9 @@ var COLUMNS = [
   { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 3.5,  wd: 3.5,  sort: "seq",  entry: "new" },
   { key: "date",   label: "Date",     entryLabel: "Date", hint: "Uses the selected day", w: 0,    wd: 4.5,  sort: "date", entry: "date", dateOnly: true },
   { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 7,    wd: 7,    sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
-  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 10,   wd: 9.5,  sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
+  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 8.5,   wd: 8,  sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
+  { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 6.5, wd: 6, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
+  { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 6.5, wd: 6, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
   { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, or type your own", w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM" },
   { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
   { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
@@ -1992,14 +2000,14 @@ function buildChrome() {
    widths here squeezed several fields to ~4.5% of the screen, so the entry row
    keeps the table's field ORDER but sizes each one to be readable. */
 var ENTRY_SPAN = {
-  seq: "", date: "", orderId: "s3", customer: "s3", otype: "", qty: "", amount: "",
+  seq: "", date: "", orderId: "s3", customer: "s3", reqShipDate: "", eventDate: "", otype: "", qty: "", amount: "",
   proof: "", status: "s4",
   startTime: "", completionTime: "", taken: "", proofRcvdTime: "", turn: "",
   fin: "", savedToDrive: "", notes: "s4", acts: ""
 };
 /* Every text-ish field in the entry row, in one place, so caching, clearing
    and draft-saving can never drift out of sync with the fields on screen. */
-var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fType", "fQty", "fAmount",
+var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
                       "fStatus", "fStart", "fDone", "fBack", "fNotes"];
 var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive"];
 function buildEntryRow(cols) {
@@ -2048,6 +2056,12 @@ function buildEntryRow(cols) {
         });
         cell.appendChild(dl);
       }
+    } else if (c.entry === "dayfield") {
+      var di = document.createElement("input");
+      di.type = "date";
+      di.id = c.field;
+      di.className = "mono";
+      cell.appendChild(di);
     } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
       var input = document.createElement("input");
       input.type = "text"; input.id = c.field; input.placeholder = c.ph || "";
@@ -2399,6 +2413,8 @@ function readRow(o, cols) {
       case "date": td = el("td", "tm", shortDate(o.date)); break;
       case "orderId": td = el("td", "oid", o.orderId); break;
       case "customer": td = el("td", "cust", o.customer); break;
+      case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
+      case "eventDate": td = el("td", "tm", o.eventDate ? shortDate(o.eventDate) : "—"); break;
       case "otype":
         td = el("td");
         if (o.otype) td.appendChild(el("span", "otype " + typeClass(o.otype), o.otype));
@@ -2504,6 +2520,16 @@ function inlineRow(o, cols) {
         td.appendChild(fields.amount);
         break;
       case "customer": fields.customer = mk("textarea", "", o.customer, "Customer"); td.appendChild(fields.customer); break;
+      case "reqShipDate":
+        fields.reqShipDate = mk("input", "mono", o.reqShipDate || "", "YYYY-MM-DD");
+        fields.reqShipDate.type = "date";
+        td.appendChild(fields.reqShipDate);
+        break;
+      case "eventDate":
+        fields.eventDate = mk("input", "mono", o.eventDate || "", "YYYY-MM-DD");
+        fields.eventDate.type = "date";
+        td.appendChild(fields.eventDate);
+        break;
       case "status": fields.status = mk("textarea", "", o.status, "Status"); td.appendChild(fields.status); break;
       case "notes": fields.notes = mk("textarea", "", o.notes, "Notes"); td.appendChild(fields.notes); break;
       case "startTime": case "completionTime": case "proofRcvdTime":
@@ -2588,6 +2614,8 @@ function saveInline(id) {
   if (f.date && /^\d{4}-\d{2}-\d{2}$/.test(f.date.value)) o.date = snapToWeekday(f.date.value);
   o.orderId = f.orderId.value.trim();
   o.customer = f.customer.value.trim();
+  if (f.reqShipDate) o.reqShipDate = parseDay(f.reqShipDate.value);
+  if (f.eventDate) o.eventDate = parseDay(f.eventDate.value);
   if (f.otype) o.otype = normType(f.otype.value);
   if (f.qty) o.qty = parseQty(f.qty.value);
   if (f.amount) o.amount = parseMoney(f.amount.value);
@@ -2696,6 +2724,8 @@ function submitOrder(e) {
 
   var fields = {
     orderId: orderId, customer: customer,
+    reqShipDate: parseDay($("fShipDate") ? $("fShipDate").value : ""),
+    eventDate: parseDay($("fEventDate") ? $("fEventDate").value : ""),
     otype: normType($("fType") ? $("fType").value : ""),
     qty: parseQty(rawQty),
     amount: parseMoney(rawAmount),
@@ -2998,14 +3028,14 @@ function csvCell(v) {
 function exportCsv() {
   var rows = visibleOrders();
   if (!rows.length) { toast("There is nothing in view to export."); return; }
-  var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "Type", "Qty", "Amount",
+  var head = ["#", "Date", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
               "PROOF?", "Status",
               "Time Started", "Time of Completion", "Time Taken (min)",
               "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
   var lines = [head.map(csvCell).join(",")];
   rows.forEach(function (o) {
     var taken = timeTaken(o), turn = turnaround(o);
-    lines.push([o.seq, o.date, o.orderId, o.customer, o.otype, o.qty,
+    lines.push([o.seq, o.date, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
                 o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.status,
                 o.startTime, o.completionTime, taken === null ? "" : taken,
                 o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
@@ -3454,25 +3484,36 @@ function applyTheme(theme) {
 function setPanel(collapsed, animate) {
   var bar = $("entrybar");
   var btn = $("btnPanel");
-  /* The hidden attribute can't be animated, so the panel collapses via a class
-     and is only marked hidden from assistive tech once it's actually closed. */
+  /* Animate from a real pixel height. max-height:none cannot ease down to 0,
+     which is why Hide entry row used to snap shut. */
+  if (collapsed) bar.style.height = "";
   if (!animate) {
     var prev = bar.style.transition;
     bar.style.transition = "none";
     bar.classList.toggle("collapsed", collapsed);
+    bar.style.maxHeight = collapsed ? "0px" : "";
     void bar.offsetWidth;
     bar.style.transition = prev;
+  } else if (collapsed) {
+    var from = bar.scrollHeight;
+    bar.style.maxHeight = from + "px";
+    bar.classList.remove("collapsed");
+    void bar.offsetHeight;
+    bar.classList.add("collapsed");
+    bar.style.maxHeight = "0px";
   } else {
-    bar.classList.toggle("collapsed", collapsed);
+    bar.classList.remove("collapsed");
+    bar.style.maxHeight = "0px";
+    void bar.offsetHeight;
+    bar.style.maxHeight = Math.max(bar.scrollHeight, 120) + "px";
+    var done = function (e) {
+      if (e && e.propertyName && e.propertyName !== "max-height") return;
+      bar.removeEventListener("transitionend", done);
+      if (!bar.classList.contains("collapsed")) bar.style.maxHeight = "";
+    };
+    bar.addEventListener("transitionend", done);
   }
-  /* A drag-resized panel carries an inline height, which would fight the
-     collapse animation, so it is dropped when the panel closes. */
-  if (collapsed) bar.style.height = "";
-  /* Open panel: let the page scroll as one document (see the page-scroll
-     block in the stylesheet). Closed: back to the fixed one-screen shell,
-     and back to the top, since there is nothing above the table any more. */
-  document.documentElement.classList.toggle("page-scroll", !collapsed);
-  if (collapsed && window.scrollTo) window.scrollTo(0, 0);
+  document.documentElement.classList.remove("page-scroll");
   bar.setAttribute("aria-hidden", collapsed ? "true" : "false");
   btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
   $("btnPanelLabel").textContent = collapsed ? "Show entry row" : "Hide entry row";
