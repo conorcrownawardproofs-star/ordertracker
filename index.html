@@ -209,9 +209,13 @@ html[data-theme="dark"] .day[aria-current="true"]{color:var(--code);border-botto
 .ecell.s6{grid-column:span 6}
 /* Labels were 10.5px in --muted, which is the main dark-mode legibility
    problem in here. Bigger, heavier, and a full contrast step brighter. */
-.ecell label{font-size:11px;font-weight:700;color:var(--text-2);letter-spacing:.05em;
+.ecell label{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.04em;
   text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ecell input,.ecell textarea,.ecell select{padding:9px 11px;font-size:14px;border-radius:8px;min-height:40px}
+.ecell .hint{font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:0;
+  text-transform:none;line-height:1.3;margin-top:-2px}
+.ecell input,.ecell textarea,.ecell select{padding:9px 11px;font-size:14px;border-radius:8px;min-height:40px;
+  border:1.5px solid var(--line);background:var(--surface-2);color:var(--text)}
+.ecell input:focus,.ecell textarea:focus,.ecell select:focus{outline:2px solid var(--crown);outline-offset:1px;border-color:var(--crown)}
 .ecell textarea{min-height:40px;line-height:1.4}
 .ecell input.money{text-align:right}
 .ecell input.qty{text-align:right}
@@ -275,10 +279,11 @@ html[data-theme="dark"] .tri.stopno button[aria-pressed="true"][data-v="FALSE"]{
     overflow:visible;resize:none}
   html.page-scroll .entryhead{position:static;margin-top:0;padding-top:0!important}
   html.page-scroll .tablewrap{overflow:visible;min-height:0}
-  /* The masthead and the column headers stay put while the rest scrolls,
-     so you never lose the search box or the column you are reading. */
+  /* Masthead + column titles stay on screen after you scroll past the
+     Add-an-order fields, so you can still see Order # / Customer / etc. */
   html.page-scroll .console{position:sticky;top:0;z-index:30}
-  html.page-scroll thead th{top:68px;z-index:6}
+  html.page-scroll thead{position:sticky;top:56px;z-index:8}
+  html.page-scroll thead th{top:56px;z-index:8;box-shadow:0 1px 0 var(--line)}
   /* Counts, totals and the save indicator stay in view at the bottom. */
   html.page-scroll .appfoot{position:sticky;bottom:0;z-index:20;box-shadow:0 -1px 0 var(--line)}
 }
@@ -308,9 +313,11 @@ html[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--code);color:
 @keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
 @keyframes slideFromLeft{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px}
-thead th{position:sticky;top:0;z-index:5;background:var(--surface-2);text-align:left;padding:7px 8px;
-  font-size:11px;font-weight:600;color:var(--text-2);border-bottom:1px solid var(--line);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+thead{position:sticky;top:0;z-index:5}
+thead th{position:sticky;top:0;z-index:5;background:var(--surface-2);text-align:left;padding:8px 8px;
+  font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--line);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 1px 0 var(--line)}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--text)}
 thead th .arrow{opacity:.3;margin-left:3px}
@@ -1924,24 +1931,24 @@ function scheduleTable() {
 /* One definition drives the colgroup, the header, and the entry row above
    the table, so the fields you type into sit over the columns they fill. */
 var COLUMNS = [
-  { key: "seq",    label: "#",        w: 3.5,  wd: 3.5,  sort: "seq",  entry: "new" },
-  { key: "date",   label: "Date",     w: 0,    wd: 4.5,  sort: "date", entry: "date", dateOnly: true },
-  { key: "orderId",label: "Order #",  w: 7,    wd: 7,    sort: "orderId", entry: "text", field: "fOrderId", ph: "16248803" },
-  { key: "customer",label:"Customer", w: 10,   wd: 9.5,  sort: "customer", entry: "area", field: "fCustomer", ph: "Name or email" },
-  { key: "otype",  label: "Type",     w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR" },
-  { key: "qty",    label: "Qty",      w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
-  { key: "amount", label: "Amount",   w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
-  { key: "proof",  label: "Proof",    w: 4,    wd: 4,    entry: "tri", field: "segProof" },
-  { key: "status", label: "Status",   w: 10,   wd: 9.5,  entry: "area", field: "fStatus", ph: "CLC, LEC, Proof Sent!" },
-  { key: "startTime", label: "Start", w: 6,    wd: 5.5,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
-  { key: "completionTime", label: "End", w: 6, wd: 5.5,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
-  { key: "taken",  label: "Taken",    w: 4.5,  wd: 4.5,  sort: "taken", entry: "calc", field: "calcTaken" },
-  { key: "proofRcvdTime", label: "Back", w: 6, wd: 5.5,  entry: "time", field: "fBack", ph: "9:39" },
-  { key: "turn",   label: "Turn",     w: 4.5,  wd: 4.5,  entry: "calc", field: "calcTurn" },
-  { key: "fin",    label: "Fin",      w: 4.5,  wd: 4,    entry: "tri", field: "segFin" },
-  { key: "savedToDrive", label: "Drive", w: 5, wd: 4.5,  entry: "tri", field: "segDrive" },
-  { key: "notes",  label: "Notes",    w: 8.5,  wd: 9,    entry: "area", field: "fNotes", ph: "Anything worth remembering" },
-  { key: "acts",   label: "",         w: 5.5,  wd: 5.5,  entry: "acts" }
+  { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 3.5,  wd: 3.5,  sort: "seq",  entry: "new" },
+  { key: "date",   label: "Date",     entryLabel: "Date", hint: "Uses the selected day", w: 0,    wd: 4.5,  sort: "date", entry: "date", dateOnly: true },
+  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 7,    wd: 7,    sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
+  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 10,   wd: 9.5,  sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
+  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, or type your own", w: 5,    wd: 4.5,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM" },
+  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 4,    wd: 3.5,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
+  { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 6,    wd: 5.5,  sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
+  { key: "proof",  label: "Proof",    entryLabel: "Proof sent?", hint: "Yes / No / N/A", w: 4,    wd: 4,    entry: "tri", field: "segProof" },
+  { key: "status", label: "Status",   entryLabel: "Status", hint: "Where this job is right now", w: 10,   wd: 9.5,  entry: "area", field: "fStatus", ph: "CLC, LEC, Proof Sent!" },
+  { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 6,    wd: 5.5,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
+  { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 6, wd: 5.5,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
+  { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 4.5,  wd: 4.5,  sort: "taken", entry: "calc", field: "calcTaken" },
+  { key: "proofRcvdTime", label: "Back", entryLabel: "Proof back", hint: "When the proof returned", w: 6, wd: 5.5,  entry: "time", field: "fBack", ph: "9:39" },
+  { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 4.5,  wd: 4.5,  entry: "calc", field: "calcTurn" },
+  { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.5,  wd: 4,    entry: "tri", field: "segFin" },
+  { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 5,  wd: 4.5,  entry: "tri", field: "segDrive" },
+  { key: "notes",  label: "Notes",    entryLabel: "Notes", hint: "Anything worth remembering", w: 8.5,  wd: 9,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 5.5,  wd: 5.5,  entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
@@ -2001,14 +2008,19 @@ function buildEntryRow(cols) {
   grid.style.gridTemplateColumns = "";        /* the stylesheet owns the grid now */
   cols.forEach(function (c) {
     var cell = el("div", "ecell" + (ENTRY_SPAN[c.key] ? " " + ENTRY_SPAN[c.key] : ""));
-    if (c.entry !== "new" && c.entry !== "date") cell.appendChild(el("label", null, c.label || " "));
+    if (c.entry !== "new" && c.entry !== "date" && c.entry !== "acts") {
+      cell.appendChild(el("label", null, c.entryLabel || c.label || " "));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+    }
     if (c.entry === "new") {
-      cell.appendChild(el("label", null, "#"));
+      cell.appendChild(el("label", null, c.entryLabel || "#"));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
       var n = el("div", "calcbox", "new");
       n.id = "calcSeq";
       cell.appendChild(n);
     } else if (c.entry === "date") {
-      cell.appendChild(el("label", null, "Date"));
+      cell.appendChild(el("label", null, c.entryLabel || "Date"));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
       var dv = el("div", "calcbox", "");
       dv.id = "calcDate";
       cell.appendChild(dv);
