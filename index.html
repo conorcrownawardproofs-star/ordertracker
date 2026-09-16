@@ -558,7 +558,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   padding:14px 22px calc(14px + env(safe-area-inset-bottom,0px));
   display:flex;align-items:center;gap:16px;font-size:12.5px;color:var(--text-2)}
 .appfoot .spacer{flex:1}
-#footHint{margin-right:50px;display:inline-flex;align-items:center;gap:7px}
+#footHint{margin-right:110px;display:inline-flex;align-items:center;gap:7px}
 .live-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:var(--muted)}
 .live-dot.live{background:#E0443A;box-shadow:0 0 0 0 rgba(224,68,58,.55);animation:livePulse 2s ease-out infinite}
 .live-dot.err{background:#2F7BEA}
@@ -608,7 +608,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 .toast.out{animation:toastOut .18s var(--ease) forwards}
 @keyframes toastOut{to{opacity:0;transform:translateY(8px) scale(.98)}}
 .toast .link{color:var(--brass-lit)}
-#modalHost{position:fixed;inset:0;z-index:80;pointer-events:none}
+#modalHost{position:fixed;inset:0;z-index:95;pointer-events:none}
 #modalHost:not(:empty){pointer-events:auto}
 .scrim{position:absolute;inset:0;background:rgba(6,14,28,.55);z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .16s var(--ease)}
 .datefield{position:relative}
@@ -851,21 +851,6 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     height:auto!important;max-height:none!important;overflow:visible!important;
     padding:14px 14px 20px!important;
   }
-  .entrygrid{
-    display:flex!important;
-    flex-direction:column!important;
-    gap:12px!important;
-    width:100%;
-  }
-  .ecell,.ecell.s3,.ecell.s4,.ecell.s5,.ecell.s6{
-    display:flex!important;
-    flex-direction:column;
-    width:100%!important;
-    max-width:100%!important;
-    grid-column:auto!important;
-    min-width:0!important;
-    padding:0!important;
-  }
   .ecell label{white-space:normal!important;font-size:11px}
   .egroup{width:100%;margin-bottom:-4px}
   .ecell input,.ecell textarea,.ecell select,.ecell .calcbox,.ecell .tri,.ecell .timefield{
@@ -880,41 +865,6 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
   .tablewrap,html.page-flow .tablewrap{overflow:visible!important;min-height:0!important;padding:0 12px 16px}
   .cm-hub-btn{bottom:max(10px,env(safe-area-inset-bottom));right:10px}
 
-  /* Compact order cards: identity first, then a short breakdown. */
-  tbody tr{
-    display:grid!important;
-    grid-template-columns:1fr 1fr;
-    gap:0 12px;
-    padding:12px 14px 10px!important;
-  }
-  tbody td{
-    display:flex!important;
-    flex-direction:column;
-    padding:6px 0!important;
-    border-bottom:none!important;
-  }
-  tbody td.seq{grid-column:1;font-size:18px;font-weight:700;color:var(--text)}
-  tbody td.oid{grid-column:2;align-items:flex-end;font-size:15px}
-  tbody td.cust{grid-column:1/-1;font-size:16px;font-weight:600;color:var(--text)}
-  tbody td[data-label="Type"],
-  tbody td[data-label="Qty"],
-  tbody td[data-label="Amount"]{grid-column:span 1}
-  tbody td[data-label="Req. Ship"],
-  tbody td[data-label="Event"],
-  tbody td[data-label="Status"],
-  tbody td[data-label="Mark"],
-  tbody td[data-label="Notes"]{grid-column:1/-1}
-  tbody td.rowacts{grid-column:1/-1;justify-content:flex-end}
-  /* Hide clock/calc noise so the list reads as a breakdown, not a spreadsheet. */
-  tbody td[data-label="Date"],
-  tbody td[data-label="Start"],
-  tbody td[data-label="End"],
-  tbody td[data-label="Taken"],
-  tbody td[data-label="Back"],
-  tbody td[data-label="Turn"],
-  tbody td[data-label="Proof"],
-  tbody td[data-label="Fin"],
-  tbody td[data-label="Drive"]{display:none!important}
   tbody td:not(.rowacts):not(.seq):empty{display:none!important}
 }
 
@@ -1021,6 +971,172 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
   @media (max-width: 640px) {
     .cm-hub-btn { height: 36px; padding: 0 13px 0 11px; }
   }
+</style>
+<style id="mobile-final">
+/* ==================================================================
+   PHONES (760px and below) — final pass. Loaded last so it wins.
+   ================================================================== */
+@media (max-width:760px){
+  body{font-size:15px}
+  /* ---- header: brand + icon buttons on one line, tasks, then search */
+  .console{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px!important;
+    padding:10px 12px 12px!important;height:auto!important}
+  .console .mark{grid-column:1;min-width:0;overflow:hidden;border-right:none!important;padding-right:0!important}
+  .console .mark .marktext{min-width:0;overflow:hidden}
+  .console .mark b{overflow:hidden;text-overflow:ellipsis}
+  .console .mark b{font-size:15px}
+  .console .spacer,.hdr-sep{display:none!important}
+  #hdrTasks{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #hdrTasks .icon-btn{justify-content:center;height:40px}
+  #hdrSettings{grid-column:2;grid-row:1;gap:6px}
+  .console .who{grid-column:3;grid-row:1;margin:0}
+  .console .searchbox{grid-column:1/-1;grid-row:3;order:0!important}
+  .console .searchbox input{width:100%!important;height:40px;font-size:16px}
+  #themeLabel,#btnMenu>span:not(.caret),.thememenu summary .caret,#btnMenu .caret{display:none}
+  .thememenu summary.icon-btn,#btnMenu{width:38px;height:38px!important;padding:0!important;justify-content:center}
+  .theme-panel{right:auto;left:50%;transform-origin:top center;margin-left:-90px}
+  @keyframes menuDrop{from{opacity:0;transform:translateY(-6px) scale(.94)}to{opacity:1;transform:none}}
+  .menu{position:absolute!important;left:10px!important;right:10px!important;min-width:0!important}
+  .who .avatar{width:38px!important;height:38px!important;flex-basis:38px!important}
+
+  /* ---- week strip: days scroll, controls in one tidy row */
+  .weekbar{display:flex!important;flex-direction:column;align-items:stretch;padding:8px 10px 10px!important;gap:8px}
+  .weekbar .weeknav{order:0;width:100%;justify-self:auto}
+  .weekbar .days{flex:1;min-width:0}
+  .weekbar .day{padding:6px 10px 5px;min-width:58px}
+  .weekbar .left{order:1;display:flex;flex-wrap:nowrap!important;gap:8px;justify-content:stretch}
+  .weekbar .left .btn{flex:1;justify-content:center;min-height:40px}
+  .weekbar .right{order:2;display:block}
+  .weekbar .right select{width:100%!important;min-height:40px}
+  .weekbar .weeklabel{display:none}
+
+  /* ---- stats: a compact grid instead of a sideways swipe */
+  .ribbon{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible!important}
+  .ribbon .stat{min-width:0!important;padding:9px 10px;border-bottom:1px solid var(--line)}
+  .ribbon .stat:last-child:nth-child(3n+1){grid-column:span 3}
+  .ribbon .stat b{font-size:17px}
+  .ribbon .stat span{font-size:10.5px;white-space:normal;line-height:1.25}
+
+  /* ---- filter chips + tools */
+  .ledger-bar{padding:10px 12px!important;gap:6px!important}
+  .ledger-bar .chips{flex:1 1 100%;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .ledger-bar .chips::-webkit-scrollbar{display:none}
+  .ledger-bar .chip{flex:0 0 auto;min-height:34px}
+  .toolmenu-panel{right:0;max-width:calc(100vw - 24px)}
+
+  /* ---- entry form: 6-column grid, short fields side by side */
+  .entrygrid{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:12px 10px!important}
+  .ecell{grid-column:span var(--span-p,6)!important;min-width:0}
+  .egroup{grid-column:1/-1!important;width:auto}
+  .ecell .hint{display:none}
+  .ecell label{font-size:11px;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}
+  .ecell input,.ecell textarea,.ecell select{padding:10px 10px;min-height:44px}
+  .ecell .timefield{flex-wrap:nowrap!important}
+  .ecell .timefield .stamp{padding:0 8px;min-height:44px}
+  .ecell .calcbox{min-height:44px!important;display:flex!important}
+  .ecell:has(.calcbox){display:flex!important}
+  .ecell input[type="date"]{min-height:44px;padding-right:6px}
+  .entryhead{gap:8px}
+  .entry-actions{flex-direction:row!important}
+
+  /* ---- footer + HUB button */
+  .appfoot{position:static!important;flex-direction:column;align-items:flex-start;gap:6px;
+    padding:14px 14px calc(76px + env(safe-area-inset-bottom,0px))!important}
+  .appfoot .spacer{display:none}
+  #footHint{margin-right:0!important;display:block!important;overflow-wrap:anywhere}
+  #footHint .live-dot{display:inline-block;margin-right:7px;vertical-align:1px}
+
+  /* ---- pop-ups */
+  .scrim{padding:10px!important;align-items:flex-start!important;overflow-y:auto}
+  .modal{max-width:100%!important;width:100%;padding:16px!important;max-height:none!important;margin:auto 0}
+  .modal .modal-actions{flex-wrap:wrap}
+  .modal .modal-actions .btn{flex:1 1 auto;min-height:44px}
+  .modal.ep .ep-tpl-head .btn{flex:1 1 100%}
+  .ep-tpl textarea{font-size:15px}
+  .crop-stage{width:min(280px,72vw);height:min(280px,72vw)}
+  .note-pop{left:10px!important;right:10px;width:auto!important}
+  .note-pop textarea{font-size:16px}
+  .toasts{width:calc(100vw - 24px);bottom:76px}
+  .toast{max-width:100%}
+  .cm-hub-btn{transform:scale(.9);transform-origin:bottom right}
+}
+/* ==================================================================
+   ORDER CARDS for phones and tablets (1000px and below): the 19-column
+   table is unreadable at these widths, so each order becomes a card.
+   Tablets get two cards per row.
+   ================================================================== */
+@media (max-width:1000px){
+  #tablewrap table,#tablewrap tbody,#tablewrap tr{display:block;width:100%!important;min-width:0!important}
+  #tablewrap colgroup,#tablewrap thead{display:none!important}
+  tbody tr{border:1px solid var(--line);border-left:4px solid var(--line);box-shadow:var(--shadow);background:var(--row-a)}
+  tbody tr.row-code{background:var(--row-code-a)} tbody tr.row-go{background:var(--row-go-a)}
+  tbody tr.row-warn{background:var(--row-warn-a)} tbody tr.row-hot{background:var(--row-hot-a)}
+  tbody tr:has(td.seq.k-code){border-left-color:var(--code)}
+  tbody tr:has(td.seq.k-go){border-left-color:var(--go)}
+  tbody tr:has(td.seq.k-warn){border-left-color:var(--hold)}
+  tbody tr:has(td.seq.k-hot){border-left-color:var(--stop)}
+  tbody td.num,tbody td.oid,tbody td.rowacts{padding:0!important}
+  /* ---- order cards */
+  .tablewrap{padding:10px 10px 16px!important}
+  tbody tr{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px 10px;
+    padding:12px 12px 10px!important;margin:0 0 10px;border-radius:12px}
+  tbody td{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:2px;padding:0!important;
+    border:none!important;min-width:0;grid-column:span 2;font-size:13.5px;text-align:left!important;white-space:normal}
+  tbody td::before{content:attr(data-label);font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+  tbody td.seq{order:1;grid-column:span 1;flex-direction:row!important;align-items:baseline!important;font-size:15px;font-weight:700;color:var(--muted)}
+  tbody td.seq::before{content:"#";font-size:15px;letter-spacing:0;color:var(--muted)}
+  tbody td.oid{order:2;grid-column:span 3;font-size:17px;font-weight:700;color:var(--text)}
+  tbody td.oid::before,tbody td.cust::before{content:none}
+  tbody td[data-label="Amount"]{order:3;grid-column:span 2;align-items:flex-end!important;font-size:15px;font-weight:600}
+  tbody td[data-label="Amount"]::before{content:none}
+  tbody td.cust{order:4;grid-column:1/-1;font-size:15.5px;font-weight:600;color:var(--text);overflow-wrap:anywhere;margin-top:-2px}
+  tbody td[data-label="Placed"]{order:5} tbody td[data-label="Req. Ship"]{order:6} tbody td[data-label="Event"]{order:7}
+  tbody td[data-label="Type"]{order:8} tbody td[data-label="Qty"]{order:9} tbody td[data-label="Mark"]{order:10}
+  tbody td[data-label="Proof"]{order:11} tbody td[data-label="Fin"]{order:12}
+  tbody td[data-label="Status"]{order:13} tbody td[data-label="Note"]{order:14} tbody td.rowacts{order:15}
+  tbody td[data-label="Status"],tbody td[data-label="Note"],tbody td.rowacts{grid-column:1/-1}
+  tbody td[data-label="Proof"],tbody td[data-label="Fin"]{grid-column:span 3;display:flex!important}
+  tbody td[data-label="Status"]>*{width:100%}
+  tbody td[data-label="Status"]>div:empty{display:none}
+  tbody td[data-label="Date"],tbody td[data-label="Start"],tbody td[data-label="End"],tbody td[data-label="Back"],
+  tbody td[data-label="Turn"]{display:none!important}
+  tbody td[data-label="Taken"]{display:none!important}
+  tbody td.rowacts::before{content:none}
+  tbody td.rowacts{padding-top:4px!important;border-top:1px solid var(--line)!important;margin-top:2px}
+  tbody td .slog-mini{width:100%}
+  tbody td .slog-mini input{min-height:36px;font-size:16px}
+  tbody td .slog-mini .stamp{min-height:36px}
+  tbody td .note-btn{width:100%}
+  td.rowacts .acts{width:100%;max-width:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding-top:6px}
+  .act{height:46px!important;flex-direction:column;gap:2px}
+  .act-email{grid-column:auto!important;height:46px!important}
+  .act .lbl{display:inline!important;font-size:10.5px}
+  .act .badge{top:-4px;right:-2px}
+  /* editing a row on a phone: every field full width */
+  tbody tr.editing td{grid-column:1/-1!important;display:flex!important}
+  tbody tr.editing td[data-label="Amount"]::before{content:attr(data-label)}
+  tbody tr.editing td[data-label="Amount"]{align-items:stretch!important}
+  tbody tr.editing td .cellinput,tbody tr.editing td select,tbody tr.editing td input,tbody tr.editing td textarea{width:100%;font-size:16px;min-height:40px}
+
+}
+@media (min-width:761px) and (max-width:1000px){
+  #tablewrap{padding:14px 16px 20px!important}
+  #tablewrap tbody{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  #tablewrap tbody tr{margin:0!important}
+  #tablewrap tbody tr.editing{grid-column:1/-1}
+  #tablewrap tbody td .empty,#tablewrap tbody tr:only-child td[colspan]{grid-column:1/-1}
+  /* header fits on one row: Theme and Account become icon buttons */
+  #themeLabel,#btnMenu>span:not(.caret){display:none}
+  .hdr-sep{display:none}
+}
+@media (max-width:370px){
+  .ribbon{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .ribbon .stat:last-child:nth-child(3n+1){grid-column:auto}
+  .ribbon .stat:last-child:nth-child(odd){grid-column:span 2}
+  tbody td[data-label="Proof"],tbody td[data-label="Fin"]{grid-column:span 3}
+  .act .lbl{font-size:9.5px}
+}
 </style>
 </head>
 <body>
@@ -1172,12 +1288,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C7D8F0" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.4-3.4"/></svg>
       <input type="text" id="search" placeholder="Search orders, customers, notes" aria-label="Search orders">
     </div>
-    <div class="hdr-group">
+    <div class="hdr-group" id="hdrTasks">
       <button class="icon-btn accent" id="btnEmailProof" title="Email proof templates"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>Email proof</span></button>
       <button class="icon-btn" id="btnSummary" title="Day summary (Ctrl+D)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Day summary</span></button>
     </div>
     <div class="hdr-sep" aria-hidden="true"></div>
-    <div class="hdr-group">
+    <div class="hdr-group" id="hdrSettings">
     <details class="thememenu" id="themeMenu">
       <summary class="icon-btn" title="Theme" aria-label="Theme">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.6-.1-1.1-.2-1.6A5 5 0 0 1 13.6 3.2 9 9 0 0 0 12 3z"/></svg>
@@ -2622,16 +2738,16 @@ var ENTRY_GROUPS = [
   { title: "Status & notes", keys: ["status", "notes", "acts"] }
 ];
 var ENTRY_SPAN = {
-  seq: [3, 2, 3],  date: [4, 3, 3],  orderId: [7, 3, 6],  customer: [10, 4, 6],
-  placedDate: [4, 2, 2], reqShipDate: [4, 2, 2], eventDate: [4, 2, 2],
-  otype: [4, 2, 2], qty: [3, 2, 2], amount: [5, 2, 2],
-  startTime: [6, 3, 3], completionTime: [6, 3, 3], taken: [3, 2, 2], proofRcvdTime: [6, 2, 2], turn: [3, 2, 2],
-  proof: [7, 4, 3], marking: [10, 5, 3], fin: [7, 3, 6],
-  status: [11, 6, 6], notes: [8, 4, 6], acts: [5, 2, 6]
+  seq: [3, 2, 3, 2],  date: [4, 3, 3, 4],  orderId: [7, 3, 6, 6],  customer: [10, 4, 6, 6],
+  placedDate: [4, 2, 2, 6], reqShipDate: [4, 2, 2, 3], eventDate: [4, 2, 2, 3],
+  otype: [4, 2, 2, 2], qty: [3, 2, 2, 2], amount: [5, 2, 2, 2],
+  startTime: [6, 3, 3, 3], completionTime: [6, 3, 3, 3], taken: [3, 2, 2, 3], proofRcvdTime: [6, 2, 2, 3], turn: [3, 2, 2, 6],
+  proof: [7, 4, 3, 6], marking: [10, 5, 3, 6], fin: [7, 3, 6, 6],
+  status: [11, 6, 6, 6], notes: [8, 4, 6, 6], acts: [5, 2, 6, 6]
 };
 /* When the Date column is hidden (single-day scope), give its space to the
    neighbours so the first row still fills the grid. */
-var ENTRY_SPAN_NODATE = { seq: [3, 2, 2], orderId: [9, 4, 4], customer: [12, 6, 6] };
+var ENTRY_SPAN_NODATE = { seq: [3, 2, 2, 2], orderId: [9, 4, 4, 4], customer: [12, 6, 6, 6] };
 /* Every text-ish field in the entry row, in one place, so caching, clearing
    and draft-saving can never drift out of sync with the fields on screen. */
 var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fPlacedDate", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
@@ -2664,6 +2780,7 @@ function buildEntryRow(cols) {
       cell.style.setProperty("--span-l", sp[0]);
       cell.style.setProperty("--span-m", sp[1]);
       cell.style.setProperty("--span-s", sp[2]);
+      cell.style.setProperty("--span-p", sp[3] || 6);
     }
     if (c.entry !== "new" && c.entry !== "date" && c.entry !== "acts") {
       var lb = el("label", null, c.entryLabel || c.label || " ");
@@ -4117,7 +4234,8 @@ function openSummary() {
   scrim.appendChild(box);
   scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
   host.appendChild(scrim);
-  close.focus();
+  close.focus({ preventScroll: true });
+  scrim.scrollTop = 0;
 }
 
 /* ------------------------------------------------------- export / import */
@@ -4908,11 +5026,9 @@ function openMenu() {
   item("Sign out", null, signOut);
   host.appendChild(menu);
   /* sit right under the Account button, wherever the header puts it */
-  if (window.innerWidth > 760) {
-    var br = $("btnMenu").getBoundingClientRect();
-    menu.style.right = Math.max(8, window.innerWidth - br.right) + "px";
-    menu.style.top = (br.bottom + 6 + window.pageYOffset) + "px";
-  }
+  var br = $("btnMenu").getBoundingClientRect();
+  if (window.innerWidth > 760) menu.style.right = Math.max(8, window.innerWidth - br.right) + "px";
+  menu.style.top = (br.bottom + 6 + window.pageYOffset) + "px";
   $("btnMenu").setAttribute("aria-expanded", "true");
   setTimeout(function () { document.addEventListener("click", outsideMenu); }, 0);
 }
