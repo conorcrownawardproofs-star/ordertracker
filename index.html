@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+<script>try{var __p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}");if(__p.theme)document.documentElement.setAttribute("data-theme",__p.theme);}catch(e){}</script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -335,6 +336,24 @@ html[data-theme="dark"] .quad button[aria-pressed="true"]{background:var(--code)
 .toolmenu-panel button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:6px;padding:7px 10px;
   font:500 13px var(--sans);color:var(--text);cursor:pointer}
 .toolmenu-panel button:hover{background:var(--surface-2)}
+/* Mid-size windows: the header wraps the search box onto its own line
+   instead of pushing Account off the edge. */
+@media (min-width:761px) and (max-width:1060px){
+  .console{flex-wrap:wrap;height:auto;padding:10px 16px;row-gap:8px}
+  .console .searchbox{order:10;flex:1 1 100%}
+  .console .searchbox input{width:100%}
+}
+.thememenu{position:relative}
+.thememenu summary{list-style:none}
+.thememenu summary::-webkit-details-marker{display:none}
+.thememenu summary .caret{font-size:10px;opacity:.8}
+.thememenu[open] summary{background:rgba(255,255,255,.2)}
+.theme-panel{min-width:180px;z-index:60}
+.theme-panel button{display:flex;align-items:center;gap:8px}
+.theme-panel .chk{width:14px;color:var(--code);font-weight:700}
+.theme-panel .nm{flex:1}
+.theme-panel .tag-note{font-size:11px;color:var(--muted)}
+.theme-panel button.on{font-weight:700}
 .toolmenu-panel hr{border:none;border-top:1px solid var(--line);margin:4px 2px}
 .chips{display:flex;gap:5px;flex-wrap:wrap}
 .chip{background:var(--surface);border:1px solid var(--line);color:var(--text-2);padding:4px 10px;border-radius:20px;
@@ -474,10 +493,11 @@ tr:hover .nowbtn{opacity:1}
 .act:hover{background:var(--surface-2);color:var(--text);border-color:var(--muted)}
 .act:active{transform:scale(.94)}
 .act .lbl{display:none}
-.act-email{background:var(--crown);border-color:var(--crown);color:#fff;grid-column:1/-1}
+.act-email{grid-column:1/-1;height:24px;font-size:11px;color:var(--code);border-color:color-mix(in srgb,var(--code) 35%,transparent);
+  background:color-mix(in srgb,var(--code) 7%,transparent)}
+.act-email svg{width:13px;height:13px}
 .act-email .lbl{display:inline}
-.act-email:hover{background:var(--crown-2);border-color:var(--crown-2);color:#fff}
-html[data-theme="dark"] .act-email{background:var(--code);border-color:var(--code);color:#0A1A2E}
+.act-email:hover{background:var(--code-bg);border-color:var(--code);color:var(--code)}
 .act-pdf.has{color:var(--code);border-color:var(--code);background:var(--code-bg)}
 .act .badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;
   background:var(--code);color:#fff;font:700 9.5px/15px var(--sans);font-style:normal;text-align:center}
@@ -500,7 +520,11 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   padding:14px 22px calc(14px + env(safe-area-inset-bottom,0px));
   display:flex;align-items:center;gap:16px;font-size:12.5px;color:var(--text-2)}
 .appfoot .spacer{flex:1}
-#footHint{margin-right:50px}
+#footHint{margin-right:50px;display:inline-flex;align-items:center;gap:7px}
+.live-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:var(--muted)}
+.live-dot.live{background:#E0443A;box-shadow:0 0 0 0 rgba(224,68,58,.55);animation:livePulse 2s ease-out infinite}
+.live-dot.err{background:#2F7BEA}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(224,68,58,.55)}70%{box-shadow:0 0 0 6px rgba(224,68,58,0)}100%{box-shadow:0 0 0 0 rgba(224,68,58,0)}}
 .appfoot b{font-family:var(--mono);font-weight:600;color:var(--text)}
 .appfoot .muted{color:var(--muted)}
 .tablefoot-buffer{height:28px}
@@ -875,6 +899,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     tbody td{padding-left:6px;padding-right:6px}
     td.num{white-space:nowrap;padding-right:10px!important}
     td.tm{white-space:nowrap}
+    td.num{padding-left:8px!important}
+    td.oid{padding-left:8px!important}
     td .mark-chip{max-width:100%;overflow-wrap:normal;word-break:keep-all;line-height:1.25}
     /* Row buttons sit two per line rather than a tall stack of four. */
     td.rowacts{display:table-cell}
@@ -1091,7 +1117,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     <button class="icon-btn accent" id="btnEmailProof" title="Email proof templates">Email proof</button>
     <button class="icon-btn" id="btnSummary">Day summary</button>
     <button class="icon-btn accent" id="btnPanel" aria-expanded="true" aria-controls="entrybar" title="Show or hide the entry row"><span class="caret">▼</span><span id="btnPanelLabel">Hide entry row</span></button>
-    <button class="icon-btn" id="btnTheme" title="Switch theme">Dark</button>
+    <details class="thememenu" id="themeMenu">
+      <summary class="icon-btn" title="Theme" aria-label="Theme">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.6-.1-1.1-.2-1.6A5 5 0 0 1 13.6 3.2 9 9 0 0 0 12 3z"/></svg>
+        <span id="themeLabel">Light</span><span class="caret">▾</span>
+      </summary>
+      <div class="toolmenu-panel theme-panel" role="menu" id="themeList"></div>
+    </details>
     <div class="who">
       <button class="avatar" id="avatar" type="button" title="Change photo">--</button>
       <input id="avatarFile" type="file" accept="image/*" hidden>
@@ -2203,6 +2235,7 @@ function persistOrders() {
   else { state.saveFailed = true; }
   if (ok && window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud) {
     CAOTCloud.pushAll(state.user.key, state.orders, state.deleted).then(function () {
+      if (state.cloudError) { state.cloudError = false; scheduleRender(); }
       var miss = CAOTCloud.missingColumns ? CAOTCloud.missingColumns() : [];
       if (miss.length && !state.warnedMissing) {
         state.warnedMissing = true;
@@ -2210,6 +2243,7 @@ function persistOrders() {
       }
     }).catch(function (err) {
       state.saveFailed = true;
+      state.cloudError = true;
       toast("Cloud save failed: " + (err && err.message ? err.message : "try again"), null, 7000);
       scheduleRender();
     });
@@ -2467,8 +2501,8 @@ function activeColumns() {
 /* Relative widths tuned so short values ("19", "RTR", "$1,234.56") never get
    chopped mid-word on a laptop screen. Unknown keys fall back to 60. */
 var COL_WEIGHT = {
-  seq: 36, date: 68, placedDate: 60, orderId: 86, customer: 146, reqShipDate: 60, eventDate: 60,
-  otype: 44, qty: 34, amount: 70, proof: 44, marking: 70, status: 106,
+  seq: 36, date: 68, placedDate: 56, orderId: 80, customer: 162, reqShipDate: 60, eventDate: 60,
+  otype: 42, qty: 30, amount: 70, proof: 44, marking: 70, status: 106,
   startTime: 60, completionTime: 60, taken: 50, proofRcvdTime: 60, turn: 50,
   fin: 58, notes: 104, acts: 136
 };
@@ -2843,7 +2877,13 @@ function renderFooter() {
   else if (state.lastSaved) hint += " · saved " + prettyTime(pad2(state.lastSaved.getHours()) + ":" +
     pad2(state.lastSaved.getMinutes()) + ":" + pad2(state.lastSaved.getSeconds()));
   var hintEl = $("footHint");
-  hintEl.textContent = hint;
+  hintEl.textContent = "";
+  var dotState = (state.saveFailed || state.cloudError) ? "err" : (state.user && state.user.cloud ? "live" : "off");
+  var dot = el("span", "live-dot " + dotState);
+  dot.title = dotState === "live" ? "Live: saving to the cloud" :
+              dotState === "err" ? "Problem saving — check the message and back up" : "Saving on this device only";
+  hintEl.appendChild(dot);
+  hintEl.appendChild(document.createTextNode(hint));
   hintEl.style.color = state.saveFailed ? "var(--stop)" : "";
   hintEl.style.fontWeight = state.saveFailed ? "700" : "";
 }
@@ -4998,7 +5038,7 @@ function enterApp(user) {
   state.sortKey = "seq"; state.sortDir = 1;
   loadOrders();
   var prefs = readJson(KEY_PREFS, {});
-  applyTheme(prefs.theme === "dark" ? "dark" : "light");
+  applyTheme(prefs.theme || "light");
   setPanel(!!prefs.panelHidden, false);
   var dates = state.orders.map(function (o) { return o.date; }).sort();
   var today = snapToWeekday(todayKey());
@@ -5036,9 +5076,34 @@ function enterApp(user) {
     bootstrapReport = null;
   }
 }
+/* Add a theme here (plus its CSS under html[data-theme="…"]) and it shows up
+   in the menu. Light is the default. */
+var THEMES = [
+  { v: "light", l: "Light", note: "Default" },
+  { v: "dark",  l: "Dark" }
+];
+function renderThemeMenu(theme) {
+  var list = $("themeList");
+  if (!list) return;
+  list.textContent = "";
+  THEMES.forEach(function (t) {
+    var b = el("button", t.v === theme ? "on" : "");
+    b.type = "button";
+    b.setAttribute("role", "menuitemradio");
+    b.setAttribute("aria-checked", t.v === theme ? "true" : "false");
+    b.setAttribute("data-theme-pick", t.v);
+    b.appendChild(el("span", "chk", t.v === theme ? "✓" : ""));
+    b.appendChild(el("span", "nm", t.l));
+    if (t.note) b.appendChild(el("span", "tag-note", t.note));
+    list.appendChild(b);
+  });
+  var cur = THEMES.filter(function (t) { return t.v === theme; })[0] || THEMES[0];
+  $("themeLabel").textContent = cur.l;
+}
 function applyTheme(theme) {
+  if (!THEMES.some(function (t) { return t.v === theme; })) theme = "light";
   document.documentElement.setAttribute("data-theme", theme);
-  $("btnTheme").textContent = theme === "dark" ? "Light" : "Dark";
+  renderThemeMenu(theme);
   var prefs = readJson(KEY_PREFS, {});
   prefs.theme = theme;
   writeJson(KEY_PREFS, prefs);
@@ -5283,9 +5348,16 @@ function wire() {
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(function () { state.query = v; scheduleTable(); }, 90);
   });
-  $("btnTheme").addEventListener("click", function () {
-    applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  var thm = $("themeMenu");
+  thm.addEventListener("click", function (e) {
+    var pickT = e.target.closest("[data-theme-pick]");
+    if (!pickT) return;
+    applyTheme(pickT.getAttribute("data-theme-pick"));
+    thm.open = false;
   });
+  document.addEventListener("click", function (e) { if (thm.open && !thm.contains(e.target)) thm.open = false; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && thm.open) thm.open = false; });
+  renderThemeMenu(document.documentElement.getAttribute("data-theme") || "light");
   $("btnPanel").addEventListener("click", togglePanel);
   bindSplitter();
   $("btnSummary").addEventListener("click", openSummary);
