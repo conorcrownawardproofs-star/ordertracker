@@ -165,6 +165,33 @@
     };
   }
 
+  /* If the database is missing a column the app knows about (for example
+     placed_date before the migration is run), don't fail the whole save:
+     drop that one field, remember it for this session, and retry. Every other
+     field still reaches the cloud. The value stays safe in local storage. */
+  var missingCols = {};
+  var MISSING_RE = /Could not find the '([a-z0-9_]+)' column/i;
+  function stripMissing(row) {
+    Object.keys(missingCols).forEach(function (k) { delete row[k]; });
+    return row;
+  }
+  function upsertOrders(rows, tries) {
+    return req("/rest/v1/orders?on_conflict=id", {
+      method: "POST",
+      body: rows,
+      prefer: "resolution=merge-duplicates,return=minimal"
+    }).catch(function (err) {
+      var m = MISSING_RE.exec(err && err.message || "");
+      if (m && tries < 8 && !missingCols[m[1]]) {
+        missingCols[m[1]] = true;
+        try { console.warn("[cloud] Column '" + m[1] + "' is missing from the orders table; saving without it. Run the migration SQL to add it."); } catch (e) {}
+        rows.forEach(function (r) { delete r[m[1]]; });
+        return upsertOrders(rows, tries + 1);
+      }
+      throw err;
+    });
+  }
+
   w.CAOTCloud = {
     enabled: function () { return enabled; },
     signIn: function (email, password) {
@@ -203,32 +230,9 @@
       });
     },
     pushAll: function (userId, orders, deleted) {
-      var upserts = (orders || []).map(function (o) { return toRow(userId, o); });
+      var upserts = (orders || []).map(function (o) { return stripMissing(toRow(userId, o)); });
       var chain = Promise.resolve();
-      if (upserts.length) {
-        chain = req("/rest/v1/orders?on_conflict=id", {
-          method: "POST",
-          body: upserts,
-          prefer: "resolution=merge-duplicates,return=minimal"
-        }).catch(function (err) {
-          /* Prefer header-based upsert */
-          return fetch(origin + "/rest/v1/orders", {
-            method: "POST",
-            headers: Object.assign(jsonHeaders(true), {
-              Prefer: "resolution=merge-duplicates,return=minimal"
-            }),
-            body: JSON.stringify(upserts)
-          }).then(function (res) {
-            return res.text().then(function (text) {
-              if (!res.ok) {
-                var data = {};
-                try { data = text ? JSON.parse(text) : {}; } catch (e) {}
-                throw new Error(parseErr(data, res.status) || err.message);
-              }
-            });
-          });
-        });
-      }
+      if (upserts.length) chain = upsertOrders(upserts, 0);
       var gone = Object.keys(deleted || {});
       if (gone.length) {
         chain = chain.then(function () {
@@ -238,6 +242,7 @@
       }
       return chain;
     },
+    missingColumns: function () { return Object.keys(missingCols); },
     loadAvatar: function (userId) {
       return req("/rest/v1/profiles?id=eq." + encodeURIComponent(userId) + "&select=avatar", { method: "GET" })
         .then(function (rows) {
