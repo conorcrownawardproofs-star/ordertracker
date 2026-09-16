@@ -502,29 +502,30 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
 .photo-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .modal.lg{max-width:620px}
 /* ---- Email proof ---- */
-.modal.xl{max-width:780px;max-height:calc(100vh - 48px);overflow-y:auto}
-.ep-pick{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:10px;margin-bottom:14px}
-.ep-pick label{display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:5px}
-.ep-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
-.ep-fact{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface-2);min-width:0}
+.modal.ep{max-width:1060px;padding:20px 22px;max-height:calc(100vh - 32px);overflow-y:auto}
+.modal.ep h3{margin-bottom:12px}
+.ep-pick,.ep-facts{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:10px;margin-bottom:10px}
+.ep-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ep-pick label{display:block;font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:4px}
+.ep-fact{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--surface-2);min-width:0}
 .ep-fact span{display:block;font-size:11px;font-weight:700;color:var(--text-2);margin-bottom:4px}
-.ep-fact .row{display:flex;gap:6px;align-items:center}
-.ep-fact input{padding:5px 8px;font-size:14px;min-width:0}
-.ep-fact .val{font-family:var(--mono);font-weight:600;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ep-fact.wide{grid-column:1/-1}
-.ep-note{font-size:12.5px;border-radius:7px;padding:7px 10px;margin-bottom:12px;background:var(--code-bg);color:var(--code)}
+.ep-fact .row{display:flex;gap:6px;align-items:stretch}
+.ep-fact input{padding:5px 8px;font-size:14px;min-width:0;flex:1}
+.ep-note{font-size:12.5px;border-radius:7px;padding:6px 10px;margin-bottom:10px;background:var(--code-bg);color:var(--code)}
 .ep-note.warn{background:var(--hold-bg);color:var(--hold)}
-.ep-opts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:12px;font-size:13px;color:var(--text-2)}
-.ep-opts label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-.ep-opts input{width:auto}
-.ep-tpl{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
-.ep-tpl-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ep-other{background:none;border:none;color:inherit;font:700 12.5px var(--sans);cursor:pointer;padding:0;text-decoration:underline}
+.ep-tpls{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.ep-tpls.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ep-tpl{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.ep-tpl-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
 .ep-tpl-head b{font-size:14.5px}
 .ep-tpl-head .spacer{flex:1}
-.ep-tpl textarea{min-height:120px;overflow:hidden;font-size:14px;line-height:1.5;resize:vertical}
-.ep-other{background:none;border:none;color:var(--code);font:600 12.5px var(--sans);cursor:pointer;padding:0;margin-bottom:12px}
+.ep-repeat{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--text-2);cursor:pointer}
+.ep-repeat input{width:auto}
+.ep-tpl textarea{min-height:120px;overflow:hidden;font-size:13.5px;line-height:1.45;resize:none}
+.modal.ep .modal-actions{margin-top:12px}
 @media (max-width:760px){
-  .ep-pick,.ep-facts{grid-template-columns:1fr}
+  .ep-pick,.ep-facts,.ep-tpls.two{grid-template-columns:1fr}
 }
 @keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 .modal h3{font-size:19px;font-weight:700;margin-bottom:5px}
@@ -896,7 +897,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     <div class="plate">
       <h1>Award Order<br>Tracker</h1>
       <div class="owner">Conor McCutcheon / Crown Awards, International HQ</div>
-      <p>Every order of the day in one ledger: proof status, start and finish times, time taken, and what is still sitting on the drive.</p>
+      <p>Every order of the day in one ledger: proof status, start and finish times, time taken, and what is still waiting on a proof.</p>
     </div>
     <div class="foot">Accounts and orders are stored in this browser only. Passwords are salted and hashed with PBKDF2-SHA256 before they are written to storage — the password itself is never saved.</div>
   </div>
@@ -2254,7 +2255,7 @@ function matchesFilter(o) {
   switch (state.filter) {
     case "await": return awaitingProof(o);
     case "unfin": return o.fin !== "TRUE";
-    case "drive": return o.savedToDrive === "FALSE";
+    case "drive": return true;
     case "codes": return isCode(o, "CLC") || isCode(o, "LEC");
     case "live":  return isLive(o);
     case "held":  return isHeld(o);
@@ -2361,13 +2362,14 @@ var COLUMNS = [
   { key: "proofRcvdTime", label: "Back", entryLabel: "Proof back", hint: "When the proof returned", w: 5, wd: 4.6,  entry: "time", field: "fBack", ph: "9:39" },
   { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.8,  wd: 3.6,  entry: "calc", field: "calcTurn" },
   { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segFin" },
-  { key: "savedToDrive", label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
+  { key: "savedToDrive", retired: true, label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
   { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 5.2,  wd: 5,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
   { key: "acts",   label: "",         entryLabel: "Save", w: 8.2,  wd: 8,    entry: "acts" }
 ];
 function activeColumns() {
   var showDate = state.scope !== "day";
-  return COLUMNS.filter(function (c) { return !c.dateOnly || showDate; });
+  /* retired columns (Drive) stay in the data and backups, just not on screen */
+  return COLUMNS.filter(function (c) { return !c.retired && (!c.dateOnly || showDate); });
 }
 /* The raw widths add up to ~117-121%, which is what pushed the log past the
    screen edge. Scale them so the visible columns always total exactly 100%. */
@@ -2428,7 +2430,7 @@ var ENTRY_GROUPS = [
   { title: "Order",         keys: ["seq", "date", "orderId", "customer"] },
   { title: "Dates & price", keys: ["placedDate", "reqShipDate", "eventDate", "otype", "qty", "amount"] },
   { title: "Timing",        keys: ["startTime", "completionTime", "taken", "proofRcvdTime", "turn"] },
-  { title: "Checks",        keys: ["proof", "marking", "fin", "savedToDrive"] },
+  { title: "Checks",        keys: ["proof", "marking", "fin"] },
   { title: "Status & notes", keys: ["status", "notes", "acts"] }
 ];
 var ENTRY_SPAN = {
@@ -2436,7 +2438,7 @@ var ENTRY_SPAN = {
   placedDate: [4, 2, 2], reqShipDate: [4, 2, 2], eventDate: [4, 2, 2],
   otype: [4, 2, 2], qty: [3, 2, 2], amount: [5, 2, 2],
   startTime: [6, 3, 3], completionTime: [6, 3, 3], taken: [3, 2, 2], proofRcvdTime: [6, 2, 2], turn: [3, 2, 2],
-  proof: [6, 3, 3], marking: [8, 5, 3], fin: [5, 2, 3], savedToDrive: [5, 2, 3],
+  proof: [7, 4, 3], marking: [10, 5, 3], fin: [7, 3, 6],
   status: [11, 6, 6], notes: [8, 4, 6], acts: [5, 2, 6]
 };
 /* When the Date column is hidden (single-day scope), give its space to the
@@ -2794,7 +2796,6 @@ function renderRibbon() {
     { n: scoped.filter(isLive).length, l: "in progress now", cls: "cool" },
     { n: scoped.filter(function (o) { return o.fin !== "TRUE"; }).length, l: "not finished", cls: "flag" },
     { n: scoped.filter(awaitingProof).length, l: "waiting on a proof", cls: "flag" },
-    { n: scoped.filter(function (o) { return o.savedToDrive === "FALSE"; }).length, l: "not on the drive", cls: "flag" },
     { n: codes, l: "CLC or LEC", cls: "cool" },
     { n: medTaken === null ? "—" : durationText(medTaken), l: "median time taken", cls: "good" },
     { n: medTurn === null ? "—" : durationText(medTurn), l: "median proof turnaround", cls: "good" }
@@ -2817,7 +2818,6 @@ function renderChips() {
     { k: "live", label: "In progress", n: scoped.filter(isLive).length },
     { k: "await", label: "Waiting on a proof", n: scoped.filter(awaitingProof).length },
     { k: "unfin", label: "Not finished", n: scoped.filter(function (o) { return o.fin !== "TRUE"; }).length },
-    { k: "drive", label: "Not on the drive", n: scoped.filter(function (o) { return o.savedToDrive === "FALSE"; }).length },
     { k: "codes", label: "CLC / LEC", n: scoped.filter(function (o) { return isCode(o, "CLC") || isCode(o, "LEC"); }).length },
     { k: "held", label: "Held up", n: scoped.filter(isHeld).length }
   ];
@@ -3207,7 +3207,7 @@ function saveInline(id) {
   o.proofRcvdTime = back.value;
   o.proof = f.proof.value;
   o.fin = f.fin.value;
-  o.savedToDrive = f.savedToDrive.value;
+  if (f.savedToDrive) o.savedToDrive = f.savedToDrive.value;
   o.updatedAt = nowIso();
   if (!persistOrders()) {
     /* Put the row back the way it was rather than leave the screen and the
@@ -3457,6 +3457,7 @@ function attachProofPdf(orderId, file) {
 }
 /* --------------------------------------------------------- entry panel */
 function segValue(id) {
+  if (!$(id)) return "X";
   var on = $(id).querySelector('[aria-pressed="true"]');
   return on ? on.getAttribute("data-v") : "X";
 }
@@ -3504,6 +3505,7 @@ function addStatusStamp() {
   input.focus();
 }
 function setSeg(id, value) {
+  if (!$(id)) return;
   Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) {
     b.setAttribute("aria-pressed", b.getAttribute("data-v") === value ? "true" : "false");
   });
@@ -3751,7 +3753,6 @@ function summaryText(dateKey, s) {
     "Orders: " + s.count + " (" + s.finished + " finished, " + s.open + " open)",
     "Proofs: " + s.proofs + " sent out, " + s.awaiting + " still waiting to come back",
     "CLC: " + s.clc + "   LEC: " + s.lec + "   Held up: " + s.held,
-    "Not saved to drive: " + s.notDrive,
     "Median time taken: " + (s.medTaken === null ? "—" : durationText(s.medTaken)) +
       "   Median proof turnaround: " + (s.medTurn === null ? "—" : durationText(s.medTurn)),
     "Tracked working time: " + durationText(s.totalTaken) + " across " + s.timed + " timed orders",
@@ -3777,7 +3778,7 @@ function openSummary() {
   var grid = el("div", "sum-grid");
   [
     [s.count, "orders"], [s.finished, "finished"], [s.open, "still open"],
-    [s.proofs, "proofs sent"], [s.awaiting, "proofs outstanding"], [s.notDrive, "not on the drive"],
+    [s.proofs, "proofs sent"], [s.awaiting, "proofs outstanding"],
     [s.medTaken === null ? "—" : durationText(s.medTaken), "median time taken"],
     [s.medTurn === null ? "—" : durationText(s.medTurn), "median proof turnaround"],
     [durationText(s.totalTaken), "tracked working time"],
@@ -4027,10 +4028,9 @@ var EP_OPENING = "Thank you for choosing us at Crown Awards. We really appreciat
 var EP_REVIEW = "Please review the attached proof(s) and kindly let us know if you would like any changes to the engraving.";
 var EP_WAIT = "We will wait for your approval to get started on your order.";
 var EP_SIGN = "Sincerely,\n\nCrown Awards Engraving Experts";
-var EP_24_NOTICE = "If we don't hear back within 24 hours, we will move forward with your order as shown.";
 var EP_TYPES = {
-  h24: { title: "24 hour proof approval", subject: "Your Crown Awards proof (24 hour approval)" },
-  std: { title: "Standard proof approval", subject: "Your Crown Awards proof for approval" }
+  h24: { title: "24 hour proof approval" },
+  std: { title: "Standard proof approval" }
 };
 function copyText(text, label) {
   var ok = function () { toast((label || "Text") + " copied."); };
@@ -4080,40 +4080,40 @@ function detectProofType(o) {
   if (is24 && isStd) return { type: null, why: "This order mentions both a 24 hour and a standard proof, so both are shown." };
   return { type: null, why: "Nothing on this order says which proof it is, so both are shown. Add \"24HR\" or \"PBP\" to the type, notes, or status log to pick one automatically." };
 }
-function buildProofEmail(kind, info, opts) {
+function buildProofEmail(kind, info, repeat) {
   var parts = [];
-  if (opts.greet && info.first) parts.push("Hi " + info.first + ",");
-  parts.push(EP_OPENING);
+  if (info.first) parts.push("Hi " + info.first + ",");
+  parts.push(repeat ? EP_OPENING.replace("your business", "your repeat business") : EP_OPENING);
   parts.push(EP_REVIEW);
-  if (opts.details) {
-    var d = [];
-    if (info.orderId) d.push("Order #: " + info.orderId);
-    if (info.qty !== "" && info.qty != null) d.push("Quantity: " + info.qty);
-    if (info.eventDate) d.push("Event date: " + prettyDate(info.eventDate));
-    if (info.reqShipDate) d.push("Requested ship date: " + prettyDate(info.reqShipDate));
-    if (d.length) parts.push(d.join("\n"));
-  }
+  var d = [];
+  if (info.orderId) d.push("Order #: " + info.orderId);
+  if (info.qty !== "" && info.qty != null) d.push("Quantity: " + info.qty);
+  if (info.eventDate) d.push("Event date: " + prettyDate(info.eventDate));
+  if (info.reqShipDate) d.push("Requested ship date: " + prettyDate(info.reqShipDate));
+  if (d.length) parts.push(d.join("\n"));
   if (kind === "std") parts.push(EP_WAIT);
-  if (kind === "h24" && opts.notice24) parts.push(EP_24_NOTICE);
   parts.push(EP_SIGN);
   return parts.join("\n\n");
 }
+function recentOrders() {
+  return state.orders.slice().sort(function (a, b) {
+    return String(b.date).localeCompare(String(a.date)) || (b.seq - a.seq);
+  });
+}
 function openEmailProof(orderId) {
-  var prefs = readJson(KEY_PREFS, {});
-  var opts = prefs.emailOpts || { greet: true, details: true, notice24: false };
   var current = orderId ? byId(orderId) : null;
   var showBoth = false;
+  var repeat = { h24: false, std: false };
 
   var host = $("modalHost");
   host.textContent = "";
   var scrim = el("div", "scrim");
-  var box = el("div", "modal xl");
+  var box = el("div", "modal ep");
   box.setAttribute("role", "dialog");
   box.setAttribute("aria-label", "Email proof");
   box.appendChild(el("h3", null, "Email proof"));
-  box.appendChild(el("p", "sub", "Pick an order, then copy each piece into the proof email."));
 
-  /* picker: today's view first, then everything else, newest first */
+  /* picker: orders in view first, then everything else, newest first */
   var pick = el("div", "ep-pick");
   var pWrap = el("div"); pWrap.appendChild(el("label", null, "Order from your log"));
   var sel = document.createElement("select");
@@ -4129,15 +4129,14 @@ function openEmailProof(orderId) {
       var op = document.createElement("option");
       op.value = o.id;
       op.textContent = "#" + o.seq + " · " + (o.orderId || "no order #") + " · " +
-        (String(o.customer || "").split("\n")[0] || "no customer") + (o.date && o.date !== state.scopeDate ? " · " + shortDate(o.date) : "");
+        (String(o.customer || "").split("\n")[0] || "no customer") +
+        (o.date && o.date !== state.scopeDate ? " · " + shortDate(o.date) : "");
       g.appendChild(op);
     });
     sel.appendChild(g);
   };
   addGroup("In view", visibleOrders());
-  addGroup("All orders", state.orders.slice().sort(function (a, b) {
-    return String(b.date).localeCompare(String(a.date)) || (b.seq - a.seq);
-  }).slice(0, 300));
+  addGroup("All orders", recentOrders().slice(0, 300));
   pWrap.appendChild(sel);
   var fWrap = el("div"); fWrap.appendChild(el("label", null, "Or find by order #"));
   var find = document.createElement("input");
@@ -4145,6 +4144,21 @@ function openEmailProof(orderId) {
   fWrap.appendChild(find);
   pick.appendChild(pWrap); pick.appendChild(fWrap);
   box.appendChild(pick);
+
+  /* recent order numbers for the Order # dropdown */
+  var dl = document.createElement("datalist");
+  dl.id = "epRecentIds";
+  var usedIds = {};
+  recentOrders().forEach(function (o) {
+    var id = String(o.orderId || "").trim();
+    if (!id || usedIds[id] || Object.keys(usedIds).length >= 40) return;
+    usedIds[id] = true;
+    var op = document.createElement("option");
+    op.value = id;
+    op.label = (String(o.customer || "").split("\n")[0] || "") + (o.date ? " · " + shortDate(o.date) : "");
+    dl.appendChild(op);
+  });
+  box.appendChild(dl);
 
   var body = el("div");
   box.appendChild(body);
@@ -4165,31 +4179,40 @@ function openEmailProof(orderId) {
   acts.appendChild(logBtn); acts.appendChild(close);
   box.appendChild(acts);
 
-  var fact = function (label, value, copyLabel, editable, extraCls) {
-    var f = el("div", "ep-fact" + (extraCls ? " " + extraCls : ""));
+  function pickByOrderId(raw) {
+    var q = String(raw || "").replace(/\D/g, "");
+    if (q.length < 4) return false;
+    var hits = state.orders.filter(function (o) { return String(o.orderId || "").replace(/\D/g, "") === q; });
+    if (!hits.length && q.length >= 8) {
+      hits = state.orders.filter(function (o) { return String(o.orderId || "").indexOf(q) !== -1; });
+    }
+    if (!hits.length) return false;
+    hits.sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+    current = hits[0];
+    sel.value = current.id;
+    find.value = current.orderId || "";
+    showBoth = false;
+    draw();
+    return true;
+  }
+
+  function copyRow(label, input, copyLabel) {
+    var f = el("div", "ep-fact");
     f.appendChild(el("span", null, label));
     var row = el("div", "row");
-    var v;
-    if (editable) {
-      v = document.createElement("input"); v.type = "text"; v.value = value;
-    } else {
-      v = el("div", "val", value || "—"); v.title = value || "";
-    }
     var b = el("button", "stamp", "Copy");
     b.type = "button";
     b.addEventListener("click", function () {
-      var t = editable ? v.value : value;
-      if (!t) { toast("Nothing to copy yet."); return; }
-      copyText(t, copyLabel);
+      if (!input.value.trim()) { toast("Nothing to copy yet."); return; }
+      copyText(input.value.trim(), copyLabel);
     });
-    row.appendChild(v); row.appendChild(b);
+    row.appendChild(input); row.appendChild(b);
     f.appendChild(row);
-    return { node: f, input: v };
-  };
+    return f;
+  }
 
   function draw() {
     body.textContent = "";
-    logBtn.disabled = !current;
     logBtn.hidden = !current;
     var o = current || {};
     var fn = customerFirstName(o.customer);
@@ -4197,105 +4220,82 @@ function openEmailProof(orderId) {
     var kinds = det.type && !showBoth ? [det.type] : ["h24", "std"];
 
     var facts = el("div", "ep-facts");
-    facts.appendChild(fact("Order #", o.orderId || "", "Order #").node);
-    var nameF = fact(fn.guessed ? "First name (guessed from email)" : "First name", fn.name, "First name", true);
-    facts.appendChild(nameF.node);
-    var subj = fact("Subject", (kinds.length === 1 ? EP_TYPES[kinds[0]].subject : "Your Crown Awards proof") + (o.orderId ? " for order #" + o.orderId : ""), "Subject", true, "wide");
-    facts.appendChild(subj.node);
+    var idIn = document.createElement("input");
+    idIn.type = "text"; idIn.className = "mono"; idIn.value = o.orderId || "";
+    idIn.placeholder = "Pick a recent order #"; idIn.setAttribute("list", "epRecentIds");
+    idIn.autocomplete = "off";
+    idIn.addEventListener("change", function () { pickByOrderId(idIn.value); });
+    facts.appendChild(copyRow("Order #", idIn, "Order #"));
+    var nameIn = document.createElement("input");
+    nameIn.type = "text"; nameIn.value = fn.name; nameIn.placeholder = "First name";
+    facts.appendChild(copyRow(fn.guessed ? "First name (guessed from email)" : "First name", nameIn, "First name"));
     body.appendChild(facts);
 
-    if (!current) {
-      body.appendChild(el("div", "ep-note", "No order picked. The templates below are ready without order details."));
-    } else {
-      body.appendChild(el("div", "ep-note", det.why));
-      if (o.proof === "FALSE" || o.proof === "X" || noProofNeeded(o)) {
-        body.appendChild(el("div", "ep-note warn",
-          noProofNeeded(o) ? "Heads up: this order is logged as CLC / LEC, which usually doesn't need a proof."
-                           : "Heads up: \u201cSend proof?\u201d on this order is set to " + (o.proof === "FALSE" ? "No" : "N/A") + "."));
-      }
+    var noteText = !current ? "No order picked. The templates are ready without order details." : det.why;
+    var note = el("div", "ep-note");
+    note.appendChild(document.createTextNode(noteText + " "));
+    if (det.type) {
+      var other = el("button", "ep-other", showBoth ? "Show one template" : "Show both templates");
+      other.type = "button";
+      other.addEventListener("click", function () { showBoth = !showBoth; draw(); });
+      note.appendChild(other);
+    }
+    body.appendChild(note);
+    if (current && (o.proof === "FALSE" || o.proof === "X" || noProofNeeded(o))) {
+      body.appendChild(el("div", "ep-note warn",
+        noProofNeeded(o) ? "Heads up: this order is logged as CLC / LEC, which usually doesn't need a proof."
+                         : "Heads up: \u201cSend proof?\u201d on this order is set to " + (o.proof === "FALSE" ? "No" : "N/A") + "."));
     }
 
-    var optRow = el("div", "ep-opts");
-    var optBoxes = {};
-    [["greet", "Start with \u201cHi " + (fn.name || "name") + ",\u201d"],
-     ["details", "Include order details"],
-     ["notice24", "24 hour: add \u201cwe'll move forward\u201d line"]].forEach(function (pair) {
-      var lb = el("label");
-      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!opts[pair[0]];
-      cb.addEventListener("change", function () {
-        opts[pair[0]] = cb.checked;
-        var pr = readJson(KEY_PREFS, {}); pr.emailOpts = opts; writeJson(KEY_PREFS, pr);
-        refreshText();
-      });
-      lb.appendChild(cb); lb.appendChild(document.createTextNode(pair[1]));
-      optRow.appendChild(lb);
-      optBoxes[pair[0]] = cb;
-    });
-    body.appendChild(optRow);
-
+    var grid = el("div", "ep-tpls" + (kinds.length > 1 ? " two" : ""));
     var areas = [];
     kinds.forEach(function (k) {
       var card = el("div", "ep-tpl");
       var head = el("div", "ep-tpl-head");
       head.appendChild(el("b", null, EP_TYPES[k].title));
+      var lb = el("label", "ep-repeat");
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = repeat[k];
+      lb.appendChild(cb); lb.appendChild(document.createTextNode("Repeat customer"));
+      head.appendChild(lb);
       head.appendChild(el("div", "spacer"));
-      var cp = el("button", "btn sm", "Copy email body");
+      var cp = el("button", "btn sm", "Copy email");
       cp.type = "button";
+      head.appendChild(cp);
       var ta = document.createElement("textarea");
       ta.spellcheck = true;
-      ta.addEventListener("input", function () { ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; });
-      cp.addEventListener("click", function () { copyText(ta.value, EP_TYPES[k].title + " body"); });
-      head.appendChild(cp);
+      cb.addEventListener("change", function () { repeat[k] = cb.checked; refreshText(); });
+      cp.addEventListener("click", function () { copyText(ta.value, EP_TYPES[k].title + " email"); });
+      ta.addEventListener("input", function () { fit(ta); });
       card.appendChild(head);
       card.appendChild(ta);
-      body.appendChild(card);
+      grid.appendChild(card);
       areas.push({ kind: k, ta: ta });
     });
-    if (det.type) {
-      var other = el("button", "ep-other", showBoth ? "Show only the " + EP_TYPES[det.type].title.toLowerCase()
-                                                     : "Show the other template too");
-      other.type = "button";
-      other.addEventListener("click", function () { showBoth = !showBoth; draw(); });
-      body.appendChild(other);
-    }
+    body.appendChild(grid);
 
+    function fit(ta) { ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; }
     function refreshText() {
-      var info = { first: nameF.input.value.trim(), orderId: o.orderId, qty: o.qty,
+      var info = { first: nameIn.value.trim(), orderId: o.orderId, qty: o.qty,
                    eventDate: o.eventDate, reqShipDate: o.reqShipDate };
-      areas.forEach(function (a) {
-        a.ta.value = buildProofEmail(a.kind, info, opts);
-      });
-      /* measure after the modal is on the page */
+      areas.forEach(function (a) { a.ta.value = buildProofEmail(a.kind, info, repeat[a.kind]); });
+      /* measure after the modal is on the page; match heights side by side */
       requestAnimationFrame(function () {
-        areas.forEach(function (a) { a.ta.style.height = "auto"; a.ta.style.height = (a.ta.scrollHeight + 4) + "px"; });
+        var h = 0;
+        areas.forEach(function (a) { a.ta.style.height = "auto"; h = Math.max(h, a.ta.scrollHeight + 4); });
+        areas.forEach(function (a) { a.ta.style.height = h + "px"; });
       });
-      optRow.firstChild.lastChild.textContent = "Start with \u201cHi " + (info.first || "name") + ",\u201d";
     }
-    nameF.input.addEventListener("input", refreshText);
+    nameIn.addEventListener("input", refreshText);
     refreshText();
   }
 
   sel.addEventListener("change", function () {
     current = sel.value ? byId(sel.value) : null;
     showBoth = false;
-    if (current) find.value = current.orderId || "";
+    find.value = current ? (current.orderId || "") : "";
     draw();
   });
-  find.addEventListener("input", function () {
-    var q = find.value.replace(/\D/g, "");
-    if (q.length < 4) return;
-    var hits = state.orders.filter(function (o) { return String(o.orderId || "").replace(/\D/g, "") === q; });
-    if (!hits.length && q.length >= 8) {
-      hits = state.orders.filter(function (o) { return String(o.orderId || "").indexOf(q) !== -1; });
-    }
-    if (hits.length) {
-      hits.sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
-      current = hits[0];
-      sel.value = current.id;
-      showBoth = false;
-      draw();
-    }
-  });
+  find.addEventListener("input", function () { pickByOrderId(find.value); });
 
   if (current) { sel.value = current.id; find.value = current.orderId || ""; }
   draw();
@@ -4303,7 +4303,6 @@ function openEmailProof(orderId) {
   scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
   host.appendChild(scrim);
   (current ? close : sel).focus({ preventScroll: true });
-  box.scrollTop = 0;
 }
 
 /* ------------------------------------------------------- toasts / modals */
