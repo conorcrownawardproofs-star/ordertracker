@@ -323,6 +323,19 @@ html[data-theme="dark"] .quad button[aria-pressed="true"]{background:var(--code)
 .stat.cool b{color:var(--code)}
 .list-title{display:none;font-size:15px;font-weight:700;letter-spacing:-.01em}
 .ledger-bar{display:flex;align-items:center;gap:9px;padding:11px 20px;border-bottom:1px solid var(--line);background:var(--surface);flex:0 0 auto}
+.toolmenu{position:relative}
+.toolmenu summary{list-style:none;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:7px;
+  border:1px solid var(--line);color:var(--text-2);cursor:pointer;font:600 12.5px var(--sans);user-select:none}
+.toolmenu summary::-webkit-details-marker{display:none}
+.toolmenu summary:hover,.toolmenu[open] summary{background:var(--surface-2);color:var(--text)}
+.toolmenu[open] summary svg{transform:rotate(60deg)}
+.toolmenu summary svg{transition:transform .25s var(--ease)}
+.toolmenu-panel{position:absolute;right:0;top:calc(100% + 6px);z-index:40;min-width:200px;padding:6px;border-radius:10px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);animation:fadeIn .12s var(--ease)}
+.toolmenu-panel button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:6px;padding:7px 10px;
+  font:500 13px var(--sans);color:var(--text);cursor:pointer}
+.toolmenu-panel button:hover{background:var(--surface-2)}
+.toolmenu-panel hr{border:none;border-top:1px solid var(--line);margin:4px 2px}
 .chips{display:flex;gap:5px;flex-wrap:wrap}
 .chip{background:var(--surface);border:1px solid var(--line);color:var(--text-2);padding:4px 10px;border-radius:20px;
   font:600 12px var(--sans);cursor:pointer;transition:background .15s var(--ease),color .15s,border-color .15s}
@@ -487,6 +500,7 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
   padding:14px 22px calc(14px + env(safe-area-inset-bottom,0px));
   display:flex;align-items:center;gap:16px;font-size:12.5px;color:var(--text-2)}
 .appfoot .spacer{flex:1}
+#footHint{margin-right:50px}
 .appfoot b{font-family:var(--mono);font-weight:600;color:var(--text)}
 .appfoot .muted{color:var(--muted)}
 .tablefoot-buffer{height:28px}
@@ -860,6 +874,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     thead th.note-hd{min-width:0}
     tbody td{padding-left:6px;padding-right:6px}
     td.num{white-space:nowrap;padding-right:10px!important}
+    td.tm{white-space:nowrap}
     td .mark-chip{max-width:100%;overflow-wrap:normal;word-break:keep-all;line-height:1.25}
     /* Row buttons sit two per line rather than a tall stack of four. */
     td.rowacts{display:table-cell}
@@ -869,7 +884,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     td.rowacts .btn{margin:2px 0 2px 2px;max-width:100%}
     @media (max-width:1280px){
       table{font-size:12px}
-      td.num,td.oid{font-size:11.5px}
+      td.num,td.oid,td.tm{font-size:11.5px}
       .tag{padding:2px 4px}
       tbody td{padding-left:4px;padding-right:4px}
       thead th{padding:8px 4px;font-size:10.5px}
@@ -1126,13 +1141,23 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     <div class="list-title" id="listTitle">Orders</div>
     <div class="chips" id="chips"></div>
     <div class="spacer"></div>
-    <button class="btn ghost sm" id="btnExportCsv">Export CSV</button>
-    <button class="btn ghost sm" id="btnBackup">Back up</button>
-    <button class="btn ghost sm" id="btnRecoverLocal">Recover local</button>
-    <button class="btn ghost sm" id="btnCopySync">Copy sync</button>
-    <button class="btn ghost sm" id="btnPasteSync">Paste sync</button>
-    <button class="btn ghost sm" id="btnRestore">Restore</button>
-    <button class="btn ghost sm" id="btnPrint">Print</button>
+    <details class="toolmenu" id="toolMenu">
+      <summary title="Export, backup, and sync tools" aria-label="Tools">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span>Tools</span>
+      </summary>
+      <div class="toolmenu-panel" role="menu">
+        <button type="button" role="menuitem" id="btnExportCsv">Export CSV</button>
+        <button type="button" role="menuitem" id="btnPrint">Print</button>
+        <hr>
+        <button type="button" role="menuitem" id="btnBackup">Back up</button>
+        <button type="button" role="menuitem" id="btnRestore">Restore from backup</button>
+        <button type="button" role="menuitem" id="btnRecoverLocal">Recover local</button>
+        <hr>
+        <button type="button" role="menuitem" id="btnCopySync">Copy sync pack</button>
+        <button type="button" role="menuitem" id="btnPasteSync">Paste sync pack</button>
+      </div>
+    </details>
     <input type="file" id="fileRestore" accept="application/json" hidden>
   </div>
 
@@ -1966,6 +1991,19 @@ var ACT_ICONS = (function () {
     del: svg('<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>')
   };
 })();
+/* Display only (the saved text is untouched): names read "Firstname Lastname",
+   email addresses read in all caps. */
+function displayCustomer(v) {
+  return String(v || "").split("\n").map(function (line) {
+    return line.split(/(\s+)/).map(function (w) {
+      if (!w.trim()) return w;
+      if (w.indexOf("@") !== -1) return w.toUpperCase();
+      if (/\d/.test(w)) return w;
+      return w.toLowerCase().replace(/(^|[-'’.(])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); })
+              .replace(/^Mc([a-z])/, function (m, c) { return "Mc" + c.toUpperCase(); });
+    }).join("");
+  }).join("\n");
+}
 function markingLabel(v) {
   var hit = MARKING_OPTS.filter(function (o) { return o.v === normMarking(v); })[0];
   return hit ? hit.l : "Nothing";
@@ -2164,7 +2202,13 @@ function persistOrders() {
   if (ok) { state.rev = rev; state.lastSaved = new Date(); state.saveFailed = false; }
   else { state.saveFailed = true; }
   if (ok && window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud) {
-    CAOTCloud.pushAll(state.user.key, state.orders, state.deleted).catch(function (err) {
+    CAOTCloud.pushAll(state.user.key, state.orders, state.deleted).then(function () {
+      var miss = CAOTCloud.missingColumns ? CAOTCloud.missingColumns() : [];
+      if (miss.length && !state.warnedMissing) {
+        state.warnedMissing = true;
+        toast("Saved to the cloud, except: " + miss.join(", ") + " (that column isn't in the database yet). It's kept on this device.", null, 9000);
+      }
+    }).catch(function (err) {
       state.saveFailed = true;
       toast("Cloud save failed: " + (err && err.message ? err.message : "try again"), null, 7000);
       scheduleRender();
@@ -2423,8 +2467,8 @@ function activeColumns() {
 /* Relative widths tuned so short values ("19", "RTR", "$1,234.56") never get
    chopped mid-word on a laptop screen. Unknown keys fall back to 60. */
 var COL_WEIGHT = {
-  seq: 36, date: 68, placedDate: 66, orderId: 86, customer: 122, reqShipDate: 66, eventDate: 66,
-  otype: 50, qty: 40, amount: 84, proof: 52, marking: 80, status: 106,
+  seq: 36, date: 68, placedDate: 60, orderId: 86, customer: 146, reqShipDate: 60, eventDate: 60,
+  otype: 44, qty: 34, amount: 70, proof: 44, marking: 70, status: 106,
   startTime: 60, completionTime: 60, taken: 50, proofRcvdTime: 60, turn: 50,
   fin: 58, notes: 104, acts: 136
 };
@@ -2971,7 +3015,7 @@ function readRow(o, cols) {
         break;
       case "date": td = el("td", "tm", shortDate(o.date)); break;
       case "orderId": td = el("td", "oid", o.orderId); break;
-      case "customer": td = el("td", "cust", o.customer); break;
+      case "customer": td = el("td", "cust", displayCustomer(o.customer)); td.title = o.customer || ""; break;
       case "placedDate": td = el("td", "tm", o.placedDate ? shortDate(o.placedDate) : "—"); break;
       case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
       case "eventDate": td = el("td", "tm", o.eventDate ? shortDate(o.eventDate) : "—"); break;
@@ -5330,6 +5374,11 @@ function wire() {
     var btn = tr.querySelector("[data-inline]");
     if (btn) startInline(btn.getAttribute("data-inline"));
   });
+  /* Tools menu: close after picking something, or on a click elsewhere. */
+  var tm = $("toolMenu");
+  tm.addEventListener("click", function (e) { if (e.target.closest(".toolmenu-panel button")) tm.open = false; });
+  document.addEventListener("click", function (e) { if (tm.open && !tm.contains(e.target)) tm.open = false; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && tm.open) tm.open = false; });
   $("btnExportCsv").addEventListener("click", exportCsv);
   $("btnBackup").addEventListener("click", backupJson);
   $("btnRecoverLocal").addEventListener("click", function () { recoverLocalLedgers(false); });
