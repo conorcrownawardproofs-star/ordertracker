@@ -405,9 +405,12 @@ html[data-theme="dark"] .otype.t-int{color:var(--brass-lit)}
 td.oid{font-family:var(--mono);font-weight:600}
 td.cust{font-weight:600;line-height:1.35}
 td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:12px}
-.note-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:6px;
-  font:600 11px var(--sans);padding:3px 8px;cursor:pointer}
-.note-btn.has{color:var(--text);border-color:var(--muted)}
+.note-btn{display:block;width:100%;text-align:left;background:transparent;border:1px dashed var(--line);color:var(--muted);
+  border-radius:6px;font:600 11px var(--sans);padding:4px 6px;cursor:pointer;transition:border-color .12s,background .12s}
+.note-btn:hover{border-color:var(--code);color:var(--code);background:var(--code-bg)}
+.note-btn.has{border-style:solid;border-color:color-mix(in srgb,var(--hold) 45%,transparent);background:var(--hold-bg);color:var(--text)}
+.note-txt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line;
+  overflow-wrap:break-word;font-weight:500;line-height:1.3}
 .pdf-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:6px;
   font:600 11px var(--sans);padding:3px 8px;cursor:pointer}
 .pdf-btn.has{color:var(--code);border-color:var(--code)}
@@ -418,8 +421,12 @@ td.notes{font-size:12px;color:var(--text-2);white-space:pre-line;padding-right:1
 .proof-item:last-of-type{border-bottom:none}
 .proof-item .nm{flex:1;min-width:0}
 .proof-item .sz{color:var(--muted);font-size:11.5px;font-family:var(--mono)}
-.note-pop{position:fixed;z-index:80;max-width:280px;background:var(--surface);border:1px solid var(--line);
-  border-radius:10px;box-shadow:var(--shadow);padding:10px 12px;white-space:pre-wrap;font-size:12.5px;line-height:1.45}
+.note-pop{position:absolute;z-index:60;width:300px;max-width:calc(100vw - 16px);background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:10px;animation:fadeIn .12s var(--ease)}
+.note-pop b{display:block;font-size:12.5px;margin-bottom:6px}
+.note-pop textarea{min-height:110px;font-size:13px;line-height:1.45;resize:vertical}
+.note-pop .foot{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:var(--muted)}
+.note-pop .foot .spacer{flex:1}
 .slog-mini{display:flex;gap:4px;margin-top:6px}
 .slog-mini input{flex:1;min-width:0;padding:4px 6px;font-size:11.5px;border-radius:5px;border:1px solid var(--line);background:var(--surface-2);color:var(--text)}
 .muted-cell{color:var(--muted)}
@@ -444,7 +451,26 @@ td.cust{white-space:pre-line}
 tr:hover .nowbtn{opacity:1}
 .nowbtn:hover{color:var(--code);border-color:var(--code);border-style:solid}
 .running{color:var(--code);font-weight:600}
-.rowacts{text-align:right;padding-right:12px!important}
+.rowacts{text-align:right;padding-right:10px!important}
+/* Row actions: one tidy grid. Email leads (it's the common job), Delete sits
+   apart in red, Hold turns solid red when an order is held. */
+.acts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;max-width:170px;margin-left:auto}
+.act{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:4px;height:30px;min-width:0;padding:0;
+  border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--text-2);cursor:pointer;
+  font:600 11px var(--sans);transition:background .12s var(--ease),color .12s,border-color .12s,transform .08s}
+.act:hover{background:var(--surface-2);color:var(--text);border-color:var(--muted)}
+.act:active{transform:scale(.94)}
+.act .lbl{display:none}
+.act-email{background:var(--crown);border-color:var(--crown);color:#fff;grid-column:1/-1}
+.act-email .lbl{display:inline}
+.act-email:hover{background:var(--crown-2);border-color:var(--crown-2);color:#fff}
+html[data-theme="dark"] .act-email{background:var(--code);border-color:var(--code);color:#0A1A2E}
+.act-pdf.has{color:var(--code);border-color:var(--code);background:var(--code-bg)}
+.act .badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;
+  background:var(--code);color:#fff;font:700 9.5px/15px var(--sans);font-style:normal;text-align:center}
+.act-hold.on{background:var(--stop);border-color:var(--stop);color:#fff}
+.act-del{color:var(--stop)}
+.act-del:hover{background:var(--stop-bg);border-color:var(--stop);color:var(--stop)}
 .rowacts button{opacity:1;transition:opacity .12s var(--ease)}
 tr:hover .rowacts button,tr.editing .rowacts button{opacity:1}
 .cellinput{width:100%;padding:5px 6px;font-size:12.5px;border-radius:5px;border:1px solid var(--line);
@@ -498,6 +524,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
 .crop-stage{width:280px;height:280px;margin:12px auto;border-radius:50%;overflow:hidden;position:relative;background:#111;cursor:grab;touch-action:none;box-shadow:inset 0 0 0 2px var(--line)}
 .crop-stage:active{cursor:grabbing}
 .crop-stage img{position:absolute;user-select:none;-webkit-user-drag:none;max-width:none}
+.crop-stage img[hidden]{display:none}
+.crop-ph{position:absolute;inset:0;display:grid;place-items:center;font:700 64px var(--sans);color:#17130A;background:var(--brass-lit)}
+.crop-ph[hidden]{display:none}
+.crop-pick{display:flex;justify-content:center;gap:8px;margin-top:4px}
 .crop-zoom{width:100%;margin:8px 0 4px}
 .photo-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .modal.lg{max-width:620px}
@@ -526,6 +556,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
 .modal.ep .modal-actions{margin-top:12px}
 @media (max-width:760px){
   .ep-pick,.ep-facts,.ep-tpls.two{grid-template-columns:1fr}
+  td.rowacts .acts{max-width:none;width:100%;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .act{flex-direction:column;gap:2px;height:48px;padding:0 2px}
+  .act .lbl{display:inline;font-size:10.5px}
+  .act-email{grid-column:auto}
 }
 @keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 .modal h3{font-size:19px;font-weight:700;margin-bottom:5px}
@@ -829,10 +863,10 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
     td .mark-chip{max-width:100%;overflow-wrap:normal;word-break:keep-all;line-height:1.25}
     /* Row buttons sit two per line rather than a tall stack of four. */
     td.rowacts{display:table-cell}
-    td.rowacts .btn,td.rowacts button{padding:3px 6px}
+    td.rowacts .btn{padding:3px 6px}
     tbody td .tag,tbody td .pill,tbody td .mark-chip{max-width:100%;white-space:normal}
     td.rowacts{white-space:normal}
-    td.rowacts .btn,td.rowacts button{margin:2px 0 2px 2px;max-width:100%}
+    td.rowacts .btn{margin:2px 0 2px 2px;max-width:100%}
     @media (max-width:1280px){
       table{font-size:12px}
       td.num,td.oid{font-size:11.5px}
@@ -1919,6 +1953,19 @@ function normMarking(v) {
   if (s === "NO LOGO" || s === "NOTHING" || s === "") return "NONE";
   return "NONE";
 }
+var ACT_ICONS = (function () {
+  var svg = function (d) {
+    return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" ' +
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  };
+  return {
+    email: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+    pdf: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/>'),
+    edit: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
+    hold: svg('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
+    del: svg('<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>')
+  };
+})();
 function markingLabel(v) {
   var hit = MARKING_OPTS.filter(function (o) { return o.v === normMarking(v); })[0];
   return hit ? hit.l : "Nothing";
@@ -2376,10 +2423,10 @@ function activeColumns() {
 /* Relative widths tuned so short values ("19", "RTR", "$1,234.56") never get
    chopped mid-word on a laptop screen. Unknown keys fall back to 60. */
 var COL_WEIGHT = {
-  seq: 36, date: 70, placedDate: 70, orderId: 86, customer: 128, reqShipDate: 70, eventDate: 70,
-  otype: 50, qty: 40, amount: 84, proof: 52, marking: 80, status: 112,
+  seq: 36, date: 68, placedDate: 66, orderId: 86, customer: 122, reqShipDate: 66, eventDate: 66,
+  otype: 50, qty: 40, amount: 84, proof: 52, marking: 80, status: 106,
   startTime: 60, completionTime: 60, taken: 50, proofRcvdTime: 60, turn: 50,
-  fin: 58, savedToDrive: 54, notes: 50, acts: 104
+  fin: 58, notes: 104, acts: 136
 };
 function columnWidth(c) {
   var wOf = function (k) { return COL_WEIGHT[k.key] || 60; };
@@ -2987,37 +3034,38 @@ function readRow(o, cols) {
         break;
       case "notes":
         td = el("td", "notes");
-        var nb = el("button", "note-btn" + (o.notes && String(o.notes).trim() ? " has" : ""), o.notes && String(o.notes).trim() ? "Note" : "—");
+        var hasNote = !!(o.notes && String(o.notes).trim());
+        var nb = el("button", "note-btn" + (hasNote ? " has" : ""));
         nb.type = "button";
         nb.setAttribute("data-note", o.id);
-        nb.disabled = !(o.notes && String(o.notes).trim());
-        if (o.notes) nb.title = "Open note";
+        nb.appendChild(el("span", "note-txt", hasNote ? String(o.notes).trim() : "+ Add"));
+        nb.title = hasNote ? String(o.notes).trim() : "Add a note";
+        nb.setAttribute("aria-label", hasNote ? "Edit note" : "Add a note");
         td.appendChild(nb);
         break;
       default:
         td = el("td", "rowacts");
-        var edit = el("button", "btn quiet xs", "Edit");
-        edit.type = "button"; edit.setAttribute("data-inline", o.id); edit.title = "Edit every field in place";
-        var del = el("button", "btn quiet xs", "Delete");
-        del.type = "button"; del.setAttribute("data-del", o.id);
-        del.title = "Delete this order";
-        del.setAttribute("aria-label", "Delete order");
-        del.style.color = "var(--stop)";
-        var hold = el("button", "btn quiet xs", isHoldFlag(o) ? "Held" : "Hold");
-        hold.type = "button";
-        hold.setAttribute("data-hold", o.id);
-        hold.title = isHoldFlag(o) ? "Release this hold" : "Hold this order (red)";
-        if (isHoldFlag(o)) hold.style.color = "var(--stop)";
-        var pdf = el("button", "btn quiet xs pdf-btn" + ((o.proofs && o.proofs.length) ? " has" : ""),
-                     (o.proofs && o.proofs.length ? "PDF (" + o.proofs.length + ")" : "PDF"));
-        pdf.type = "button";
-        pdf.setAttribute("data-pdfs", o.id);
-        pdf.title = "Proof PDFs";
-        var mail = el("button", "btn quiet xs", "Email");
-        mail.type = "button";
-        mail.setAttribute("data-email", o.id);
-        mail.title = "Email proof templates for this order";
-        td.appendChild(edit); td.appendChild(hold); td.appendChild(pdf); td.appendChild(mail); td.appendChild(del);
+        var grid = el("div", "acts");
+        var held = isHoldFlag(o);
+        var nPdf = (o.proofs && o.proofs.length) || 0;
+        [
+          ["email", "data-email", "Email", "Email proof for this order", ""],
+          ["pdf", "data-pdfs", "PDF", nPdf ? nPdf + " proof PDF" + (nPdf === 1 ? "" : "s") : "Attach a proof PDF", nPdf ? " has" : ""],
+          ["edit", "data-inline", "Edit", "Edit every field in place", ""],
+          ["hold", "data-hold", held ? "Held" : "Hold", held ? "Release this hold" : "Put this order on hold", held ? " on" : ""],
+          ["del", "data-del", "Delete", "Delete this order", ""]
+        ].forEach(function (a) {
+          var b = el("button", "act act-" + a[0] + a[4]);
+          b.type = "button";
+          b.setAttribute(a[1], o.id);
+          b.title = a[3];
+          b.setAttribute("aria-label", a[3]);
+          b.innerHTML = ACT_ICONS[a[0]];
+          b.appendChild(el("span", "lbl", a[2]));
+          if (a[0] === "pdf" && nPdf) b.appendChild(el("i", "badge", nPdf));
+          grid.appendChild(b);
+        });
+        td.appendChild(grid);
     }
     /* Feeds the mobile card layout's ::before label — unused, and harmless,
        on the desktop table where the header row already labels the column. */
@@ -3268,22 +3316,64 @@ function addLogStamp(id, code) {
 }
 function closeNotePop() {
   var pop = $("notePop");
-  if (pop && pop.parentNode) pop.parentNode.removeChild(pop);
+  if (!pop) return;
+  if (pop._save) pop._save();
+  if (pop.parentNode) pop.parentNode.removeChild(pop);
 }
+/* Click a note to read and edit it in place. Saves when you click away,
+   press Ctrl/Cmd+Enter or Save; Esc throws the edit away. */
 function openNotePop(id, anchor) {
+  var already = $("notePop");
+  var same = already && already._id === id;
   closeNotePop();
+  if (same) return;
   var o = byId(id);
-  if (!o || !o.notes) return;
+  if (!o) return;
   var pop = el("div", "note-pop");
   pop.id = "notePop";
-  pop.textContent = o.notes;
+  pop._id = id;
+  pop.appendChild(el("b", null, "Note · #" + o.seq + (o.orderId ? " · " + o.orderId : "")));
+  var ta = document.createElement("textarea");
+  ta.value = o.notes || "";
+  ta.placeholder = "Install notes, contact, quirks…";
+  pop.appendChild(ta);
+  var foot = el("div", "foot");
+  foot.appendChild(el("span", null, "Ctrl+Enter to save · Esc to cancel"));
+  foot.appendChild(el("div", "spacer"));
+  var saveB = el("button", "btn sm", "Save");
+  saveB.type = "button";
+  foot.appendChild(saveB);
+  pop.appendChild(foot);
+  var original = o.notes || "";
+  pop._save = function () {
+    pop._save = null;
+    var next = ta.value.replace(/\s+$/, "");
+    if (next === original.replace(/\s+$/, "")) return;
+    var cur = byId(id);
+    if (!cur) return;
+    var prev = cur.notes;
+    cur.notes = next;
+    cur.updatedAt = nowIso();
+    if (!persistOrders()) { cur.notes = prev; saveFailedModal("note"); return; }
+    scheduleRender();
+    toast(next ? "Note saved on #" + cur.seq + "." : "Note cleared on #" + cur.seq + ".");
+  };
+  saveB.addEventListener("click", closeNotePop);
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); pop._save = null; closeNotePop(); }
+    else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); e.stopPropagation(); closeNotePop(); }
+  });
   document.body.appendChild(pop);
+  /* page coordinates, so it scrolls with the row it belongs to */
   var r = anchor.getBoundingClientRect();
-  var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(8, r.right - pop.offsetWidth));
-  var top = r.bottom + 6;
-  if (top + pop.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - pop.offsetHeight - 6);
+  var sx = window.pageXOffset, sy = window.pageYOffset;
+  var left = Math.min(sx + window.innerWidth - pop.offsetWidth - 8, Math.max(sx + 8, sx + r.right - pop.offsetWidth));
+  var top = sy + r.bottom + 6;
+  if (r.bottom + 6 + pop.offsetHeight > window.innerHeight - 8) top = Math.max(sy + 8, sy + r.top - pop.offsetHeight - 6);
   pop.style.left = left + "px";
   pop.style.top = top + "px";
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
 }
 function proofDb() {
   return new Promise(function (resolve, reject) {
@@ -4708,15 +4798,21 @@ function openPhotoModal() {
   var overlay = el("div", "scrim");
   var box = el("div", "modal photo-modal");
   box.appendChild(el("h3", null, "Profile photo"));
-  box.appendChild(el("p", "sub", "Pick a file, drag to frame it, then save. This stays on your account."));
+  var currentSrc = currentAvatarSrc();
+  box.appendChild(el("p", "sub", currentSrc ? "Drag or zoom to reframe your photo, or choose a new one."
+                                            : "Choose a photo, drag to frame it, then save."));
   var pick = el("button", "btn ghost sm", "Choose photo");
   pick.type = "button";
   var fileIn = document.createElement("input");
   fileIn.type = "file"; fileIn.accept = "image/*"; fileIn.hidden = true;
   var stage = el("div", "crop-stage");
   var img = document.createElement("img");
-  img.alt = "Crop preview";
+  img.alt = "";
+  img.hidden = true;               /* an <img> with no src showed a broken-image icon */
+  var ph = el("div", "crop-ph", (state.user.username || state.user.email || "?").slice(0, 2).toUpperCase());
+  stage.appendChild(ph);
   stage.appendChild(img);
+  var dirty = false;
   var zoom = document.createElement("input");
   zoom.type = "range"; zoom.min = "1"; zoom.max = "3"; zoom.step = "0.02"; zoom.value = "1"; zoom.className = "crop-zoom";
   zoom.disabled = true;
@@ -4735,8 +4831,13 @@ function openPhotoModal() {
   }
   function loadFile(file) {
     if (!file || !file.type || file.type.indexOf("image/") !== 0) { toast("Choose an image file."); return; }
-    var url = URL.createObjectURL(file);
+    dirty = true;
+    loadSrc(URL.createObjectURL(file));
+  }
+  function loadSrc(url) {
     img.onload = function () {
+      img.hidden = false; ph.hidden = true;
+      save.disabled = !dirty;
       var boxW = stage.clientWidth || 280, boxH = stage.clientHeight || 280;
       crop.min = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight);
       crop.scale = crop.min;
@@ -4763,13 +4864,14 @@ function openPhotoModal() {
     var cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
     var px = (cx - crop.x) / crop.scale, py = (cy - crop.y) / crop.scale;
     crop.scale = next;
+    dirty = true; save.disabled = false;
     crop.x = cx - px * crop.scale;
     crop.y = cy - py * crop.scale;
     layout();
   });
   stage.addEventListener("pointerdown", function (e) {
     if (!crop.img) return;
-    crop.drag = true; crop.sx = e.clientX; crop.sy = e.clientY; crop.ox = crop.x; crop.oy = crop.y;
+    crop.drag = true; dirty = true; save.disabled = false; crop.sx = e.clientX; crop.sy = e.clientY; crop.ox = crop.x; crop.oy = crop.y;
     stage.setPointerCapture(e.pointerId);
   });
   stage.addEventListener("pointermove", function (e) {
@@ -4783,7 +4885,7 @@ function openPhotoModal() {
   var cancel = el("button", "btn ghost", "Cancel");
   var save = el("button", "btn", "Save");
   cancel.type = "button"; save.type = "button"; save.disabled = true;
-  img.addEventListener("load", function () { save.disabled = false; });
+  img.addEventListener("error", function () { img.hidden = true; ph.hidden = false; crop.img = null; });
   cancel.addEventListener("click", function () { host.innerHTML = ""; });
   overlay.addEventListener("click", function (e) { if (e.target === overlay) host.innerHTML = ""; });
   save.addEventListener("click", function () {
@@ -4796,13 +4898,43 @@ function openPhotoModal() {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, out, out);
     ctx.drawImage(crop.img, crop.x * factor, crop.y * factor, crop.img.naturalWidth * crop.scale * factor, crop.img.naturalHeight * crop.scale * factor);
-    setProfilePhoto(canvas.toDataURL("image/jpeg", 0.84));
+    var out64;
+    try { out64 = canvas.toDataURL("image/jpeg", 0.84); }
+    catch (err) { toast("That photo can't be reframed here. Choose it again from your computer."); return; }
+    setProfilePhoto(out64);
     host.innerHTML = "";
   });
   actions.appendChild(cancel); actions.appendChild(save);
-  box.appendChild(pick); box.appendChild(fileIn); box.appendChild(stage); box.appendChild(zoom); box.appendChild(actions);
+  box.appendChild(stage); box.appendChild(zoom);
+  var pickRow = el("div", "crop-pick");
+  pickRow.appendChild(pick);
+  if (currentSrc) {
+    var rm = el("button", "btn quiet sm", "Remove photo");
+    rm.type = "button";
+    rm.style.color = "var(--stop)";
+    rm.addEventListener("click", function () { clearProfilePhoto(); host.innerHTML = ""; });
+    pickRow.appendChild(rm);
+  }
+  box.appendChild(pickRow); box.appendChild(fileIn); box.appendChild(actions);
   overlay.appendChild(box);
   host.appendChild(overlay);
+  /* start from the photo already on the account */
+  if (currentSrc) { pick.textContent = "Choose a new photo"; loadSrc(currentSrc); }
+}
+function currentAvatarSrc() {
+  var stored = avatarKey() ? readJson(avatarKey(), null) : null;
+  return (stored && stored.data) || (state.user && state.user.avatar) || "";
+}
+function clearProfilePhoto() {
+  var k = avatarKey();
+  if (!k) return;
+  try { localStorage.removeItem(k); } catch (e) {}
+  state.user.avatar = "";
+  paintAvatar();
+  if (window.CAOTCloud && CAOTCloud.enabled() && CAOTCloud.saveAvatar) {
+    CAOTCloud.saveAvatar("").catch(function () {});
+  }
+  toast("Profile photo removed.");
 }
 function setProfilePhoto(dataUrl) {
   var k = avatarKey();
