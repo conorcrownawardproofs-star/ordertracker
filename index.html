@@ -152,7 +152,34 @@ html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
 .icon-btn.accent[aria-expanded="false"]:hover{background:rgba(201,154,52,.18)}
 .caret{display:inline-block;font-size:9px;line-height:1;transition:transform .3s var(--ease)}
 .icon-btn[aria-expanded="false"] .caret{transform:rotate(-90deg)}
-.who{display:flex;align-items:center;gap:8px}
+.who{display:flex;align-items:center;gap:8px;margin-left:4px}
+.hdr-group{display:flex;align-items:center;gap:8px}
+.hdr-sep{width:1px;height:26px;background:var(--crown-line)}
+.console .icon-btn{height:34px;padding:0 12px;white-space:nowrap}
+.mark .marktext{white-space:nowrap}
+@media (min-width:1061px) and (max-width:1240px){ .console .searchbox input{width:170px} .console{gap:12px} }
+.console .icon-btn svg{flex:0 0 auto;opacity:.9}
+#btnMenu .caret,.thememenu summary .caret{font-size:10px;opacity:.8;transform:none;transition:transform .2s var(--ease)}
+#btnMenu[aria-expanded="true"] .caret,.thememenu[open] summary .caret{transform:rotate(180deg)}
+.who .avatar{width:36px!important;height:36px!important;flex-basis:36px!important;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+/* entry toggle now lives in the week strip */
+.panel-toggle{gap:6px;background:var(--brass);border-color:var(--brass);color:#fff}
+.panel-toggle[aria-expanded="false"]{background:transparent;color:var(--brass);border-color:var(--brass)}
+.panel-toggle[aria-expanded="false"]:hover{background:var(--brass-soft)}
+.panel-toggle .caret{display:inline-block;font-size:9px;transition:transform .3s var(--ease)}
+.panel-toggle[aria-expanded="false"] .caret{transform:rotate(-90deg)}
+html[data-theme="dark"] .panel-toggle[aria-expanded="false"]{color:var(--brass-lit);border-color:var(--brass-lit)}
+.weekbar{height:auto!important;min-height:62px;padding-top:8px!important;padding-bottom:8px!important}
+.weekbar .left{flex-wrap:nowrap}
+@media (max-width:1180px){ .weekbar .weeklabel{display:none} }
+@media (min-width:761px) and (max-width:1000px){
+  .weekbar{grid-template-columns:1fr 1fr!important;row-gap:8px}
+  .weekbar .weeknav{grid-column:1/-1;grid-row:2;justify-self:center}
+}
+@media (max-width:760px){
+  .hdr-sep{display:none}
+  .weekbar .left{flex-wrap:wrap;justify-content:center}
+}
 .who .avatar{width:34px;height:34px;border-radius:50%;background:var(--brass-lit);color:#17130A;display:grid;place-items:center;font-weight:700;font-size:12.5px;overflow:hidden;cursor:pointer;padding:0;border:none;flex:0 0 34px}
 .who .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .who .avatar:hover{box-shadow:0 0 0 2px var(--brass-lit)}
@@ -160,7 +187,7 @@ html[data-theme="dark"] .code-drop .code{color:var(--brass-lit)}
 /* ---------------- week strip ---------------- */
 .weekbar{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;
   display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 22px;height:62px}
-.weekbar .left{display:flex;align-items:center;gap:9px}
+.weekbar .left{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
 .weekbar .right{display:flex;align-items:center;gap:9px;justify-content:flex-end}
 .weeknav{display:flex;align-items:center;gap:6px;justify-self:center}
 .wk{background:var(--surface);border:1px solid var(--line);border-radius:7px;width:34px;height:34px;cursor:pointer;
@@ -348,7 +375,18 @@ html[data-theme="dark"] .quad button[aria-pressed="true"]{background:var(--code)
 .thememenu summary::-webkit-details-marker{display:none}
 .thememenu summary .caret{font-size:10px;opacity:.8}
 .thememenu[open] summary{background:rgba(255,255,255,.2)}
-.theme-panel{min-width:180px;z-index:60}
+.theme-panel{min-width:180px;z-index:60;transform-origin:top right;animation:menuDrop .18s cubic-bezier(.2,.8,.3,1.2)}
+.thememenu.closing .theme-panel{animation:menuUp .14s ease-in forwards}
+.theme-panel button{opacity:0;animation:menuItem .22s ease-out forwards}
+.theme-panel button:nth-child(1){animation-delay:.04s}
+.theme-panel button:nth-child(2){animation-delay:.08s}
+.theme-panel button:nth-child(3){animation-delay:.12s}
+.theme-panel button:nth-child(4){animation-delay:.16s}
+.thememenu summary svg{transition:transform .35s var(--ease)}
+.thememenu[open] summary svg{transform:rotate(-25deg) scale(1.1)}
+@keyframes menuDrop{from{opacity:0;transform:translateY(-6px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes menuUp{to{opacity:0;transform:translateY(-6px) scale(.96)}}
+@keyframes menuItem{from{opacity:0;transform:translateX(6px)}to{opacity:1;transform:none}}
 .theme-panel button{display:flex;align-items:center;gap:8px}
 .theme-panel .chk{width:14px;color:var(--code);font-weight:700}
 .theme-panel .nm{flex:1}
@@ -532,6 +570,26 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 
 /* ---------------- summary / modal / toast ---------------- */
 .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.modal.sum-modal{max-width:920px;max-height:calc(100vh - 32px);overflow-y:auto;padding:20px 22px}
+.sum-modal .sub{margin-bottom:10px}
+.sum-modal .sum-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.sum-modal .sum-cell{padding:9px 11px}
+.sum-modal .sum-cell b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.sum-panel{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0;display:flex;flex-direction:column}
+.sum-panel .barwrap{flex:1;display:flex}
+.sum-panel .bars{flex:1;height:auto;min-height:64px}
+.sum-panel .sum-h{margin:0 0 8px}
+.sum-panel .sum-row{padding:2px 0}
+.sum-panel .sum-row:last-child{border-bottom:none}
+.sum-row.cur span:first-child{font-weight:700}
+.sum-row.total{font-weight:700;border-top:1px solid var(--line);border-bottom:none;margin-top:2px}
+.sum-empty{font-size:12.5px;color:var(--muted)}
+.sum-modal .modal-actions{margin-top:14px}
+@media (max-width:760px){
+  .sum-modal .sum-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sum-panels{grid-template-columns:1fr}
+}
 .sum-cell{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px}
 .sum-cell b{display:block;font-family:var(--mono);font-size:19px;font-weight:600}
 .sum-cell span{font-size:11.5px;color:var(--muted)}
@@ -1114,9 +1172,12 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C7D8F0" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.4-3.4"/></svg>
       <input type="text" id="search" placeholder="Search orders, customers, notes" aria-label="Search orders">
     </div>
-    <button class="icon-btn accent" id="btnEmailProof" title="Email proof templates">Email proof</button>
-    <button class="icon-btn" id="btnSummary">Day summary</button>
-    <button class="icon-btn accent" id="btnPanel" aria-expanded="true" aria-controls="entrybar" title="Show or hide the entry row"><span class="caret">▼</span><span id="btnPanelLabel">Hide entry row</span></button>
+    <div class="hdr-group">
+      <button class="icon-btn accent" id="btnEmailProof" title="Email proof templates"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>Email proof</span></button>
+      <button class="icon-btn" id="btnSummary" title="Day summary (Ctrl+D)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Day summary</span></button>
+    </div>
+    <div class="hdr-sep" aria-hidden="true"></div>
+    <div class="hdr-group">
     <details class="thememenu" id="themeMenu">
       <summary class="icon-btn" title="Theme" aria-label="Theme">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.6-.1-1.1-.2-1.6A5 5 0 0 1 13.6 3.2 9 9 0 0 0 12 3z"/></svg>
@@ -1124,16 +1185,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
       </summary>
       <div class="toolmenu-panel theme-panel" role="menu" id="themeList"></div>
     </details>
+      <button class="icon-btn" id="btnMenu" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Account</span><span class="caret">▾</span></button>
+    </div>
     <div class="who">
-      <button class="avatar" id="avatar" type="button" title="Change photo">--</button>
       <input id="avatarFile" type="file" accept="image/*" hidden>
       <input id="proofFile" type="file" accept="application/pdf,.pdf" multiple hidden>
-      <button class="icon-btn" id="btnMenu" aria-haspopup="true" aria-expanded="false">Account ▾</button>
+      <button class="avatar" id="avatar" type="button" title="Change photo">--</button>
     </div>
   </div>
 
   <div class="weekbar">
     <div class="left">
+      <button class="btn sm panel-toggle" id="btnPanel" aria-expanded="true" aria-controls="entrybar" title="Show or hide the order entry form"><span class="caret">▼</span><span id="btnPanelLabel">Hide entry row</span></button>
       <span class="weeklabel" id="weekLabel"></span>
       <button class="btn ghost sm" id="btnThisWeek">This week</button>
     </div>
@@ -3943,7 +4006,7 @@ function openSummary() {
   var host = $("modalHost");
   host.textContent = "";
   var scrim = el("div", "scrim");
-  var box = el("div", "modal lg");
+  var box = el("div", "modal sum-modal");
   box.appendChild(el("h3", null, "Summary for " + prettyDate(dateKey)));
   box.appendChild(el("p", "sub", s.count
     ? s.finished + " of " + s.count + " orders finished."
@@ -3965,8 +4028,15 @@ function openSummary() {
     grid.appendChild(c);
   });
   box.appendChild(grid);
+  /* Four small panels in a 2x2 grid instead of one tall column that ran off
+     the top and bottom of the screen. */
+  var panels = el("div", "sum-panels");
+  var pHours = el("section", "sum-panel"), pWeek = el("section", "sum-panel"),
+      pTypes = el("section", "sum-panel"), pMix = el("section", "sum-panel");
+  panels.appendChild(pHours); panels.appendChild(pWeek);
+  panels.appendChild(pTypes); panels.appendChild(pMix);
 
-  box.appendChild(el("div", "sum-h", "Orders completed by hour"));
+  pHours.appendChild(el("div", "sum-h", "Orders completed by hour"));
   var wrap = el("div", "barwrap");
   var bars = el("div", "bars");
   var hours = [], max = 1;
@@ -3985,20 +4055,21 @@ function openSummary() {
     bars.appendChild(bar);
   });
   wrap.appendChild(bars);
-  box.appendChild(wrap);
+  pHours.appendChild(wrap);
 
   var typeKeys = Object.keys(s.types).sort();
+  pTypes.appendChild(el("div", "sum-h", "Order types"));
+  if (!typeKeys.length) pTypes.appendChild(el("div", "sum-empty", "No order types logged."));
   if (typeKeys.length) {
-    box.appendChild(el("div", "sum-h", "Order types"));
     typeKeys.forEach(function (t) {
       var row = el("div", "sum-row");
       row.appendChild(el("span", null, t));
       row.appendChild(el("span", null, s.types[t]));
-      box.appendChild(row);
+      pTypes.appendChild(row);
     });
   }
 
-  box.appendChild(el("div", "sum-h", "Status mix"));
+  pMix.appendChild(el("div", "sum-h", "Status mix"));
   [["Routing codes (CLC, LEC, WEE, ILS)", s.tally["t-code"]],
    ["Approved or sent", s.tally["t-go"]],
    ["Proof required or requested", s.tally["t-warn"]],
@@ -4006,24 +4077,25 @@ function openSummary() {
    ["CLC", s.clc], ["LEC", s.lec]].forEach(function (pair) {
     var row = el("div", "sum-row");
     row.appendChild(el("span", null, pair[0]));
-    row.appendChild(el("span", null, pair[1]));
-    box.appendChild(row);
+    row.appendChild(el("span", null, pair[1] || 0));
+    pMix.appendChild(row);
   });
 
-  box.appendChild(el("div", "sum-h", "This week"));
+  pWeek.appendChild(el("div", "sum-h", "This week"));
   var weekTotal = 0;
   weekdayKeys(state.weekStart).forEach(function (key) {
     var n = state.orders.filter(function (o) { return o.date === key; }).length;
     weekTotal += n;
-    var row = el("div", "sum-row");
+    var row = el("div", "sum-row" + (key === dateKey ? " cur" : ""));
     row.appendChild(el("span", null, DAY_NAMES[dateFromKey(key).getDay()] + ", " + shortDate(key)));
     row.appendChild(el("span", null, n));
-    box.appendChild(row);
+    pWeek.appendChild(row);
   });
-  var totalRow = el("div", "sum-row");
+  var totalRow = el("div", "sum-row total");
   totalRow.appendChild(el("span", null, "Week total"));
   totalRow.appendChild(el("span", null, weekTotal));
-  box.appendChild(totalRow);
+  pWeek.appendChild(totalRow);
+  box.appendChild(panels);
 
   var acts = el("div", "modal-actions");
   var copy = el("button", "btn ghost", "Copy as text");
@@ -4835,6 +4907,12 @@ function openMenu() {
   menu.appendChild(el("hr"));
   item("Sign out", null, signOut);
   host.appendChild(menu);
+  /* sit right under the Account button, wherever the header puts it */
+  if (window.innerWidth > 760) {
+    var br = $("btnMenu").getBoundingClientRect();
+    menu.style.right = Math.max(8, window.innerWidth - br.right) + "px";
+    menu.style.top = (br.bottom + 6 + window.pageYOffset) + "px";
+  }
   $("btnMenu").setAttribute("aria-expanded", "true");
   setTimeout(function () { document.addEventListener("click", outsideMenu); }, 0);
 }
@@ -5349,14 +5427,25 @@ function wire() {
     searchTimer = setTimeout(function () { state.query = v; scheduleTable(); }, 90);
   });
   var thm = $("themeMenu");
+  /* close with a short fade instead of vanishing */
+  var closeTheme = function () {
+    if (!thm.open || thm.classList.contains("closing")) return;
+    var instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (instant) { thm.open = false; return; }
+    thm.classList.add("closing");
+    setTimeout(function () { thm.open = false; thm.classList.remove("closing"); }, 140);
+  };
+  thm.querySelector("summary").addEventListener("click", function (e) {
+    if (thm.open) { e.preventDefault(); closeTheme(); }
+  });
   thm.addEventListener("click", function (e) {
     var pickT = e.target.closest("[data-theme-pick]");
     if (!pickT) return;
     applyTheme(pickT.getAttribute("data-theme-pick"));
-    thm.open = false;
+    closeTheme();
   });
-  document.addEventListener("click", function (e) { if (thm.open && !thm.contains(e.target)) thm.open = false; });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && thm.open) thm.open = false; });
+  document.addEventListener("click", function (e) { if (thm.open && !thm.contains(e.target)) closeTheme(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && thm.open) closeTheme(); });
   renderThemeMenu(document.documentElement.getAttribute("data-theme") || "light");
   $("btnPanel").addEventListener("click", togglePanel);
   bindSplitter();
