@@ -12,6 +12,9 @@ if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fon
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Award Order Tracker — Crown Awards International HQ</title>
+<!-- App/tab identity: the same crown mark is used for browser tabs and iPhone home-screen installs. -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230E3A78'/%3E%3Cpath d='M4 22V12l6 5 6-9 6 9 6-5v10H4Z' fill='%23D9B45F'/%3E%3Crect x='4' y='24' width='24' height='4' rx='1' fill='%23D9B45F'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='32' fill='%230E3A78'/%3E%3Cpath d='M22 124V68l34 28 34-52 34 52 34-28v56H22Z' fill='%23D9B45F'/%3E%3Crect x='22' y='136' width='136' height='22' rx='5' fill='%23D9B45F'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -468,8 +471,11 @@ td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 td.dur{font-family:var(--mono);font-size:12px}
 td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
 td.num.zero{color:var(--muted)}
-td.amt-editable{cursor:pointer;transition:background .12s var(--ease)}
-td.amt-editable:hover{background:var(--row-hover);box-shadow:inset 0 0 0 1px var(--crown-line)}
+td.amt-editable{cursor:pointer;transition:background .12s var(--ease),box-shadow .12s var(--ease)}
+/* Do not paint a second background on top of the row hover overlay. The old
+   cell background competed with tbody tr:hover's full-row inset shadow and
+   made the Amount column flicker/jump between hover states. */
+td.amt-editable:hover{background:transparent;box-shadow:inset 0 0 0 1px var(--crown-line)}
 td.amt-editable.zero:hover::after{content:"+ add price";font-family:var(--sans);font-size:11px;font-weight:600;color:var(--focus);margin-left:5px;white-space:nowrap}
 td.amt-edit-input{width:100%;text-align:right;font-family:var(--mono);font-size:12.5px;background:var(--surface);color:var(--text);border:1px solid var(--focus);border-radius:4px;padding:2px 6px}
 .otype{display:inline-block;padding:2px 7px;border-radius:5px;font:700 11px var(--mono);letter-spacing:.04em;
@@ -603,6 +609,10 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 .sum-panel .sum-h{margin:0 0 8px}
 .sum-panel .sum-row{padding:2px 0}
 .sum-panel .sum-row:last-child{border-bottom:none}
+.sum-panel.sum-financial{grid-column:1/-1}
+.sum-financial .financial-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.sum-financial .sum-cell{padding:8px 10px}
+.sum-financial .sum-cell b{font-size:16px}
 .sum-row.cur span:first-child{font-weight:700}
 .sum-row.total{font-weight:700;border-top:1px solid var(--line);border-bottom:none;margin-top:2px}
 .sum-empty{font-size:12.5px;color:var(--muted)}
@@ -610,6 +620,8 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 @media (max-width:760px){
   .sum-modal .sum-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sum-panels{grid-template-columns:1fr}
+  .sum-panel.sum-financial{grid-column:auto}
+  .sum-financial .financial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 .sum-cell{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px}
 .sum-cell b{display:block;font-family:var(--mono);font-size:19px;font-weight:600}
@@ -635,7 +647,18 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 .datefield{position:relative}
 input[type="date"]{width:100%;padding:9px 28px 9px 11px;border:1px solid var(--line);border-radius:7px;
   background:var(--surface);color:var(--text);font-family:var(--mono);font-size:13.5px}
-input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;width:14px;height:14px;margin:0}
+/* Date inputs keep one tab stop. The visible picker button is deliberately
+   mouse/touch-only, so keyboard users tab straight from date to the next field. */
+input[type="date"]::-webkit-calendar-picker-indicator{display:none}
+.datefield{display:flex;align-items:stretch;gap:6px}
+.datefield input{flex:1;min-width:0}
+.datefield .calendar-btn{
+  flex:0 0 40px;width:40px;min-height:40px;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface-2);color:var(--text-2);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;padding:0;
+}
+.datefield .calendar-btn:hover{background:var(--code-bg);border-color:var(--code);color:var(--code)}
+.datefield .calendar-btn svg{width:16px;height:16px}
 /* The generic date-input padding above was tuned for the roomy entry form and
    was winning (by specificity) over .cellinput's tighter padding inside the
    table's inline-edit row, eating ~39px of an already-narrow column and
@@ -770,6 +793,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;
   .timefield .stamp{min-height:44px}
   /* 16px prevents iOS Safari zooming the page when a field is focused. */
   .ecell input,.ecell textarea,.ecell select{font-size:16px;padding:12px 14px;min-height:48px}
+  .datefield .calendar-btn{flex-basis:48px;width:48px;min-height:48px}
   .ecell input.money,.ecell input.qty{text-align:left}
   .ecell textarea{min-height:56px}
   .tri{min-height:48px}
@@ -1551,7 +1575,7 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
     </div>
     <div class="hdr-group" id="hdrTasks">
       <button class="icon-btn accent" id="btnEmailProof" title="Email proof templates"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>Email proof</span></button>
-      <button class="icon-btn" id="btnSummary" title="Day summary (Ctrl+D)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Day summary</span></button>
+      <button class="icon-btn" id="btnSummary" title="Day and financial summary (Ctrl+D)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Summary</span></button>
     </div>
     <div class="hdr-sep" aria-hidden="true"></div>
     <div class="hdr-group" id="hdrSettings">
@@ -2363,7 +2387,22 @@ function spanMinutes(a, b) {
   if (x === null || y === null) return null;
   return Math.round(y - x);
 }
-function timeTaken(o) { return spanMinutes(o.startTime, o.completionTime); }
+function holdMinutes(o) {
+  if (!o) return 0;
+  var total = Number(o.heldMinutes) || 0;
+  /* A live hold is accumulated only until the moment the summary/table asks
+     for it, so the timer stays frozen while an order waits for clarification. */
+  if (isHoldFlag(o) && o.heldStartedAt && isClock(o.startTime) && !isClock(o.completionTime)) {
+    var started = Date.parse(o.heldStartedAt);
+    if (!isNaN(started)) total += Math.max(0, (Date.now() - started) / 60000);
+  }
+  return Math.max(0, total);
+}
+function timeTaken(o) {
+  var span = spanMinutes(o.startTime, o.completionTime);
+  if (span === null) return null;
+  return Math.max(0, Math.round(span - holdMinutes(o)));
+}
 function turnaround(o) { return spanMinutes(o.completionTime, o.proofRcvdTime); }
 function durationText(min) {
   if (min === null || min === undefined) return "";
@@ -2773,6 +2812,8 @@ function normalizeOrder(o) {
     fin: tri(o.fin),
     savedToDrive: tri(o.savedToDrive),
     held: o.held === "TRUE" || o.held === true ? "TRUE" : "FALSE",
+    heldStartedAt: txt(o.heldStartedAt),
+    heldMinutes: Number(o.heldMinutes) > 0 ? Number(o.heldMinutes) : 0,
     notes: txt(o.notes),
     proofs: Array.isArray(o.proofs) ? o.proofs : [],
     createdAt: o.createdAt || nowIso(),
@@ -2804,7 +2845,7 @@ function inScope(o) {
   if (state.scope === "week") return weekKeysSet()[o.date] === true;
   return o.date === state.scopeDate;
 }
-function isLive(o) { return isClock(o.startTime) && !isClock(o.completionTime); }
+function isLive(o) { return isClock(o.startTime) && !isClock(o.completionTime) && !isHoldFlag(o); }
 function awaitingProof(o) { return o.proof === "TRUE" && !isClock(o.proofRcvdTime); }
 function isCode(o, code) {
   var blob = (o.status || "") + " " + statusTextFromLog(o.statusLog);
@@ -3000,10 +3041,12 @@ var ENTRY_GROUPS = [
 ];
 var ENTRY_SPAN = {
   seq: [3, 2, 3, 2],  date: [4, 3, 3, 4],  orderId: [7, 3, 6, 6],  customer: [10, 4, 6, 6],
-  placedDate: [4, 2, 2, 6], reqShipDate: [4, 2, 2, 3], eventDate: [4, 2, 2, 3],
-  otype: [4, 2, 2, 2], qty: [3, 2, 2, 2], amount: [5, 2, 2, 2],
+  placedDate: [4, 2, 2, 6], reqShipDate: [2, 2, 2, 3], eventDate: [2, 2, 2, 3],
+  /* Give Type / Qty / Amount / Proof / Mark equal desktop weight. The space
+     comes from the two date fields, which no longer dominate this row. */
+  otype: [4, 2, 2, 2], qty: [4, 2, 2, 2], amount: [4, 2, 2, 2],
   startTime: [6, 3, 3, 3], completionTime: [6, 3, 3, 3], taken: [3, 2, 2, 3], proofRcvdTime: [6, 2, 2, 3], turn: [3, 2, 2, 6],
-  proof: [7, 4, 3, 6], marking: [10, 5, 3, 6], fin: [7, 3, 6, 6],
+  proof: [4, 4, 3, 6], marking: [4, 5, 3, 6], fin: [7, 3, 6, 6],
   status: [11, 6, 6, 6], notes: [8, 4, 6, 6], acts: [5, 2, 6, 6]
 };
 /* When the Date column is hidden (single-day scope), give its space to the
@@ -3091,7 +3134,23 @@ function buildEntryRow(cols) {
       di.type = "date";
       di.id = c.field;
       di.className = "mono";
+      /* Explicitly keep the date input as the only keyboard stop. */
+      di.setAttribute("tabindex", "0");
       wrap.appendChild(di);
+      var cal = el("button", "calendar-btn");
+      cal.type = "button";
+      cal.tabIndex = -1;
+      cal.setAttribute("aria-label", "Open calendar");
+      cal.title = "Open calendar";
+      cal.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+      cal.addEventListener("click", function () {
+        di.focus({ preventScroll: true });
+        if (typeof di.showPicker === "function") {
+          try { di.showPicker(); return; } catch (e) {}
+        }
+        di.click();
+      });
+      wrap.appendChild(cal);
       cell.appendChild(wrap);
     } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
       var input = document.createElement("input");
@@ -3814,6 +3873,10 @@ function stampNow(id, field) {
     toast("CLC / LEC orders do not take a proof time.");
     return;
   }
+  if (field === "completionTime" && isHoldFlag(o)) {
+    toast("Release the hold before completing this order.");
+    return;
+  }
   var prev = o[field];
   o[field] = nowClock();
   o.updatedAt = nowIso();
@@ -4513,19 +4576,47 @@ function openSummary() {
     pMix.appendChild(row);
   });
 
-  pWeek.appendChild(el("div", "sum-h", "This week"));
-  var weekTotal = 0;
-  weekdayKeys(state.weekStart).forEach(function (key) {
-    var n = state.orders.filter(function (o) { return o.date === key; }).length;
-    weekTotal += n;
-    var row = el("div", "sum-row" + (key === dateKey ? " cur" : ""));
-    row.appendChild(el("span", null, DAY_NAMES[dateFromKey(key).getDay()] + ", " + shortDate(key)));
-    row.appendChild(el("span", null, n));
+  pWeek.classList.add("sum-financial");
+  pWeek.appendChild(el("div", "sum-h", "Week financial summary"));
+  var weekRows = weekdayKeys(state.weekStart).map(function (key) {
+    var ordersForDay = state.orders.filter(function (o) { return o.date === key; });
+    var ds = summarize(ordersForDay);
+    return { key: key, summary: ds };
+  });
+  var weekAmount = weekRows.reduce(function (sum, d) { return sum + (d.summary.amount || 0); }, 0);
+  var weekQty = weekRows.reduce(function (sum, d) { return sum + (d.summary.qty || 0); }, 0);
+  var activeDays = weekRows.filter(function (d) { return d.summary.count > 0; }).length;
+  var avgDay = activeDays ? weekAmount / activeDays : 0;
+
+  var financialGrid = el("div", "sum-grid financial-grid");
+  [
+    [money(weekAmount), "week order value"],
+    [activeDays ? money(avgDay) : "—", "avg value / active day"],
+    [money(s.amount || 0), "selected day"],
+    [weekQty || "—", "week pieces"]
+  ].forEach(function (pair) {
+    var c = el("div", "sum-cell");
+    c.appendChild(el("b", null, pair[0]));
+    c.appendChild(el("span", null, pair[1]));
+    financialGrid.appendChild(c);
+  });
+  pWeek.appendChild(financialGrid);
+
+  pWeek.appendChild(el("div", "sum-h", "Daily comparison"));
+  weekRows.forEach(function (d) {
+    var label = DAY_NAMES[dateFromKey(d.key).getDay()] + ", " + shortDate(d.key);
+    var row = el("div", "sum-row" + (d.key === dateKey ? " cur" : ""));
+    var left = el("span", null, label + (d.key === dateKey ? " · selected" : ""));
+    var right = el("span", null, money(d.summary.amount || 0));
+    row.appendChild(left);
+    row.appendChild(right);
+    row.title = d.key === dateKey ? "Selected day" :
+      "Difference from selected day: " + money((d.summary.amount || 0) - (s.amount || 0));
     pWeek.appendChild(row);
   });
   var totalRow = el("div", "sum-row total");
   totalRow.appendChild(el("span", null, "Week total"));
-  totalRow.appendChild(el("span", null, weekTotal));
+  totalRow.appendChild(el("span", null, money(weekAmount)));
   pWeek.appendChild(totalRow);
   box.appendChild(panels);
 
@@ -5697,14 +5788,30 @@ function applyTheme(theme) {
 function toggleHold(id) {
   var o = byId(id);
   if (!o) return;
-  o.held = isHoldFlag(o) ? "FALSE" : "TRUE";
+  var wasHeld = isHoldFlag(o);
+  var prevHeld = o.held, prevStarted = o.heldStartedAt || "", prevMinutes = Number(o.heldMinutes) || 0;
+  if (wasHeld) {
+    /* Close the current pause interval before releasing the hold. */
+    if (o.heldStartedAt && isClock(o.startTime) && !isClock(o.completionTime)) {
+      var started = Date.parse(o.heldStartedAt);
+      if (!isNaN(started)) o.heldMinutes = prevMinutes + Math.max(0, (Date.now() - started) / 60000);
+    }
+    o.held = "FALSE";
+    o.heldStartedAt = "";
+  } else {
+    o.held = "TRUE";
+    /* Only a running order has working time to pause. */
+    o.heldStartedAt = isClock(o.startTime) && !isClock(o.completionTime) ? nowIso() : "";
+  }
   o.updatedAt = nowIso();
   if (!persistOrders()) {
-    o.held = o.held === "TRUE" ? "FALSE" : "TRUE";
+    o.held = prevHeld;
+    o.heldStartedAt = prevStarted;
+    o.heldMinutes = prevMinutes;
     saveFailedModal("hold");
     return;
   }
-  toast(o.held === "TRUE" ? "Held #" + o.seq + "." : "Released #" + o.seq + ".");
+  toast(o.held === "TRUE" ? "Held #" + o.seq + " — timer paused." : "Released #" + o.seq + ".");
   scheduleRender();
 }
 function applyEntryHeight(px) {
@@ -6133,7 +6240,7 @@ window.__CAOT__ = {
   statusParts: statusParts, rowAccent: rowAccent, mondayOf: mondayOf,
   weekdayKeys: weekdayKeys, snapToWeekday: snapToWeekday, durationText: durationText,
   summarize: summarize, summaryText: summaryText, installBootstrap: installBootstrap,
-  renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
+  holdMinutes: holdMinutes, renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
   setPanel: setPanel, panelCollapsed: panelCollapsed,
   isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
   startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
