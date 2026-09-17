@@ -453,9 +453,11 @@ tbody tr.row-warn:nth-child(odd){background:var(--row-warn-a)}
 tbody tr.row-warn:nth-child(even){background:var(--row-warn-b)}
 tbody tr.row-hot:nth-child(odd){background:var(--row-hot-a)}
 tbody tr.row-hot:nth-child(even){background:var(--row-hot-b)}
-/* Hover tints on top of whatever band the row already has, instead of
-   replacing it, so the colour coding never disappears under the cursor. */
-tbody tr:hover{box-shadow:inset 0 0 0 9999px var(--row-hover)}
+/* Hover tints on the cells rather than the whole row. The Amount cell is
+   intentionally excluded so its editable surface never gets the blue hover
+   animation that used to flicker over the value. */
+tbody tr:hover{box-shadow:none}
+tbody tr:hover td:not(.amt-editable){box-shadow:inset 0 0 0 9999px var(--row-hover)}
 tbody tr.editing,tbody tr.editing:nth-child(odd),tbody tr.editing:nth-child(even){background:var(--code-bg)}
 tbody tr.editing td{vertical-align:middle;padding:5px 6px}
 tbody tr.flash{animation:rowFlash 1.2s var(--ease)}
@@ -471,11 +473,10 @@ td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 td.dur{font-family:var(--mono);font-size:12px}
 td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
 td.num.zero{color:var(--muted)}
-td.amt-editable{cursor:pointer;transition:background .12s var(--ease),box-shadow .12s var(--ease)}
-/* Do not paint a second background on top of the row hover overlay. The old
-   cell background competed with tbody tr:hover's full-row inset shadow and
-   made the Amount column flicker/jump between hover states. */
-td.amt-editable:hover{background:transparent;box-shadow:inset 0 0 0 1px var(--crown-line)}
+td.amt-editable{cursor:pointer;transition:none}
+/* Amount is deliberately excluded from row-hover painting above. Keep its
+   own hover state completely inert so there is no blue animation/flicker. */
+td.amt-editable:hover{background:inherit;box-shadow:none}
 td.amt-editable.zero:hover::after{content:"+ add price";font-family:var(--sans);font-size:11px;font-weight:600;color:var(--focus);margin-left:5px;white-space:nowrap}
 td.amt-edit-input{width:100%;text-align:right;font-family:var(--mono);font-size:12.5px;background:var(--surface);color:var(--text);border:1px solid var(--focus);border-radius:4px;padding:2px 6px}
 .otype{display:inline-block;padding:2px 7px;border-radius:5px;font:700 11px var(--mono);letter-spacing:.04em;
@@ -2982,10 +2983,12 @@ function activeColumns() {
 /* Relative widths tuned so short values ("19", "RTR", "$1,234.56") never get
    chopped mid-word on a laptop screen. Unknown keys fall back to 60. */
 var COL_WEIGHT = {
-  seq: 26, date: 68, placedDate: 150, orderId: 84, customer: 140, reqShipDate: 145, eventDate: 145,
-  otype: 30, qty: 22, amount: 60, proof: 32, marking: 62, status: 86,
-  startTime: 56, completionTime: 56, taken: 40, proofRcvdTime: 56, turn: 40,
-  fin: 42, notes: 80, acts: 92
+  /* Rebalanced to match the entry form: # is readable, Placed / Req. Ship /
+     Event are tighter, and Type through Turn get enough room for their values. */
+  seq: 40, date: 68, placedDate: 90, orderId: 92, customer: 140, reqShipDate: 92, eventDate: 92,
+  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 88,
+  startTime: 64, completionTime: 64, taken: 46, proofRcvdTime: 64, turn: 52,
+  fin: 52, notes: 80, acts: 92
 };
 function columnWidth(c) {
   var wOf = function (k) { return COL_WEIGHT[k.key] || 60; };
@@ -3041,11 +3044,14 @@ var ENTRY_GROUPS = [
 ];
 var ENTRY_SPAN = {
   seq: [3, 2, 3, 2],  date: [4, 3, 3, 4],  orderId: [7, 3, 6, 6],  customer: [10, 4, 6, 6],
-  placedDate: [4, 2, 2, 6], reqShipDate: [2, 2, 2, 3], eventDate: [2, 2, 2, 3],
-  /* Give Type / Qty / Amount / Proof / Mark equal desktop weight. The space
-     comes from the two date fields, which no longer dominate this row. */
-  otype: [4, 2, 2, 2], qty: [4, 2, 2, 2], amount: [4, 2, 2, 2],
-  startTime: [6, 3, 3, 3], completionTime: [6, 3, 3, 3], taken: [3, 2, 2, 3], proofRcvdTime: [6, 2, 2, 3], turn: [3, 2, 2, 6],
+  /* Keep the first row balanced: # gets enough room to stay visible, while
+     Placed / Req. Ship / Event no longer consume oversized chunks. */
+  placedDate: [3, 2, 2, 4], reqShipDate: [2, 2, 2, 3], eventDate: [2, 2, 2, 3],
+  /* The date fields give their reclaimed space to the working fields. Type
+     through Turn now have deliberate, readable widths instead of being
+     squeezed into narrow slivers. */
+  otype: [4, 2, 2, 3], qty: [3, 2, 2, 3], amount: [4, 2, 2, 3],
+  startTime: [5, 3, 3, 3], completionTime: [5, 3, 3, 3], taken: [3, 2, 2, 3], proofRcvdTime: [5, 2, 2, 3], turn: [6, 2, 2, 3],
   proof: [4, 4, 3, 6], marking: [4, 5, 3, 6], fin: [7, 3, 6, 6],
   status: [11, 6, 6, 6], notes: [8, 4, 6, 6], acts: [5, 2, 6, 6]
 };
