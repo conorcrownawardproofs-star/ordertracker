@@ -6221,10 +6221,22 @@ function wire() {
     if (!e.target.closest(".note-pop") && !e.target.closest("[data-note]")) closeNotePop();
   });
   $("tbody").addEventListener("dblclick", function (e) {
+    /* Order # is a copy field, not an edit trigger. Explicitly select its
+       contents on double-click so copying is reliable, while every other
+       normal table cell retains the existing double-click-to-edit behavior. */
+    var oid = e.target.closest("td.oid");
+    if (oid) {
+      e.preventDefault();
+      var sel = window.getSelection ? window.getSelection() : null;
+      if (sel) {
+        var range = document.createRange();
+        range.selectNodeContents(oid);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      return;
+    }
     if (state.inlineId) return;
-    /* Order # is intentionally text-selectable for fast copy/paste; a
-       double-click on it must never trigger whole-row editing. */
-    if (e.target.closest("td.oid")) return;
     if (e.target.closest("[data-edit-amount], .amt-edit-input")) return;
     var tr = e.target.closest("tr");
     if (!tr) return;
