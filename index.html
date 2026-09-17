@@ -4,7 +4,7 @@
 /* Apply the saved theme before anything paints (no flash of the wrong colours). */
 try{(function(){var p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}"),t=p.theme||"light",r=document.documentElement,
 dark={dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1},
-f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display"};
+f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display"};
 r.setAttribute("data-theme",t);r.setAttribute("data-tone",dark[t]?"dark":"light");if(p.fx!==false)r.classList.add("fx");
 if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fonts.googleapis.com/css2?family='+f[t]+'&display=swap">');})();}catch(e){}
 </script>
@@ -1265,44 +1265,200 @@ html[data-theme="arizona"] .modal h3,html[data-theme="arizona"] .entryhead h3{fo
 html[data-theme="arizona"] .icon-btn.accent{box-shadow:0 0 14px rgba(63,243,230,.55)}
 html[data-theme="arizona"] .btn.ghost{color:var(--text)}
 
-/* ---------- Crystal Castles: black ice, lilac static, glitch ---------- */
+/* ---------- Crystal Castles: concrete, spray paint, static and grime ----------
+   Overhauled: asphalt + rolled-on concrete texture, four spray-can colours,
+   torn edges, sticker chips, hard offset shadows, drifting ash, rolling static.
+   Every animation sits behind html.fx and the global reduced-motion rule. */
 html[data-theme="castles"]{
-  --crown:#050409; --crown-2:#0C0A13; --crown-line:#2E2940; --crown-ink:#F1EEFF; --crown-dim:#9C94B8;
-  --paper:#060509; --surface:#0E0D13; --surface-2:#15131C; --line:#2A2635;
-  --text:#EDEAF7; --text-2:#B4ADC8; --muted:#7D7792;
-  --brass:#C9B6FF; --brass-lit:#E4DAFF; --brass-soft:#211A36;
-  --go:#8CFFD9; --go-bg:#0F2A24; --stop:#FF4F8B; --stop-bg:#3A0F22;
-  --hold:#E8FF6B; --hold-bg:#262B0C; --code:#7CE7FF; --code-bg:#0F2833;
-  --idle:#9A93B3; --idle-bg:#1B1826; --focus:#E8FF6B;
-  --row-a:#0E0D13; --row-b:#13111A; --row-code-a:#0D1C24; --row-code-b:#10232C;
-  --row-go-a:#0C1E1B; --row-go-b:#0F2521; --row-warn-a:#1D200C; --row-warn-b:#232710;
-  --row-hot-a:#250C18; --row-hot-b:#2D0F1D; --row-hover:rgba(201,182,255,.07);
-  --btn-ink:#0A0714; --accent-ink:#0A0714; --code-ink:#041A22; --go-ink:#04201A; --stop-ink:#1A0610;
-  --ghost-bg:#1B1826; --ghost-bg-h:#262236; --ghost-line:#3A3450; --ghost-line-h:#C9B6FF;
-  --crest:#F1EEFF;
+  /* --- spray can rack --- */
+  --cc-pink:#FF2E88; --cc-acid:#C8FF2E; --cc-ice:#68E8FF; --cc-lilac:#B49BFF; --cc-tar:#08070B;
+  /* --- textures: fine static, and a coarse poured-concrete wall --- */
+  --cc-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='.4'/%3E%3C/svg%3E");
+  --cc-tooth:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23t)' opacity='.1'/%3E%3C/svg%3E");
+  --cc-concrete:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.07' numOctaves='5'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23c)' opacity='.16'/%3E%3C/svg%3E");
+  --crown:#0B0910; --crown-2:#16131F; --crown-line:#3B3450; --crown-ink:#F5F2FF; --crown-dim:#A79EC4;
+  --paper:#0A090D; --surface:#121017; --surface-2:#1A1822; --line:#2F2B3C;
+  --text:#F1EEFA; --text-2:#B6AECC; --muted:#827B96;
+  --brass:#C8FF2E; --brass-lit:#E0FF7A; --brass-soft:#1F2708;
+  --go:#6DFFC0; --go-bg:#0C2C23; --stop:#FF2E88; --stop-bg:#3B0B21;
+  --hold:#FFD23D; --hold-bg:#2E2408; --code:#68E8FF; --code-bg:#0B2B37;
+  --idle:#968FAB; --idle-bg:#1C1A25; --focus:#C8FF2E;
+  --row-a:#121017; --row-b:#17141E; --row-code-a:#0C212B; --row-code-b:#0F2733;
+  --row-go-a:#0C201C; --row-go-b:#102723; --row-warn-a:#221C09; --row-warn-b:#29220C;
+  --row-hot-a:#270B18; --row-hot-b:#2F0E1E; --row-hover:rgba(200,255,46,.09);
+  --btn-ink:#0B0F02; --accent-ink:#0B0F02; --code-ink:#03181F; --go-ink:#03201A; --stop-ink:#1F0410;
+  --ghost-bg:#1D1A28; --ghost-bg-h:#2A2539; --ghost-line:#453D5E; --ghost-line-h:#C8FF2E;
+  --crest:#F5F2FF;
   --display:'VT323',ui-monospace,monospace;
-  --hdr-bg:linear-gradient(180deg,#0C0A13,#050409);
-  --shadow:0 0 0 1px rgba(201,182,255,.06),0 12px 30px -16px rgba(124,231,255,.25);
+  --cc-tag:'Permanent Marker','VT323',ui-monospace,monospace;
+  --hdr-bg:var(--cc-concrete),
+    radial-gradient(60% 190% at 8% 125%,rgba(255,46,136,.32),transparent 62%),
+    radial-gradient(55% 165% at 78% -45%,rgba(104,232,255,.24),transparent 60%),
+    linear-gradient(180deg,#16131F,#08070B);
+  --shadow:0 0 0 1px rgba(200,255,46,.07),5px 5px 0 rgba(0,0,0,.55),0 20px 44px -24px rgba(255,46,136,.45);
 }
+/* Wall: sprayed blooms bleeding through a concrete pour. */
+html[data-theme="castles"] body{
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(42% 26% at 13% 5%,rgba(255,46,136,.17),transparent 70%),
+    radial-gradient(34% 24% at 89% 17%,rgba(104,232,255,.14),transparent 70%),
+    radial-gradient(50% 30% at 64% 99%,rgba(200,255,46,.11),transparent 72%),
+    var(--cc-concrete);
+  background-size:auto,auto,auto,300px 300px;
+  background-attachment:fixed}
+/* Static: a grain plate that twitches four times a frame-beat. */
+html[data-theme="castles"] body::before{content:"";position:fixed;inset:-80px;z-index:-1;pointer-events:none;
+  background-image:var(--cc-grain);background-size:200px 200px;opacity:.4;mix-blend-mode:overlay}
+html.fx[data-theme="castles"] body::before{animation:ccStatic .42s steps(4) infinite}
+@keyframes ccStatic{
+  0%{transform:translate3d(0,0,0)}25%{transform:translate3d(-14px,9px,0)}
+  50%{transform:translate3d(10px,-13px,0)}75%{transform:translate3d(-8px,-7px,0)}
+  100%{transform:translate3d(12px,6px,0)}}
+/* Scanlines plus a tracking bar that rolls down the screen like bad VHS. */
 html[data-theme="castles"] body::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;
-  background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
-html[data-theme="castles"] .mark b{font-size:24px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;
-  text-shadow:1.5px 0 rgba(255,79,139,.8),-1.5px 0 rgba(124,231,255,.8)}
-html.fx[data-theme="castles"] .mark b{animation:ccGlitch 5.5s steps(1) infinite}
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),
+    linear-gradient(180deg,transparent 0,rgba(180,155,255,.055) 42%,rgba(104,232,255,.05) 58%,transparent 100%);
+  background-size:100% 3px,100% 18vh;
+  background-repeat:repeat,no-repeat;
+  background-position:0 0,0 -30vh;
+  mix-blend-mode:screen}
+html.fx[data-theme="castles"] body::after{animation:ccRoll 8s linear infinite}
+@keyframes ccRoll{from{background-position:0 0,0 -30vh}to{background-position:0 9px,0 130vh}}
+
+/* ---- header: sprayed concrete slab with a torn bottom and wet drips ---- */
+html[data-theme="castles"] .console{position:relative;box-shadow:none}
+html[data-theme="castles"] .console::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:10px;z-index:3;pointer-events:none;
+  background:linear-gradient(135deg,#08070B 25%,transparent 25%) -9px 0/18px 18px repeat-x,
+             linear-gradient(225deg,#08070B 25%,transparent 25%) -9px 0/18px 18px repeat-x}
+html[data-theme="castles"] .console::before{content:"";position:absolute;left:0;right:0;bottom:-24px;height:26px;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(4px 13px at 13% 0,var(--cc-pink),transparent 72%),
+    radial-gradient(3px 21px at 31% 0,var(--cc-acid),transparent 72%),
+    radial-gradient(3px 9px at 57% 0,var(--cc-ice),transparent 72%),
+    radial-gradient(4px 17px at 80% 0,var(--cc-lilac),transparent 72%);
+  opacity:.5}
+html.fx[data-theme="castles"] .console::before{animation:ccDrip 11s ease-in-out infinite}
+@keyframes ccDrip{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+html[data-theme="castles"] .mark{position:relative;border-right-color:rgba(200,255,46,.35)}
+html[data-theme="castles"] .mark b{font-family:var(--cc-tag);font-size:21px;font-weight:400;letter-spacing:.01em;
+  text-transform:uppercase;color:#FFFFFF;transform:rotate(-1.6deg);
+  text-shadow:2px 0 var(--cc-pink),-2px 0 var(--cc-ice),0 0 18px rgba(200,255,46,.22)}
+html[data-theme="castles"] .mark span{text-transform:uppercase;letter-spacing:.14em;font-family:var(--mono);
+  font-size:10px;color:var(--cc-acid);opacity:.85}
+html.fx[data-theme="castles"] .mark b{animation:ccGlitch 4.2s steps(1) infinite}
 @keyframes ccGlitch{
-  0%,86%,100%{transform:none;text-shadow:1.5px 0 rgba(255,79,139,.8),-1.5px 0 rgba(124,231,255,.8);clip-path:none}
-  87%{transform:translate(-2px,1px) skewX(-8deg);text-shadow:-3px 0 #FF4F8B,3px 0 #7CE7FF;clip-path:inset(10% 0 45% 0)}
-  89%{transform:translate(3px,-1px);text-shadow:3px 0 #E8FF6B,-3px 0 #C9B6FF;clip-path:inset(55% 0 5% 0)}
-  91%{transform:translate(-1px,0) skewX(6deg);clip-path:inset(30% 0 30% 0)}
-  93%{transform:none;clip-path:none}
-}
+  0%,74%,100%{transform:rotate(-1.6deg);text-shadow:2px 0 var(--cc-pink),-2px 0 var(--cc-ice),0 0 18px rgba(200,255,46,.22);clip-path:none;opacity:1}
+  75%{transform:translate(-4px,1px) skewX(-12deg) rotate(-1.6deg);text-shadow:-5px 0 #FF2E88,5px 0 #68E8FF;clip-path:inset(8% 0 52% 0)}
+  77%{transform:translate(5px,-2px) rotate(-1.6deg);text-shadow:5px 0 #C8FF2E,-5px 0 #B49BFF;clip-path:inset(58% 0 4% 0)}
+  79%{transform:translate(-2px,0) skewX(9deg) rotate(-1.6deg);clip-path:inset(34% 0 32% 0);opacity:.75}
+  81%{transform:rotate(-1.6deg);clip-path:none}
+  88%{transform:translate(3px,1px) rotate(-1.6deg);text-shadow:-4px 0 #FF2E88,4px 0 #C8FF2E;clip-path:inset(20% 0 60% 0)}
+  90%{transform:rotate(-1.6deg);clip-path:none}}
+html[data-theme="castles"] .crest{filter:drop-shadow(1.5px 0 rgba(255,46,136,.85)) drop-shadow(-1.5px 0 rgba(104,232,255,.85))}
+html.fx[data-theme="castles"] .crest{animation:ccBuzz 6.5s steps(1) infinite}
+@keyframes ccBuzz{0%,90%,100%{transform:none}91%{transform:translate(-2px,1px) rotate(-4deg)}
+  94%{transform:translate(2px,-1px) rotate(3deg)}97%{transform:none}}
+
+/* ---- typography: stencil labels, marker headings ---- */
 html[data-theme="castles"] .entryhead h3{font-size:21px!important;line-height:1}
-html[data-theme="castles"] .modal h3,html[data-theme="castles"] .entryhead h3,html[data-theme="castles"] .auth-brand h1{font-weight:400;font-size:26px;letter-spacing:.04em;text-transform:uppercase;
-  text-shadow:1px 0 rgba(255,79,139,.6),-1px 0 rgba(124,231,255,.6)}
+html[data-theme="castles"] .modal h3,html[data-theme="castles"] .entryhead h3,html[data-theme="castles"] .auth-brand h1,
+html[data-theme="castles"] .empty b{font-weight:400;letter-spacing:.03em;text-transform:uppercase;
+  text-shadow:1.5px 0 rgba(255,46,136,.7),-1.5px 0 rgba(104,232,255,.7)}
+html[data-theme="castles"] .modal h3,html[data-theme="castles"] .auth-brand h1{font-size:26px}
+html.fx[data-theme="castles"] .modal h3,html.fx[data-theme="castles"] .entryhead h3{animation:ccChroma 3.4s ease-in-out infinite}
+@keyframes ccChroma{
+  0%,100%{text-shadow:1.5px 0 rgba(255,46,136,.7),-1.5px 0 rgba(104,232,255,.7)}
+  50%{text-shadow:-2.5px 0 rgba(255,46,136,.8),2.5px 0 rgba(104,232,255,.8)}}
+/* A rough marker stroke under every heading. */
+html[data-theme="castles"] .modal h3::after,html[data-theme="castles"] .entryhead h3::after{content:"";display:block;
+  height:5px;margin-top:5px;width:min(170px,62%);
+  background:linear-gradient(90deg,var(--cc-pink),var(--cc-acid));
+  clip-path:polygon(0 34%,7% 2%,21% 62%,39% 8%,57% 70%,75% 18%,91% 66%,100% 26%,100% 100%,0 100%);opacity:.9}
+html[data-theme="castles"] .egroup,html[data-theme="castles"] thead th,html[data-theme="castles"] .stat span,
+html[data-theme="castles"] .ecell label{text-transform:uppercase;letter-spacing:.09em;font-family:var(--mono);font-size:11px}
+html[data-theme="castles"] .ecell label{font-size:11.5px;color:var(--cc-lilac)}
+html[data-theme="castles"] .egroup{color:var(--cc-acid)}
+html[data-theme="castles"] .stat b{text-shadow:0 0 14px rgba(200,255,46,.28)}
+
+/* ---- hardware: square corners, hard black shadows, stencil caps ---- */
 html[data-theme="castles"] .btn,html[data-theme="castles"] .icon-btn,html[data-theme="castles"] .act,
-html[data-theme="castles"] .modal,html[data-theme="castles"] .toolmenu-panel{border-radius:2px}
-html[data-theme="castles"] .btn.ghost{color:var(--text)}
-html[data-theme="castles"] .crest{filter:drop-shadow(0 0 4px rgba(201,182,255,.7))}
+html[data-theme="castles"] .modal,html[data-theme="castles"] .toolmenu-panel,html[data-theme="castles"] .menu,
+html[data-theme="castles"] .theme-panel,html[data-theme="castles"] .chip,html[data-theme="castles"] .pill,
+html[data-theme="castles"] .tag,html[data-theme="castles"] .otype,html[data-theme="castles"] .mark-chip,
+html[data-theme="castles"] .wk,html[data-theme="castles"] .stamp,html[data-theme="castles"] .tri,
+html[data-theme="castles"] .quad,html[data-theme="castles"] .toast,html[data-theme="castles"] .note-pop,
+html[data-theme="castles"] input,html[data-theme="castles"] textarea,html[data-theme="castles"] select,
+html[data-theme="castles"] .calcbox,html[data-theme="castles"] .note-btn,html[data-theme="castles"] .cellinput{border-radius:0}
+html[data-theme="castles"] .btn{text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:13px;
+  box-shadow:3px 3px 0 rgba(0,0,0,.6)}
+html[data-theme="castles"] .btn.quiet{box-shadow:none}
+html[data-theme="castles"] .btn:not(.quiet):hover{box-shadow:1px 1px 0 rgba(0,0,0,.6)}
+html[data-theme="castles"] .btn.ghost{color:var(--text);border-style:dashed}
+html[data-theme="castles"] .btn.ghost:hover{border-style:solid}
+html.fx[data-theme="castles"] .btn:not(.quiet):hover,html.fx[data-theme="castles"] .icon-btn.accent:hover{animation:ccJitter .16s steps(2) infinite}
+@keyframes ccJitter{0%{transform:translate(0,0)}50%{transform:translate(-1px,1px)}100%{transform:translate(1px,-1px)}}
+html[data-theme="castles"] .icon-btn.accent{box-shadow:3px 3px 0 rgba(0,0,0,.55),0 0 18px rgba(200,255,46,.35)}
+html[data-theme="castles"] .icon-btn{text-transform:uppercase;letter-spacing:.05em}
+html[data-theme="castles"] input:focus,html[data-theme="castles"] textarea:focus,html[data-theme="castles"] select:focus,
+html[data-theme="castles"] .ecell input:focus,html[data-theme="castles"] .ecell textarea:focus,
+html[data-theme="castles"] .ecell select:focus{outline-color:var(--cc-acid);border-color:var(--cc-acid);
+  box-shadow:0 0 0 3px rgba(200,255,46,.16)}
+/* Stickers: slapped on slightly crooked, with a hard shadow. */
+html[data-theme="castles"] .tag,html[data-theme="castles"] .mark-chip,html[data-theme="castles"] .otype,
+html[data-theme="castles"] .pill{box-shadow:2px 2px 0 rgba(0,0,0,.55);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+html[data-theme="castles"] .tag{transform:rotate(-1.4deg)}
+html[data-theme="castles"] .otype,html[data-theme="castles"] .mark-chip{transform:rotate(1.2deg)}
+html[data-theme="castles"] .pill:active{transform:scale(.94) rotate(-2deg)}
+/* Selected states: black on black was unreadable, so these go acid. */
+html[data-theme="castles"] .day[aria-current="true"]{color:var(--cc-acid);border-bottom-color:var(--cc-acid)}
+html[data-theme="castles"] .day .cnt{color:var(--cc-ice)}
+html[data-theme="castles"] .day.today b::after{background:var(--cc-pink)}
+html[data-theme="castles"] .chip[aria-pressed="true"]{background:var(--cc-acid);color:#0B0F02;border-color:var(--cc-acid)}
+html[data-theme="castles"] .tri button[aria-pressed="true"],
+html[data-theme="castles"] .quad button[aria-pressed="true"]{background:var(--cc-lilac);color:#0B0714}
+html[data-theme="castles"] thead th[aria-sort] .arrow{color:var(--cc-acid)}
+html[data-theme="castles"] .steps span.on{background:var(--cc-acid)}
+html[data-theme="castles"] .live-dot.live{background:var(--cc-acid);box-shadow:0 0 0 0 rgba(200,255,46,.55)}
+
+/* ---- ledger: concrete header, grimy rules, acid swipe on hover ---- */
+html[data-theme="castles"] thead th{background-image:var(--cc-tooth);background-size:160px 160px;
+  border-bottom:2px solid rgba(200,255,46,.55);color:var(--text-2)}
+html[data-theme="castles"] tbody td{border-bottom:1px dotted var(--line)}
+html[data-theme="castles"] tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--cc-acid),inset 0 0 0 9999px var(--row-hover)}
+html[data-theme="castles"] .ribbon,html[data-theme="castles"] .weekbar,html[data-theme="castles"] .ledger-bar,
+html[data-theme="castles"] .appfoot{background-image:var(--cc-tooth);background-size:160px 160px}
+html[data-theme="castles"] .modal{border-color:rgba(180,155,255,.5);
+  background-image:var(--cc-tooth);background-size:160px 160px;
+  box-shadow:8px 8px 0 rgba(0,0,0,.6),0 0 0 1px rgba(255,46,136,.3),0 30px 60px -30px rgba(255,46,136,.45)}
+html[data-theme="castles"] .toolmenu-panel,html[data-theme="castles"] .menu,html[data-theme="castles"] .theme-panel,
+html[data-theme="castles"] .note-pop{box-shadow:6px 6px 0 rgba(0,0,0,.55)}
+html[data-theme="castles"] .toast{border:1px solid var(--cc-acid);background:#16131F;color:var(--text)}
+html[data-theme="castles"] .proof-drop,html[data-theme="castles"] .note-btn,html[data-theme="castles"] .nowbtn{border-style:dashed}
+html[data-theme="castles"] .splitter:hover,html[data-theme="castles"] .splitter.dragging{background:rgba(200,255,46,.4)}
+/* ---- sign-in wall: the navy panel becomes a sprayed hoarding ---- */
+html[data-theme="castles"] .auth-brand{position:relative;
+  background:var(--cc-concrete),
+    radial-gradient(60% 45% at 18% 12%,rgba(255,46,136,.28),transparent 68%),
+    radial-gradient(55% 45% at 85% 78%,rgba(104,232,255,.22),transparent 68%),
+    linear-gradient(165deg,#16131F 0%,#08070B 100%)}
+html[data-theme="castles"] .auth-brand::after{content:"";position:absolute;top:0;bottom:0;right:-9px;width:10px;z-index:2;
+  background:linear-gradient(45deg,#0A090D 25%,transparent 25%) 0 -9px/18px 18px repeat-y,
+             linear-gradient(315deg,#0A090D 25%,transparent 25%) 0 -9px/18px 18px repeat-y}
+html[data-theme="castles"] .auth-brand .plate{border-left-color:var(--cc-acid);border-color:rgba(180,155,255,.35);
+  background:rgba(10,9,13,.45)}
+html[data-theme="castles"] .auth-brand h1{font-family:var(--cc-tag);font-size:30px;line-height:1.2}
+html[data-theme="castles"] .auth-brand .owner{color:var(--cc-acid);text-transform:uppercase;letter-spacing:.12em;font-size:11px}
+html[data-theme="castles"] .auth-card h2{text-transform:uppercase;letter-spacing:.04em;font-weight:400;font-family:var(--display);font-size:30px;
+  text-shadow:1.5px 0 rgba(255,46,136,.7),-1.5px 0 rgba(104,232,255,.7)}
+html[data-theme="castles"] .auth-card h2::after{content:"";display:block;height:5px;margin-top:5px;width:120px;
+  background:linear-gradient(90deg,var(--cc-pink),var(--cc-acid));
+  clip-path:polygon(0 34%,7% 2%,21% 62%,39% 8%,57% 70%,75% 18%,91% 66%,100% 26%,100% 100%,0 100%);opacity:.9}
+html[data-theme="castles"] .field>label:not([for="siRemember"]){text-transform:uppercase;
+  letter-spacing:.1em;font-family:var(--mono);font-size:11px;color:var(--cc-lilac)}
+html[data-theme="castles"] .code-drop{border-style:dashed;border-color:var(--cc-acid);border-radius:0}
+html[data-theme="castles"] .code-drop .code{color:var(--cc-acid)}
 
 /* ---------- Trophy Room: black lacquer and gold leaf ---------- */
 html[data-theme="trophy"]{
@@ -1411,12 +1567,19 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
 #ambient.bubbles i{top:auto;bottom:-24px;animation-name:ambRise}
 #ambient.bubbles i b{width:9px;height:9px;border-radius:50%;border:1px solid rgba(123,240,225,.55);
   background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.55),rgba(123,240,225,.08) 60%,transparent 70%)}
+/* grime: ash, paint flecks and spray dust drifting down a wall */
+#ambient.grime i b{width:3px;height:3px;border-radius:0;background:rgba(244,241,255,.5);
+  box-shadow:0 0 5px rgba(200,255,46,.35)}
+#ambient.grime i:nth-child(3n) b{background:var(--cc-pink,#FF2E88);box-shadow:0 0 7px rgba(255,46,136,.5)}
+#ambient.grime i:nth-child(4n) b{background:var(--cc-ice,#68E8FF);box-shadow:0 0 6px rgba(104,232,255,.45)}
+#ambient.grime i:nth-child(5n) b{background:var(--cc-acid,#C8FF2E);height:7px;width:2px}
+#ambient.grime i:nth-child(7n) b{background:rgba(130,123,150,.75);box-shadow:none;width:5px;height:2px}
 @keyframes ambFall{from{transform:translate3d(0,-5vh,0)}to{transform:translate3d(var(--drift,40px),110vh,0)}}
 @keyframes ambRise{from{transform:translate3d(0,0,0)}to{transform:translate3d(var(--drift,20px),-115vh,0)}}
 @keyframes ambSway{from{transform:translateX(-14px) rotate(-25deg)}to{transform:translateX(14px) rotate(35deg)}}
 @media (prefers-reduced-motion:reduce){#ambient{display:none}}
 @media (max-width:760px){
-  html[data-theme="castles"] .console .mark b{font-size:19px;letter-spacing:.03em}
+  html[data-theme="castles"] .console .mark b{font-size:15px;letter-spacing:-.01em}
   html[data-theme="arizona"] .console .mark b,html[data-theme="rose"] .console .mark b{font-size:17px}
 }
 @media print{#ambient{display:none}}
@@ -5800,8 +5963,8 @@ var THEMES = [
     font: "Cormorant+Garamond:ital,wght@1,500;1,600", sw: ["#2A1622", "#F2A7C3", "#F6EAF0"] },
   { v: "arizona", l: "Arizona Cyan Tea", sub: "Vaporwave sunset",         tone: "dark",  group: "Moods",
     font: "Righteous", sw: ["#5B1A8C", "#3FF3E6", "#FF8AE2"] },
-  { v: "castles", l: "Crystal Castles",  sub: "Witchcore static",         tone: "dark",  group: "Moods",
-    font: "VT323", sw: ["#050409", "#C9B6FF", "#7CE7FF"] },
+  { v: "castles", l: "Crystal Castles",  sub: "Spray paint, static, grime", tone: "dark", group: "Moods", fx: "grime",
+    font: "Permanent+Marker&family=VT323", sw: ["#0A090D", "#FF2E88", "#C8FF2E"] },
   { v: "trophy",  l: "Trophy Room",      sub: "Black lacquer, gold leaf", tone: "dark",  group: "Moods",
     font: "Cinzel:wght@600;700", sw: ["#0B0A07", "#D4AF37", "#F4EEDC"] },
   { v: "abyss",   l: "Abyss",            sub: "Deep sea, rising bubbles", tone: "dark",  group: "Moods", fx: "bubbles",
@@ -5831,11 +5994,15 @@ function setAmbient(kind) {
   var box = el("div", kind);
   box.id = "ambient";
   box.setAttribute("aria-hidden", "true");
-  var n = kind === "petals" ? (window.innerWidth < 700 ? 14 : 24) : (window.innerWidth < 700 ? 10 : 18);
+  var n = kind === "petals" ? (window.innerWidth < 700 ? 14 : 24)
+        : kind === "grime" ? (window.innerWidth < 700 ? 20 : 38)
+        : (window.innerWidth < 700 ? 10 : 18);
   for (var i = 0; i < n; i++) {
     var it = document.createElement("i");
     var inner = document.createElement("b");
-    var dur = kind === "petals" ? 10 + Math.random() * 12 : 12 + Math.random() * 14;
+    var dur = kind === "petals" ? 10 + Math.random() * 12
+            : kind === "grime" ? 7 + Math.random() * 9
+            : 12 + Math.random() * 14;
     it.style.left = (Math.random() * 100) + "%";
     it.style.animationDuration = dur + "s";
     it.style.animationDelay = (-Math.random() * dur) + "s";
@@ -5845,6 +6012,7 @@ function setAmbient(kind) {
     inner.style.transform = "scale(" + sc + ")";
     it.style.opacity = String(0.45 + Math.random() * 0.5);
     if (kind === "bubbles") { inner.style.width = inner.style.height = (5 + Math.random() * 12) + "px"; }
+    else if (kind === "grime") { inner.style.width = (1 + Math.random() * 3) + "px"; inner.style.height = (1 + Math.random() * 5) + "px"; }
     else { inner.style.width = (12 + Math.random() * 9) + "px"; inner.style.height = (9 + Math.random() * 6) + "px"; }
     it.appendChild(inner);
     box.appendChild(it);
