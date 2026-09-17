@@ -2294,7 +2294,7 @@ var state = {
   user: null, orders: [], byId: {},
   scopeDate: todayKey(), weekStart: null, scope: "day",
   query: "", filter: "all", sortKey: "seq", sortDir: 1, flashId: null,
-  inlineId: null, inlineFields: null,
+  inlineId: null, inlineFields: null, inlineFocusKey: null,
   /* save bookkeeping — see persistOrders() */
   rev: 0, lastSaved: null, saveFailed: false, deleted: {}
 };
@@ -3564,6 +3564,7 @@ function rowBand(o) {
 }
 function readRow(o, cols) {
   var tr = el("tr", rowBand(o));
+  tr.setAttribute("data-row-id", o.id);
   if (o.id === state.flashId) tr.className += " flash";
   cols.forEach(function (c) {
     var td;
@@ -3682,6 +3683,7 @@ function readRow(o, cols) {
 /* Every field of a logged order is editable right in its own row. */
 function inlineRow(o, cols) {
   var tr = el("tr", ("editing " + rowBand(o)).trim());
+  tr.setAttribute("data-row-id", o.id);
   var mk = function (tag, cls, value, ph) {
     var n = document.createElement(tag);
     n.className = "cellinput" + (cls ? " " + cls : "");
@@ -3797,6 +3799,7 @@ function inlineRow(o, cols) {
     tr.appendChild(td);
   });
   state.inlineFields = fields;
+  state.inlineFocusKey = focusKey || null;
   if (fields.proof) {
     var syncInlineProof = function () {
       var noProof = fields.proof.value === "FALSE";
@@ -3827,10 +3830,12 @@ function inlineRow(o, cols) {
     } else if (e.key === "Escape") { e.preventDefault(); cancelInline(); }
   });
   setTimeout(function () {
-    var target = focusKey && fields[focusKey] ? fields[focusKey] : null;
-    /* Never force focus back to Order #. When editing is opened from a
-       particular cell, keep the keyboard exactly where the user started. */
-    if (target) { target.focus(); if (target.select) target.select(); }
+    var key = focusKey || state.inlineFocusKey;
+    var target = key && fields[key] ? fields[key] : null;
+    /* Focus only the field that actually launched editing. If no field was
+       specified (for example, the Edit action button), leave focus alone so
+       the browser never jumps unexpectedly to Order #. */
+    if (target) { target.focus(); if (target.select && target.type !== "date") target.select(); }
   }, 0);
   return tr;
 }
@@ -3838,6 +3843,7 @@ function startInline(id, focusKey) {
   var o = byId(id);
   if (!o) { toast("That order is no longer in the list."); return; }
   state.inlineId = id;
+  state.inlineFocusKey = focusKey || null;
   var banner = $("editBanner");
   banner.textContent = "Editing #" + o.seq + (o.orderId ? " · " + o.orderId : "") + " in the table below";
   banner.hidden = false;
@@ -3850,6 +3856,7 @@ function switchInline(id, focusKey) {
 function cancelInline() {
   state.inlineId = null;
   state.inlineFields = null;
+  state.inlineFocusKey = null;
   $("editBanner").hidden = true;
   renderTable();
 }
@@ -3896,6 +3903,7 @@ function saveInline(id) {
   }
   state.inlineId = null;
   state.inlineFields = null;
+  state.inlineFocusKey = null;
   $("editBanner").hidden = true;
   state.flashId = o.id;
   toast("Saved #" + o.seq + (o.orderId ? " · " + o.orderId : "") + ".", {
@@ -6256,12 +6264,16 @@ function wire() {
       return;
     }
     if (e.target.closest("[data-edit-amount], .amt-edit-input")) return;
-    var tr = e.target.closest("tr");
+    var tr = e.target.closest("tr[data-row-id]");
     if (!tr) return;
-    var id = tr.querySelector("[data-inline]") && tr.querySelector("[data-inline]").getAttribute("data-inline");
-    if (!id) return;
+    var id = tr.getAttribute("data-row-id");
+    if (!id || !byId(id)) return;
     var cell = e.target.closest("td[data-edit-key]");
     var focusKey = cell ? cell.getAttribute("data-edit-key") : null;
+    /* Only actual editable fields get a focus target. Calculated columns and
+       action cells open the row without manufacturing a focus target. */
+    var nonEditable = { seq: true, taken: true, turn: true };
+    if (nonEditable[focusKey]) focusKey = null;
     switchInline(id, focusKey);
   });
   /* Tools menu: close after picking something, or on a click elsewhere. */
