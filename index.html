@@ -3815,14 +3815,15 @@ function inlineRow(o, cols, focusKey) {
   }
 
   var recalc = function () {
-    var a = parseTime(fields.startTime.value), b = parseTime(fields.completionTime.value),
-        c2 = parseTime(fields.proofRcvdTime.value);
+    var a = fields.startTime ? parseTime(fields.startTime.value) : { ok: false, value: "" };
+    var b = fields.completionTime ? parseTime(fields.completionTime.value) : { ok: false, value: "" };
+    var c2 = fields.proofRcvdTime ? parseTime(fields.proofRcvdTime.value) : { ok: false, value: "" };
     var takenCell = tr.querySelector('[data-calc="taken"]'), turnCell = tr.querySelector('[data-calc="turn"]');
     if (takenCell) takenCell.textContent = (a.ok && b.ok) ? durationText(spanMinutes(a.value, b.value)) : "?";
     if (turnCell) turnCell.textContent = noProofNeeded(o) ? "" : ((b.ok && c2.ok) ? durationText(spanMinutes(b.value, c2.value)) : "?");
   };
   ["startTime", "completionTime", "proofRcvdTime"].forEach(function (k) {
-    fields[k].addEventListener("input", recalc);
+    if (fields[k]) fields[k].addEventListener("input", recalc);
   });
   tr.addEventListener("keydown", function (e) {
     if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
