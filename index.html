@@ -359,6 +359,12 @@ html[data-tone="dark"] .quad button[aria-pressed="true"]{background:var(--code);
 
 /* ---------------- ribbon + toolbar ---------------- */
 .ribbon{display:flex;background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;overflow:hidden}
+/* Keep the KPI ribbon visible while the document scrolls, then let the
+   column header sit directly beneath it. */
+@media (min-width:761px){
+  .ribbon{position:sticky;top:0;z-index:30;box-shadow:0 2px 8px -7px rgba(18,22,28,.45)}
+  html.page-scroll thead,html.page-scroll thead th{top:62px;z-index:25}
+}
 .stat{padding:12px 20px;border-right:1px solid var(--line);flex:1;min-width:0}
 .stat b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.25}
 .stat span{font-size:11px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
@@ -2987,9 +2993,9 @@ var COL_WEIGHT = {
   /* Rebalanced to match the entry form: # is readable, Placed / Req. Ship /
      Event are tighter, and Type through Turn get enough room for their values. */
   seq: 40, date: 68, placedDate: 90, orderId: 92, customer: 140, reqShipDate: 92, eventDate: 92,
-  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 88,
-  startTime: 64, completionTime: 64, taken: 46, proofRcvdTime: 64, turn: 52,
-  fin: 52, notes: 80, acts: 92
+  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 120,
+  startTime: 64, completionTime: 64, taken: 68, proofRcvdTime: 64, turn: 52,
+  fin: 52, notes: 68, acts: 80
 };
 function columnWidth(c) {
   var wOf = function (k) { return COL_WEIGHT[k.key] || 60; };
@@ -4893,15 +4899,17 @@ function detectProofType(o) {
 }
 function buildProofEmail(kind, info, repeat) {
   var parts = [];
-  if (info.first) parts.push("Hi " + info.first + ",");
+  /* Customer-facing proof email: quantity/dates first, followed by the
+     standard Crown Awards copy. The picker fields remain available for
+     convenience but are intentionally not inserted into the body. */
+  var details = [];
+  if (info.qty !== "" && info.qty != null) details.push("Award Quantity: " + info.qty);
+  if (info.eventDate) details.push("Event date: " + prettyDate(info.eventDate));
+  if (info.reqShipDate) details.push("Requested ship date: " + prettyDate(info.reqShipDate));
+  if (details.length) parts.push(details.join("\n"));
   parts.push(repeat ? EP_OPENING.replace("your business", "your repeat business") : EP_OPENING);
   parts.push(EP_REVIEW);
-  var d = [];
-  if (info.orderId) d.push("Order #: " + info.orderId);
-  if (info.qty !== "" && info.qty != null) d.push("Quantity: " + info.qty);
-  if (info.eventDate) d.push("Event date: " + prettyDate(info.eventDate));
-  if (info.reqShipDate) d.push("Requested ship date: " + prettyDate(info.reqShipDate));
-  if (d.length) parts.push(d.join("\n"));
+  /* This line is Standard Proof only. */
   if (kind === "std") parts.push(EP_WAIT);
   parts.push(EP_SIGN);
   return parts.join("\n\n");
