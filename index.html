@@ -3530,7 +3530,7 @@ function renderTable() {
 
   var frag = document.createDocumentFragment();
   rows.forEach(function (o) {
-    frag.appendChild(o.id === state.inlineId ? inlineRow(o, cols) : readRow(o, cols));
+    frag.appendChild(o.id === state.inlineId ? inlineRow(o, cols, state.inlineFocusKey) : readRow(o, cols));
   });
   var body = $("tbody");
   body.textContent = "";
@@ -3681,7 +3681,7 @@ function readRow(o, cols) {
   return tr;
 }
 /* Every field of a logged order is editable right in its own row. */
-function inlineRow(o, cols) {
+function inlineRow(o, cols, focusKey) {
   var tr = el("tr", ("editing " + rowBand(o)).trim());
   tr.setAttribute("data-row-id", o.id);
   var mk = function (tag, cls, value, ph) {
@@ -3831,11 +3831,18 @@ function inlineRow(o, cols) {
   });
   setTimeout(function () {
     var key = focusKey || state.inlineFocusKey;
+    /* Order # is deliberately never an automatic focus target. It is a
+       copy/select field in the read-only row, not the row editor's entry
+       point. */
+    if (key === "orderId") key = null;
     var target = key && fields[key] ? fields[key] : null;
-    /* Focus only the field that actually launched editing. If no field was
-       specified (for example, the Edit action button), leave focus alone so
-       the browser never jumps unexpectedly to Order #. */
-    if (target) { target.focus(); if (target.select && target.type !== "date") target.select(); }
+    /* Focus only the field that actually launched editing. If editing was
+       opened from the row Edit button, leave focus alone rather than
+       defaulting to the first field. */
+    if (target) {
+      target.focus();
+      if (target.select && target.type !== "date" && target.tagName !== "SELECT") target.select();
+    }
   }, 0);
   return tr;
 }
@@ -6239,9 +6246,22 @@ function wire() {
     if (!state.inlineId) return;
     var editingRow = $("tbody").querySelector("tr.editing");
     if (editingRow && editingRow.contains(e.target)) return;
-    /* Tapping/clicking anywhere outside the active edit row closes it.
-       A different order can then be opened normally. */
     if (e.target.closest(".modal") || e.target.closest("[role=dialog]") || e.target.closest(".note-pop")) return;
+
+    /* Desktop-safe handoff: if the user clicks another row's Edit button,
+       switch directly on pointerdown. The click target is about to be
+       replaced by renderTable(), so waiting for the delegated click would
+       leave that original target detached and make the edit appear to do
+       nothing. For every other outside click, simply close the editor. */
+    var otherEdit = e.target.closest("[data-inline]");
+    if (otherEdit) {
+      var otherId = otherEdit.getAttribute("data-inline");
+      if (otherId && otherId !== state.inlineId && byId(otherId)) {
+        e.preventDefault();
+        switchInline(otherId, null);
+        return;
+      }
+    }
     cancelInline();
   });
   document.addEventListener("click", function (e) {
