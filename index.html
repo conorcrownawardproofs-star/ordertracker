@@ -1755,4 +1755,4558 @@ function sha256(bytes) {
   var H = new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
   var l = bytes.length, total = ((l + 9 + 63) >> 6) << 6;
   var buf = new Uint8Array(total);
-  buf
+  buf.set(bytes); buf[l] = 0x80;
+  var dv = new DataView(buf.buffer);
+  var bits = l * 8;
+  dv.setUint32(total - 8, Math.floor(bits / 4294967296));
+  dv.setUint32(total - 4, bits >>> 0);
+  var w = new Uint32Array(64);
+  for (var off = 0; off < total; off += 64) {
+    for (var i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+    for (i = 16; i < 64; i++) {
+      var s0 = rotr(w[i-15],7) ^ rotr(w[i-15],18) ^ (w[i-15] >>> 3);
+      var s1 = rotr(w[i-2],17) ^ rotr(w[i-2],19) ^ (w[i-2] >>> 10);
+      w[i] = (w[i-16] + s0 + w[i-7] + s1) >>> 0;
+    }
+    var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for (i = 0; i < 64; i++) {
+      var S1 = rotr(e,6) ^ rotr(e,11) ^ rotr(e,25);
+      var ch = (e & f) ^ (~e & g);
+      var t1 = (h + S1 + ch + K256[i] + w[i]) >>> 0;
+      var S0 = rotr(a,2) ^ rotr(a,13) ^ rotr(a,22);
+      var maj = (a & b) ^ (a & c) ^ (b & c);
+      var t2 = (S0 + maj) >>> 0;
+      h=g; g=f; f=e; e=(d + t1) >>> 0; d=c; c=b; b=a; a=(t1 + t2) >>> 0;
+    }
+    H[0]=(H[0]+a)>>>0; H[1]=(H[1]+b)>>>0; H[2]=(H[2]+c)>>>0; H[3]=(H[3]+d)>>>0;
+    H[4]=(H[4]+e)>>>0; H[5]=(H[5]+f)>>>0; H[6]=(H[6]+g)>>>0; H[7]=(H[7]+h)>>>0;
+  }
+  var out = new Uint8Array(32), odv = new DataView(out.buffer);
+  for (var j = 0; j < 8; j++) odv.setUint32(j * 4, H[j]);
+  return out;
+}
+function hmacSha256(key, msg) {
+  if (key.length > 64) key = sha256(key);
+  var k = new Uint8Array(64); k.set(key);
+  var ok = new Uint8Array(64), ik = new Uint8Array(64);
+  for (var i = 0; i < 64; i++) { ok[i] = k[i] ^ 0x5c; ik[i] = k[i] ^ 0x36; }
+  return sha256(concatBytes(ok, sha256(concatBytes(ik, msg))));
+}
+function pbkdf2Js(password, salt, iterations, dkLen) {
+  var pw = enc.encode(password);
+  var blocks = Math.ceil(dkLen / 32);
+  var out = new Uint8Array(blocks * 32);
+  for (var b = 1; b <= blocks; b++) {
+    var idx = new Uint8Array([(b >>> 24) & 255, (b >>> 16) & 255, (b >>> 8) & 255, b & 255]);
+    var u = hmacSha256(pw, concatBytes(salt, idx));
+    var t = u.slice();
+    for (var i = 1; i < iterations; i++) {
+      u = hmacSha256(pw, u);
+      for (var j = 0; j < 32; j++) t[j] ^= u[j];
+    }
+    out.set(t, (b - 1) * 32);
+  }
+  return out.slice(0, dkLen);
+}
+var PBKDF2_ITERATIONS = 120000;
+function pbkdf2(password, salt, iterations, dkLen) {
+  dkLen = dkLen || 32;
+  if (window.crypto && window.crypto.subtle && window.crypto.subtle.importKey) {
+    return window.crypto.subtle
+      .importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"])
+      .then(function (key) {
+        return window.crypto.subtle.deriveBits(
+          { name: "PBKDF2", salt: salt, iterations: iterations, hash: "SHA-256" }, key, dkLen * 8);
+      })
+      .then(function (bits) { return new Uint8Array(bits); })
+      .catch(function () { return pbkdf2Js(password, salt, iterations, dkLen); });
+  }
+  return Promise.resolve(pbkdf2Js(password, salt, iterations, dkLen));
+}
+function hashSecret(secret, saltB64, iterations) {
+  return pbkdf2(secret, fromB64(saltB64), iterations).then(toB64);
+}
+
+/* ---------------------------------------------------------------- storage */
+var KEY_USERS = "caot_users_v1";
+var KEY_SESSION = "caot_session_v1";
+var KEY_PREFS = "caot_prefs_v1";
+var ordersKey = function (u) { return "caot_orders_" + u; };
+
+function readJson(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    var val = JSON.parse(raw);
+    return (val === null || val === undefined) ? fallback : val;
+  } catch (e) { return fallback; }
+}
+function writeJson(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch (e) {
+    toast("Storage is full or blocked, so that change was not saved. Back up and free some space.", null, 8000);
+    return false;
+  }
+}
+function getUsers() { return readJson(KEY_USERS, {}); }
+function saveUsers(u) { return writeJson(KEY_USERS, u); }
+function getUser(name) {
+  var users = getUsers();
+  return users[String(name || "").trim().toLowerCase()] || null;
+}
+function putUser(rec) {
+  var users = getUsers();
+  users[rec.key] = rec;
+  return saveUsers(users);
+}
+function findByEmail(email) {
+  var users = getUsers(), e = String(email || "").trim().toLowerCase();
+  for (var k in users) if (users[k].email && users[k].email.toLowerCase() === e) return users[k];
+  return null;
+}
+
+/* ------------------------------------------------------------- bootstrap */
+/* Conor's account. The password is NOT in this file — only the PBKDF2 salt
+   and derived hash, which cannot be reversed back into the password. */
+var SEED_VERSION = 2;
+var BOOTSTRAP_USER = {
+  key: "cm16",
+  username: "CM16",
+  email: "conormcc.edits@gmail.com",
+  salt: "7+EozYEXnLjwv2lkFHFusA==",
+  hash: "DMbclG/3dTEX1Uo9TGXPvWYctN1gQ0BLcVXQ+40sAw8=",
+  iterations: 120000,
+  createdAt: "2026-09-14T08:00:00.000Z",
+  passwordChangedAt: "2026-09-14T08:00:00.000Z",
+  tokenVersion: 1,
+  seedVersion: SEED_VERSION,
+  failedAttempts: 0,
+  lockUntil: 0,
+  reset: null
+};
+var BOOTSTRAP_ORDERS = [
+  {
+    "date": "2026-09-14",
+    "seq": 1,
+    "orderId": "16248803",
+    "customer": "laurieann.taylor@cartercenter.org",
+    "proof": "TRUE",
+    "status": "Proof Sent!",
+    "startTime": "",
+    "completionTime": "09:35:00",
+    "proofRcvdTime": "09:39:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 2,
+    "orderId": "16251618",
+    "customer": "HFE WOMAN Awards Committee",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "09:48:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 3,
+    "orderId": "16251690",
+    "customer": "LINDA SANCHEZ",
+    "proof": "TRUE",
+    "status": "Proof Requested\nProof Sent!",
+    "startTime": "",
+    "completionTime": "10:20:00",
+    "proofRcvdTime": "10:21:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "PLACED ON WEE AT 9:56 AM\nENG RCVD @ 10:11 AM\nPROOF REQUESTED"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 4,
+    "orderId": "16231894",
+    "customer": "Joseph Myers",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "10:01:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": "Copied Format from XEM#\n16007102 in CDL2026"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 5,
+    "orderId": "16248798",
+    "customer": "LAUREN@POWER2WORKERS.ORG",
+    "proof": "TRUE",
+    "status": "Proof Sent!\nAPPROVED",
+    "startTime": "",
+    "completionTime": "10:09:00",
+    "proofRcvdTime": "10:10:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Customer has Previous XEM#\n1420017601 (2024)\n\nLogo Path from:\nG:\\CORPORATE 2025\\\n70227925"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 6,
+    "orderId": "16250411",
+    "customer": "SHRIDEVI KARIKIHALLI",
+    "proof": "TRUE",
+    "status": "Proof Required",
+    "startTime": "",
+    "completionTime": "10:33:00",
+    "proofRcvdTime": "10:36:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 7,
+    "orderId": "16251743",
+    "customer": "SARAH.BERG@ISD728.ORG",
+    "proof": "TRUE",
+    "status": "Proof Required",
+    "startTime": "",
+    "completionTime": "10:55:00",
+    "proofRcvdTime": "10:56:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Copied from Previous XEM#\n1614701101 (2026)"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 8,
+    "orderId": "16249579",
+    "customer": "BELINDAVINES@GMAIL.COM",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "10:49:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 9,
+    "orderId": "16245090",
+    "customer": "EC-Council",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "12:15:00",
+    "proofRcvdTime": "12:17:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "HELD UP:\nLogo Clarification Requested\nfrom OrderEdit @ 11:52 AM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 10,
+    "orderId": "16251777",
+    "customer": "STORE SUPPLY WAREHOUSE",
+    "proof": "TRUE",
+    "status": "Proof Requested\n(CC JOEL) — SENT!",
+    "startTime": "",
+    "completionTime": "11:20:00",
+    "proofRcvdTime": "11:23:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Referencng logo and\nformat from 16177206"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 11,
+    "orderId": "COR - 16215786",
+    "customer": "Cowan.T.SmithSr@uscis.dhs.gov",
+    "proof": "X",
+    "status": "N/A",
+    "startTime": "",
+    "completionTime": "N/A",
+    "proofRcvdTime": "N/A",
+    "fin": "X",
+    "savedToDrive": "X",
+    "notes": "Correction Confirmation sent by Rep @ 11:49 AM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 12,
+    "orderId": "16252243",
+    "customer": "DHL Supply Chain",
+    "proof": "TRUE",
+    "status": "Judgement: Proof Sent",
+    "startTime": "",
+    "completionTime": "12:10:00",
+    "proofRcvdTime": "12:10:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 13,
+    "orderId": "16249562",
+    "customer": "VICKI KIRKPATRICK\nKnights of Peter Claver Ladies Auxiliary",
+    "proof": "TRUE",
+    "status": "Logo PGroup3\n24HR Proof",
+    "startTime": "",
+    "completionTime": "12:26:00",
+    "proofRcvdTime": "12:27:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 14,
+    "orderId": "16251995",
+    "customer": "LISA TAGLIARINO",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "12:32:00",
+    "proofRcvdTime": "12:33:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 15,
+    "orderId": "16248716",
+    "customer": "Arthritis Foundation",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "12:36:00",
+    "proofRcvdTime": "12:37:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 16,
+    "orderId": "16252537",
+    "customer": "ALFA MUTUAL INSURANCE COMPANY",
+    "proof": "TRUE",
+    "status": "Standard Proof Required\nSent!",
+    "startTime": "",
+    "completionTime": "13:17:00",
+    "proofRcvdTime": "13:19:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Placed on WEE @ 12:48 PM\n(No Info in Email)\nBack @ 1:14 PM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 17,
+    "orderId": "16252183",
+    "customer": "HULTEEN.KASEY@GMAIL.COM",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "13:21:00",
+    "proofRcvdTime": "N/A",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 18,
+    "orderId": "16252871",
+    "customer": "ZULEMA@DRYASMININSTITUTE.COM",
+    "proof": "TRUE",
+    "status": "LEC",
+    "startTime": "",
+    "completionTime": "",
+    "proofRcvdTime": "",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "LOF - WLE status @ 2:12 PM\nWaiting on Logo from CX\n\nPlaced on ILS as Logo is still waiting\nReturn from India @ 2:45 PM"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 19,
+    "orderId": "16253018",
+    "customer": "CONNOR MULHERIN",
+    "proof": "X",
+    "status": "",
+    "startTime": "",
+    "completionTime": "",
+    "proofRcvdTime": "",
+    "fin": "FALSE",
+    "savedToDrive": "FALSE",
+    "notes": "WEE Status @ 2:13 PM\nWaiting on ENG Info from CX"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 20,
+    "orderId": "16248122",
+    "customer": "JODI GRAHNE",
+    "proof": "TRUE",
+    "status": "Logo PGroup3\n24HR Proof Sent",
+    "startTime": "",
+    "completionTime": "14:34:00",
+    "proofRcvdTime": "14:35:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 21,
+    "orderId": "16253230",
+    "customer": "BKELLY@700CREDIT.COM",
+    "proof": "X",
+    "status": "CLC",
+    "startTime": "",
+    "completionTime": "14:54:00",
+    "proofRcvdTime": "",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 22,
+    "orderId": "16252858",
+    "customer": "ZULEMA@DRYASMININSTITUTE.COM",
+    "proof": "TRUE",
+    "status": "LEC",
+    "startTime": "",
+    "completionTime": "15:11:00",
+    "proofRcvdTime": "",
+    "fin": "TRUE",
+    "savedToDrive": "X",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 23,
+    "orderId": "16253414",
+    "customer": "DBYRNE@GLSAUTO.COM",
+    "proof": "TRUE",
+    "status": "Logo PGroup7\n24HR Proof Sent",
+    "startTime": "",
+    "completionTime": "16:01:00",
+    "proofRcvdTime": "16:02:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": "Proof Req. by Rep\n4:16 PM APPROVED"
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 24,
+    "orderId": "16253613",
+    "customer": "JENNIFERD@EMPIREHOMEREMODELING.COM",
+    "proof": "TRUE",
+    "status": "Logo PGroup3\n24HR Proof Sent",
+    "startTime": "",
+    "completionTime": "16:25:00",
+    "proofRcvdTime": "16:26:00",
+    "fin": "TRUE",
+    "savedToDrive": "TRUE",
+    "notes": ""
+  },
+  {
+    "date": "2026-09-14",
+    "seq": 25,
+    "orderId": "16253552",
+    "customer": "ROBERT SEDAGHATPOUR",
+    "proof": "FALSE",
+    "status": "",
+    "startTime": "",
+    "completionTime": "",
+    "proofRcvdTime": "",
+    "fin": "FALSE",
+    "savedToDrive": "FALSE",
+    "notes": "ILS - 4:29 PM"
+  }
+];
+
+function seedRecord(o) {
+  var copy = JSON.parse(JSON.stringify(o));
+  copy.id = uid();
+  copy.createdAt = BOOTSTRAP_USER.createdAt;
+  copy.updatedAt = BOOTSTRAP_USER.createdAt;   /* untouched marker */
+  return copy;
+}
+function installBootstrap() {
+  var users = getUsers();
+  if (!users[BOOTSTRAP_USER.key]) {
+    users[BOOTSTRAP_USER.key] = JSON.parse(JSON.stringify(BOOTSTRAP_USER));
+    saveUsers(users);
+    if (localStorage.getItem(ordersKey(BOOTSTRAP_USER.key)) === null) {
+      writeOrdersRaw(BOOTSTRAP_USER.key, BOOTSTRAP_ORDERS.map(seedRecord), 1);
+    }
+    return { added: 0, updated: 0, fresh: true };
+  }
+  /* Existing install from an earlier version: fold in the newer sheet without
+     stepping on anything that has been edited since it was seeded. */
+  var user = users[BOOTSTRAP_USER.key];
+  if ((user.seedVersion || 1) >= SEED_VERSION) return { added: 0, updated: 0, fresh: false };
+  var existing = readOrdersRaw(BOOTSTRAP_USER.key);
+  var current = existing.orders;
+  var index = {};
+  current.forEach(function (o) { index[o.date + "|" + String(o.orderId).toLowerCase()] = o; });
+  var added = 0, updated = 0;
+  BOOTSTRAP_ORDERS.forEach(function (s) {
+    var hit = index[s.date + "|" + String(s.orderId).toLowerCase()];
+    if (!hit) { current.push(seedRecord(s)); added++; return; }
+    if (hit.updatedAt && hit.createdAt && hit.updatedAt === hit.createdAt) {
+      ["customer","proof","status","startTime","completionTime","proofRcvdTime","fin","savedToDrive","notes","seq"]
+        .forEach(function (f) { hit[f] = s[f]; });
+      updated++;
+    }
+  });
+  writeOrdersRaw(BOOTSTRAP_USER.key, current, existing.rev + 1);
+  user.seedVersion = SEED_VERSION;
+  putUser(user);
+  return { added: added, updated: updated, fresh: false };
+}
+var bootstrapReport = null;
+
+/* --------------------------------------------------------------- session */
+var SESSION_MS = 8 * 60 * 60 * 1000;
+var REMEMBER_MS = 30 * 24 * 60 * 60 * 1000;
+var state = {
+  user: null, orders: [], byId: {},
+  scopeDate: todayKey(), weekStart: null, scope: "day",
+  query: "", filter: "all", sortKey: "seq", sortDir: 1, flashId: null,
+  inlineId: null, inlineFields: null,
+  /* save bookkeeping — see persistOrders() */
+  rev: 0, lastSaved: null, saveFailed: false, deleted: {}
+};
+
+function startSession(userRec, remember) {
+  var session = {
+    key: userRec.key, token: toB64(randomBytes(24)),
+    tokenVersion: userRec.tokenVersion,
+    expires: Date.now() + (remember ? REMEMBER_MS : SESSION_MS),
+    remember: !!remember
+  };
+  writeJson(KEY_SESSION, session);
+  return session;
+}
+function restoreSession() {
+  var s = readJson(KEY_SESSION, null);
+  if (!s || !s.key || !s.token) return null;
+  if (!s.expires || s.expires < Date.now()) { localStorage.removeItem(KEY_SESSION); return null; }
+  var user = getUsers()[s.key];
+  if (!user) { localStorage.removeItem(KEY_SESSION); return null; }
+  if (user.tokenVersion !== s.tokenVersion) { localStorage.removeItem(KEY_SESSION); return null; }
+  s.expires = Date.now() + (s.remember ? REMEMBER_MS : SESSION_MS);
+  writeJson(KEY_SESSION, s);
+  return user;
+}
+function endSession() { localStorage.removeItem(KEY_SESSION); }
+
+/* ------------------------------------------------------------ validation */
+function validUsername(u) { return /^[A-Za-z0-9._-]{3,20}$/.test(u); }
+function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+function passwordChecks(p) {
+  return { len: p.length >= 10, upper: /[A-Z]/.test(p), lower: /[a-z]/.test(p),
+           digit: /[0-9]/.test(p), symbol: /[^A-Za-z0-9]/.test(p) };
+}
+function passwordOk(p) {
+  var c = passwordChecks(p), extras = [c.upper, c.lower, c.digit, c.symbol].filter(Boolean).length;
+  return c.len && extras >= 3;
+}
+function passwordScore(p) {
+  if (!p) return 0;
+  var c = passwordChecks(p);
+  var score = Math.min(50, p.length * 3.2);
+  score += (c.upper ? 12 : 0) + (c.lower ? 8 : 0) + (c.digit ? 12 : 0) + (c.symbol ? 18 : 0);
+  if (/^[A-Za-z]+$/.test(p) || /^[0-9]+$/.test(p)) score -= 20;
+  if (/(.)\1{2,}/.test(p)) score -= 10;
+  if (/^(password|qwerty|letmein|welcome|crown|admin)/i.test(p)) score -= 35;
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+function wirePasswordMeter(inputId, meterId, rulesId) {
+  var input = $(inputId), meter = $(meterId), rules = $(rulesId);
+  if (!input) return;
+  input.addEventListener("input", function () {
+    var v = input.value, c = passwordChecks(v), score = passwordScore(v);
+    meter.style.width = score + "%";
+    meter.style.background = score < 40 ? "var(--stop)" : score < 70 ? "var(--hold)" : "var(--go)";
+    Array.prototype.forEach.call(rules.querySelectorAll("li"), function (li) {
+      li.classList.toggle("ok", !!c[li.getAttribute("data-rule")]);
+    });
+  });
+}
+
+/* ------------------------------------------------------------ time logic */
+function parseTime(raw) {
+  var s = String(raw == null ? "" : raw).trim();
+  if (!s) return { ok: true, value: "" };
+  if (/^(n\/?a|x|-|—|–)$/i.test(s)) return { ok: true, value: "N/A" };
+  var m = s.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?\s*([ap])\.?m?\.?$/i);
+  if (!m) m = s.match(/^(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?$/);
+  if (!m) {
+    var short = s.match(/^(\d{1,2})\s*([ap])\.?m?\.?$/i);
+    if (short) m = [short[0], short[1], "00", undefined, short[2]];
+  }
+  if (!m) return { ok: false, value: "" };
+  var h = parseInt(m[1], 10), mi = parseInt(m[2], 10), se = m[3] ? parseInt(m[3], 10) : 0;
+  var ap = m[4] ? m[4].toLowerCase() : null;
+  if (ap) {
+    if (h < 1 || h > 12) return { ok: false, value: "" };
+    if (ap === "p" && h !== 12) h += 12;
+    if (ap === "a" && h === 12) h = 0;
+  }
+  if (h > 23 || mi > 59 || se > 59) return { ok: false, value: "" };
+  return { ok: true, value: pad2(h) + ":" + pad2(mi) + ":" + pad2(se) };
+}
+function isClock(v) { return /^\d{2}:\d{2}:\d{2}$/.test(v || ""); }
+function minutesOf(v) {
+  if (!isClock(v)) return null;
+  var p = v.split(":");
+  return (+p[0]) * 60 + (+p[1]) + (+p[2]) / 60;
+}
+function prettyTime(v) {
+  if (!isClock(v)) return v || "";
+  var p = v.split(":"), h = +p[0], ap = h >= 12 ? "PM" : "AM";
+  var hh = h % 12; if (hh === 0) hh = 12;
+  return hh + ":" + p[1] + " " + ap;
+}
+function spanMinutes(a, b) {
+  var x = minutesOf(a), y = minutesOf(b);
+  if (x === null || y === null) return null;
+  return Math.round(y - x);
+}
+function holdMinutes(o) {
+  if (!o) return 0;
+  var total = Number(o.heldMinutes) || 0;
+  /* A live hold is accumulated only until the moment the summary/table asks
+     for it, so the timer stays frozen while an order waits for clarification. */
+  if (isHoldFlag(o) && o.heldStartedAt && isClock(o.startTime) && !isClock(o.completionTime)) {
+    var started = Date.parse(o.heldStartedAt);
+    if (!isNaN(started)) total += Math.max(0, (Date.now() - started) / 60000);
+  }
+  return Math.max(0, total);
+}
+function timeTaken(o) {
+  var span = spanMinutes(o.startTime, o.completionTime);
+  if (span === null) return null;
+  return Math.max(0, Math.round(span - holdMinutes(o)));
+}
+function turnaround(o) { return spanMinutes(o.completionTime, o.proofRcvdTime); }
+function durationText(min) {
+  if (min === null || min === undefined) return "";
+  if (min < 0) return "—";
+  if (min < 60) return min + "m";
+  return Math.floor(min / 60) + "h " + pad2(min % 60) + "m";
+}
+function nowClock() {
+  var d = new Date();
+  return pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+}
+var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+function prettyDate(key) {
+  var d = dateFromKey(key);
+  if (isNaN(d.getTime())) return key || "";
+  return DAY_NAMES[d.getDay()] + ", " + MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+}
+function shortDate(key) {
+  var d = dateFromKey(key);
+  return isNaN(d.getTime()) ? key : (MONTHS[d.getMonth()].slice(0, 3) + " " + d.getDate());
+}
+function parseDay(v) {
+  var s = String(v == null ? "" : v).trim();
+  if (!s) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    var year = m[3].length === 2 ? ("20" + m[3]) : m[3];
+    return year + "-" + pad2(+m[1]) + "-" + pad2(+m[2]);
+  }
+  return s;
+}
+/* The shop is closed at weekends, so every date the app works with is Mon-Fri. */
+function mondayOf(key) {
+  var d = dateFromKey(key);
+  var dow = d.getDay();                       /* 0 Sun .. 6 Sat */
+  var delta = dow === 0 ? -6 : 1 - dow;
+  d.setDate(d.getDate() + delta);
+  return todayKey(d);
+}
+function weekdayKeys(monday) {
+  var out = [], d = dateFromKey(monday);
+  for (var i = 0; i < 5; i++) {
+    out.push(todayKey(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
+}
+function snapToWeekday(key, forward) {
+  var d = dateFromKey(key);
+  if (isNaN(d.getTime())) return todayKey();
+  var dow = d.getDay();
+  if (dow === 6) d.setDate(d.getDate() + (forward === false ? -1 : 2));
+  else if (dow === 0) d.setDate(d.getDate() + (forward === false ? -2 : 1));
+  return todayKey(d);
+}
+
+/* ------------------------------------------------------- status colouring */
+var RX_CODE = /\b(CLC|LEC)\b/;
+var RX_GO   = /\b(APPROVED|APPROVAL|SENT|COMPLETE[D]?|DONE|CONFIRMED|OK(?:'D|AYED)?|SHIPPED|CLOSED)\b|SENT!/;
+var RX_HOT  = /\b(HELD ?UP|\bHOLD\b|WAITING|WAIT|RUSH|URGENT|ISSUE|PROBLEM|REJECTED|CANCELL?ED|REDO|ERROR|MISSING|CLARIFICATION)\b/;
+var RX_WARN = /\b(PROOF|REQUIRED|REQUESTED|24 ?HR|PENDING|REVIEW|JUDGE?MENT|LOGO|STANDARD)\b/;
+function classifyStatus(line) {
+  var s = String(line || "").trim();
+  if (!s) return null;
+  var u = s.toUpperCase();
+  if (RX_HOT.test(u)) return "t-hot";
+  if (RX_CODE.test(u)) return "t-code";
+  if (RX_GO.test(u)) return "t-go";
+  if (RX_WARN.test(u)) return "t-warn";
+  return "t-plain";
+}
+var MARKING_OPTS = [
+  { v: "NONE", l: "Nothing" },
+  { v: "ETCH", l: "Etch" },
+  { v: "LOGO", l: "Logo" },
+  { v: "BOTH", l: "Logo + Etch" }
+];
+function normMarking(v) {
+  var s = String(v == null ? "" : v).trim().toUpperCase();
+  if (s === "ETCH" || s === "LOGO" || s === "BOTH" || s === "NONE") return s;
+  if (s === "LOGO+ETCH" || s === "LOGO AND ETCH" || s === "BOTH") return "BOTH";
+  if (s === "NO LOGO" || s === "NOTHING" || s === "") return "NONE";
+  return "NONE";
+}
+var ACT_ICONS = (function () {
+  var svg = function (d) {
+    return '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" ' +
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  };
+  return {
+    email: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'),
+    pdf: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14h6M9 17h4"/>'),
+    edit: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
+    hold: svg('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
+    del: svg('<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>')
+  };
+})();
+/* Display only (the saved text is untouched): names read "Firstname Lastname",
+   email addresses read in all caps. */
+function displayCustomer(v) {
+  return String(v || "").split("\n").map(function (line) {
+    return line.split(/(\s+)/).map(function (w) {
+      if (!w.trim()) return w;
+      if (w.indexOf("@") !== -1) return w.toUpperCase();
+      if (/\d/.test(w)) return w;
+      return w.toLowerCase().replace(/(^|[-'’.(])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); })
+              .replace(/^Mc([a-z])/, function (m, c) { return "Mc" + c.toUpperCase(); });
+    }).join("");
+  }).join("\n");
+}
+function markingLabel(v) {
+  var hit = MARKING_OPTS.filter(function (o) { return o.v === normMarking(v); })[0];
+  return hit ? hit.l : "Nothing";
+}
+function parseStatusLog(log, statusText) {
+  if (Array.isArray(log) && log.length) {
+    return log.map(function (e) {
+      return { t: String(e && e.t || "").trim(), code: String(e && e.code || "").trim() };
+    }).filter(function (e) { return e.code; });
+  }
+  return String(statusText || "").split("\n").map(function (line) {
+    line = line.trim();
+    if (!line) return null;
+    var m = line.match(/^(\d{1,2}:\d{2}(?:\s*[AP]M)?)\s+[—\-]\s+(.+)$/i)
+         || line.match(/^(\d{1,2}:\d{2}(?:\s*[AP]M)?)\s+(.+)$/i);
+    if (m) return { t: m[1], code: m[2] };
+    return { t: "", code: line };
+  }).filter(Boolean);
+}
+function statusTextFromLog(log) {
+  return (log || []).map(function (e) { return (e.t ? e.t + " — " : "") + e.code; }).join("\n");
+}
+function statusParts(status) {
+  return String(status || "").split("\n")
+    .map(function (l) { return l.trim(); })
+    .filter(Boolean)
+    .map(function (l) { return { text: l, cls: classifyStatus(l) }; });
+}
+function isCompletedOrder(o) {
+  return !!(o && (o.fin === "TRUE" || isClock(o.completionTime)));
+}
+function isCorOrder(o) {
+  if (!o) return false;
+  if (normType(o.otype) === "COR") return true;
+  return /^\s*COR\b/i.test(o.orderId || "");
+}
+function isHoldFlag(o) {
+  return !!(o && (o.held === "TRUE" || o.held === true));
+}
+function rowAccent(order) {
+  /* Priority: HOLD (red) > COR type (green) > completed CLC/LEC (blue)
+     > gold note/status > plain grey. CLC/LEC on an open job no longer
+     paints the whole row blue. */
+  if (isHoldFlag(order) || isHeld(order)) return "k-hot";
+  if (isCorOrder(order)) return "k-go";
+  if ((isCode(order, "CLC") || isCode(order, "LEC")) && isCompletedOrder(order)) return "k-code";
+  var parts = statusParts(order.status).concat(statusParts(order.notes));
+  var i;
+  for (i = 0; i < parts.length; i++) if (parts[i].cls === "t-warn") return "k-warn";
+  return "";
+}
+
+/* --------------------------------------------------------------- orders */
+/* Orders used to be written as a bare array. They are now wrapped in an
+   envelope carrying a revision number, so a second tab writing the same key
+   can be detected and merged instead of silently clobbering this one. Both
+   shapes are still read, so nothing already in storage is lost. */
+function unwrapOrders(v) {
+  if (Array.isArray(v)) return { orders: v, rev: 0, savedAt: null };
+  if (v && Array.isArray(v.orders)) {
+    return { orders: v.orders, rev: Number(v.rev) || 0, savedAt: v.savedAt || null };
+  }
+  return { orders: [], rev: 0, savedAt: null };
+}
+function readOrdersRaw(userKey) { return unwrapOrders(readJson(ordersKey(userKey), [])); }
+function writeOrdersRaw(userKey, orders, rev) {
+  return writeJson(ordersKey(userKey), { v: 2, rev: rev, savedAt: nowIso(), orders: orders });
+}
+/* The search index is cached on each order as __hay. It must never be written
+   to storage — it roughly doubled the size of the payload, which is the fast
+   way to hit the 5 MB localStorage ceiling and start failing writes. */
+function stripInternal(o) {
+  var c = {};
+  for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k) && k.slice(0, 2) !== "__") c[k] = o[k];
+  return c;
+}
+function scanLocalLedgers() {
+  var found = [];
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (!k || k.indexOf("caot_orders_") !== 0) continue;
+      var raw = readJson(k, null);
+      var list = raw && Array.isArray(raw.orders) ? raw.orders : (Array.isArray(raw) ? raw : []);
+      if (list.length) found.push({ key: k, orders: list.map(normalizeOrder) });
+    }
+  } catch (e) {}
+  return found;
+}
+function mergeLedgerList(incoming) {
+  var seenId = {}, seenJob = {};
+  state.orders.forEach(function (o) {
+    seenId[o.id] = true;
+    if (o.orderId) seenJob[o.date + "|" + String(o.orderId).toLowerCase()] = true;
+  });
+  var added = 0;
+  incoming.forEach(function (o) {
+    o = normalizeOrder(o);
+    var job = o.orderId ? o.date + "|" + String(o.orderId).toLowerCase() : "";
+    if (seenId[o.id] || (job && seenJob[job])) return;
+    state.orders.push(o);
+    seenId[o.id] = true;
+    if (job) seenJob[job] = true;
+    added++;
+  });
+  return added;
+}
+function recoverLocalLedgers(quiet) {
+  var packs = scanLocalLedgers();
+  var incoming = [];
+  packs.forEach(function (p) { incoming = incoming.concat(p.orders); });
+  if (!incoming.length) {
+    if (!quiet) toast("No older ledgers found in this browser.");
+    return 0;
+  }
+  var added = mergeLedgerList(incoming);
+  if (added) {
+    persistOrders();
+    scheduleRender();
+    toast("Recovered " + added + " order" + (added === 1 ? "" : "s") + " from this browser.", null, 7000);
+  } else if (!quiet) {
+    toast("Found older ledgers, but those orders are already in this account.");
+  }
+  return added;
+}
+function loadOrders() {
+  if (!state.user) { state.orders = []; state.rev = 0; reindex(); return; }
+  var raw = readOrdersRaw(state.user.key);
+  state.orders = raw.orders.map(normalizeOrder);
+  state.rev = raw.rev;
+  state.deleted = {};
+  reindex();
+  if (window.CAOTCloud && CAOTCloud.enabled() && state.user.cloud) {
+    CAOTCloud.pull().then(function (rows) {
+      if (rows && rows.length) {
+        state.orders = rows.map(normalizeOrder);
+        recoverLocalLedgers(true);
+        writeOrdersRaw(state.user.key, state.orders.map(stripInternal), state.rev + 1);
+        state.rev += 1;
+        reindex();
+        scheduleRender();
+        return;
+      }
+      recoverLocalLedgers(true);
+      if (state.orders.length) {
+        return CAOTCloud.pushAll(state.user.key, state.orders, {}).then(function () {
+          toast("Uploaded " + state.orders.length + " local orders to the live ledger.", null, 6000);
+        });
+      }
+    }).catch(function (err) {
+      toast("Could not reach the live ledger: " + (err && err.message ? err.message : "offline"), null, 7000);
+    });
+  }
+}
+function reindex() {
+  state.byId = {};
+  for (var i = 0; i < state.orders.length; i++) state.byId[state.orders[i].id] = state.orders[i];
+}
+function byId(id) { return state.byId[id] || null; }
+/* Pulls in anything a second tab added since this tab last read, so two open
+   windows can't erase each other's orders. Rows deleted in this tab stay
+   deleted. */
+function mergeForeign(foreign) {
+  var merged = 0;
+  for (var i = 0; i < foreign.length; i++) {
+    var f = normalizeOrder(foreign[i]);
+    if (state.deleted[f.id]) continue;
+    var mine = state.byId[f.id];
+    if (!mine) { state.orders.push(f); merged++; continue; }
+    if (f.updatedAt && mine.updatedAt && f.updatedAt > mine.updatedAt) {
+      for (var k in f) if (k.slice(0, 2) !== "__") mine[k] = f[k];
+      merged++;
+    }
+  }
+  if (merged) reindex();
+  return merged;
+}
+/* Returns true only when the change is actually on disk. Every caller that
+   can lose data on a false is expected to check it. */
+function persistOrders() {
+  if (!state.user) return false;
+  var key = state.user.key;
+  var stored = readOrdersRaw(key);
+  var merged = 0;
+  if (stored.rev !== state.rev) merged = mergeForeign(stored.orders);
+  var rev = Math.max(stored.rev, state.rev) + 1;
+  var payload = state.orders.map(stripInternal);
+  var ok = writeOrdersRaw(key, payload, rev);
+  if (ok) {
+    /* Read it straight back. A write can be accepted and then dropped by
+       storage pressure or an extension, and a silent drop is exactly the
+       failure that looks like "I entered it and it vanished". */
+    var back = readOrdersRaw(key);
+    if (back.rev !== rev || back.orders.length !== payload.length) ok = false;
+  }
+  if (ok) { state.rev = rev; state.lastSaved = new Date(); state.saveFailed = false; }
+  else { state.saveFailed = true; }
+  if (ok && window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud) {
+    CAOTCloud.pushAll(state.user.key, state.orders, state.deleted).then(function () {
+      if (state.cloudError) { state.cloudError = false; scheduleRender(); }
+      var miss = CAOTCloud.missingColumns ? CAOTCloud.missingColumns() : [];
+      if (miss.length && !state.warnedMissing) {
+        state.warnedMissing = true;
+        toast("Saved to the cloud, except: " + miss.join(", ") + " (that column isn't in the database yet). It's kept on this device.", null, 9000);
+      }
+    }).catch(function (err) {
+      state.saveFailed = true;
+      state.cloudError = true;
+      toast("Cloud save failed: " + (err && err.message ? err.message : "try again"), null, 7000);
+      scheduleRender();
+    });
+  }
+  reindex();
+  if (merged) {
+    toast("Picked up " + merged + " change" + (merged === 1 ? "" : "s") +
+          " made in another tab.", null, 6000);
+    scheduleRender();
+  }
+  return ok;
+}
+/* One place to shout when a save does not land, instead of a toast that
+   scrolls away while you carry on typing. */
+function saveFailedModal(what) {
+  confirmModal("That " + what + " was not saved",
+    "The browser refused to write to local storage. This is almost always a full quota or " +
+    "private-browsing mode. Your work is still on screen — use Back up to write a JSON file " +
+    "before you reload or close this tab.",
+    "Back up now", backupJson, "Ignore", function () {});
+}
+/* ------------------------------------------------- order type / qty / money */
+var ORDER_TYPES = ["RTR", "INT", "SAM", "COR"];
+function normType(v) {
+  var t = String(v == null ? "" : v).trim().toUpperCase().replace(/\s+/g, " ");
+  return t.slice(0, 14);
+}
+function typeClass(t) {
+  return ORDER_TYPES.indexOf(normType(t)) !== -1 ? "t-" + normType(t).toLowerCase() : "";
+}
+function parseQty(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  var digits = String(v).replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  var n = parseInt(digits, 10);
+  return isFinite(n) ? n : "";
+}
+function parseMoney(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  var clean = String(v).replace(/[^0-9.]/g, "");
+  if (!clean) return "";
+  var n = parseFloat(clean);
+  if (!isFinite(n)) return "";
+  return Math.round(n * 100) / 100;
+}
+function money(n) {
+  if (n === "" || n === null || n === undefined) return "";
+  return "$" + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function sumQty(list) {
+  return list.reduce(function (t, o) { return t + (o.qty === "" ? 0 : Number(o.qty)); }, 0);
+}
+function sumAmount(list) {
+  return Math.round(list.reduce(function (t, o) {
+    return t + (o.amount === "" ? 0 : Number(o.amount));
+  }, 0) * 100) / 100;
+}
+
+function normalizeOrder(o) {
+  o = o || {};
+  var tri = function (v) {
+    var s = String(v == null ? "" : v).trim().toUpperCase();
+    if (s === "TRUE" || s === "YES" || s === "T") return "TRUE";
+    if (s === "FALSE" || s === "NO" || s === "F") return "FALSE";
+    return "X";
+  };
+  var txt = function (v) { return String(v == null ? "" : v); };
+  return {
+    id: o.id || uid(),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(o.date || "") ? o.date : todayKey(),
+    seq: Number(o.seq) > 0 ? Number(o.seq) : 0,
+    orderId: txt(o.orderId).trim(),
+    customer: txt(o.customer).trim(),
+    reqShipDate: parseDay(o.reqShipDate),
+    eventDate: parseDay(o.eventDate),
+    placedDate: parseDay(o.placedDate),
+    otype: normType(o.otype),
+    qty: parseQty(o.qty),
+    amount: parseMoney(o.amount),
+    proof: tri(o.proof),
+    marking: normMarking(o.marking),
+    statusLog: parseStatusLog(o.statusLog, o.status),
+    status: txt(o.status) || statusTextFromLog(parseStatusLog(o.statusLog, o.status)),
+    startTime: txt(o.startTime),
+    completionTime: txt(o.completionTime),
+    proofRcvdTime: txt(o.proofRcvdTime),
+    fin: tri(o.fin),
+    savedToDrive: tri(o.savedToDrive),
+    held: o.held === "TRUE" || o.held === true ? "TRUE" : "FALSE",
+    heldStartedAt: txt(o.heldStartedAt),
+    heldMinutes: Number(o.heldMinutes) > 0 ? Number(o.heldMinutes) : 0,
+    notes: txt(o.notes),
+    proofs: Array.isArray(o.proofs) ? o.proofs : [],
+    createdAt: o.createdAt || nowIso(),
+    updatedAt: o.updatedAt || nowIso()
+  };
+}
+function nextSeq(dateKey) {
+  var max = 0;
+  for (var i = 0; i < state.orders.length; i++) {
+    var o = state.orders[i];
+    if (o.date === dateKey && o.seq > max) max = o.seq;
+  }
+  return max + 1;
+}
+function renumberDate(dateKey) {
+  var rows = state.orders.filter(function (o) { return o.date === dateKey; })
+    .sort(function (a, b) { return (a.seq - b.seq) || a.createdAt.localeCompare(b.createdAt); });
+  rows.forEach(function (o, i) { o.seq = i + 1; o.updatedAt = nowIso(); });
+  if (!persistOrders()) saveFailedModal("renumber");
+  scheduleRender();
+}
+function weekKeysSet() {
+  var set = {};
+  weekdayKeys(state.weekStart).forEach(function (k) { set[k] = true; });
+  return set;
+}
+function inScope(o) {
+  if (state.scope === "all") return true;
+  if (state.scope === "week") return weekKeysSet()[o.date] === true;
+  return o.date === state.scopeDate;
+}
+function isLive(o) { return isClock(o.startTime) && !isClock(o.completionTime) && !isHoldFlag(o); }
+function awaitingProof(o) { return o.proof === "TRUE" && !isClock(o.proofRcvdTime); }
+function isCode(o, code) {
+  var blob = (o.status || "") + " " + statusTextFromLog(o.statusLog);
+  return new RegExp("\\b" + code + "\\b", "i").test(blob);
+}
+function noProofNeeded(o) {
+  return !!(o && (o.proof === "FALSE" || isCode(o, "CLC") || isCode(o, "LEC")));
+}
+function isHeld(o) {
+  if (isHoldFlag(o)) return true;
+  var lines = String(o.status || "").split("\n").concat(String(o.notes || "").split("\n"));
+  return lines.some(function (l) { return classifyStatus(l) === "t-hot"; });
+}
+function matchesFilter(o) {
+  switch (state.filter) {
+    case "await": return awaitingProof(o);
+    case "unfin": return o.fin !== "TRUE";
+    case "drive": return true;
+    case "codes": return isCode(o, "CLC") || isCode(o, "LEC");
+    case "live":  return isLive(o);
+    case "held":  return isHeld(o);
+    default: return true;
+  }
+}
+function searchText(o) {
+  if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
+    o.__hay = [o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+               o.amount === "" ? "" : money(o.amount), o.status, o.marking, o.notes,
+               o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
+    o.__hayStamp = o.updatedAt;
+  }
+  return o.__hay;
+}
+function matchesQuery(o, terms) {
+  if (!terms.length) return true;
+  var hay = searchText(o);
+  for (var i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) === -1) return false;
+  return true;
+}
+function visibleOrders() {
+  var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  var rows = [];
+  for (var i = 0; i < state.orders.length; i++) {
+    var o = state.orders[i];
+    if (inScope(o) && matchesFilter(o) && matchesQuery(o, terms)) rows.push(o);
+  }
+  var k = state.sortKey, dir = state.sortDir;
+  var num = function (o) {
+    if (k === "taken") return timeTaken(o);
+    return minutesOf(o[k]);
+  };
+  rows.sort(function (a, b) {
+    var r = 0;
+    if (k === "seq") r = (a.date === b.date) ? a.seq - b.seq : a.date.localeCompare(b.date);
+    else if (k === "date") r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    else if (k === "taken" || k === "startTime" || k === "completionTime") {
+      var x = num(a), y = num(b);
+      /* Blank times sink to the bottom whichever direction the column is sorted. */
+      if (x === null && y !== null) return 1;
+      if (y === null && x !== null) return -1;
+      r = (x === null && y === null) ? 0 : x - y;
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    } else if (k === "qty" || k === "amount") {
+      var qa = a[k] === "" ? null : Number(a[k]), qb = b[k] === "" ? null : Number(b[k]);
+      if (qa === null && qb !== null) return 1;
+      if (qb === null && qa !== null) return -1;
+      r = (qa === null && qb === null) ? 0 : qa - qb;
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    } else {
+      r = String(a[k] || "").localeCompare(String(b[k] || ""), undefined, { numeric: true, sensitivity: "base" });
+      if (r === 0) r = a.date.localeCompare(b.date) || (a.seq - b.seq);
+    }
+    return r * dir;
+  });
+  return rows;
+}
+
+/* ------------------------------------------------------------------ view */
+function el(tag, cls, text) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) n.textContent = String(text);
+  return n;
+}
+var renderQueued = false;
+function scheduleRender() {
+  if (renderQueued) return;
+  renderQueued = true;
+  var run = function () { renderQueued = false; render(); };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+  else setTimeout(run, 16);
+}
+var tableQueued = false;
+function scheduleTable() {
+  if (tableQueued) return;
+  tableQueued = true;
+  var run = function () { tableQueued = false; renderTable(); renderFooter(); };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+  else setTimeout(run, 16);
+}
+
+/* ---------------------------------------------------- columns & chrome */
+/* One definition drives the colgroup, the header, and the entry row above
+   the table, so the fields you type into sit over the columns they fill. */
+var COLUMNS = [
+  { key: "seq",    label: "#",        entryLabel: "New #", hint: "Assigned on save", w: 2.8,  wd: 2.6,  sort: "seq",  entry: "new" },
+  { key: "date",   label: "Date",     entryLabel: "Log date", hint: "Uses the selected day", w: 0,    wd: 4.2,  sort: "date", entry: "date", dateOnly: true },
+  { key: "placedDate", label: "Placed", entryLabel: "Date placed", hint: "When the customer placed it", w: 5.4, wd: 5, sort: "placedDate", entry: "dayfield", field: "fPlacedDate" },
+  { key: "orderId",label: "Order #",  entryLabel: "8-digit Order #", hint: "Crown / FASTSIGNS number", w: 8.8,  wd: 8.2,  sort: "orderId", entry: "text", field: "fOrderId", ph: "e.g. 16248803" },
+  { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 14.5,  wd: 13.2, sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
+  { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 5.2, wd: 4.8, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
+  { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 5.2, wd: 4.8, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
+  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 4.2,  wd: 3.8,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
+  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 3.4,  wd: 3.2,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
+  { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 5.4,  wd: 5,    sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
+  { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 5.4,  wd: 5,    entry: "tri", field: "segProof" },
+  { key: "marking",label: "Mark",     entryLabel: "Etch / logo", hint: "Nothing, etch, logo, or both", w: 6.4, wd: 6, entry: "mark", field: "segMark" },
+  { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 9.2,  wd: 8.4,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
+  { key: "startTime", label: "Start", entryLabel: "Start time", hint: "When you picked it up", w: 5,    wd: 4.6,  sort: "startTime", entry: "time", field: "fStart", ph: "9:20" },
+  { key: "completionTime", label: "End", entryLabel: "End time", hint: "When you finished", w: 5, wd: 4.6,  sort: "completionTime", entry: "time", field: "fDone", ph: "9:35" },
+  { key: "taken",  label: "Taken",    entryLabel: "Time taken", hint: "End minus start", w: 3.8,  wd: 3.6,  sort: "taken", entry: "calc", field: "calcTaken" },
+  { key: "proofRcvdTime", label: "Back", entryLabel: "Proof back", hint: "When the proof returned", w: 5, wd: 4.6,  entry: "time", field: "fBack", ph: "9:39" },
+  { key: "turn",   label: "Turn",     entryLabel: "Turnaround", hint: "Back minus end", w: 3.8,  wd: 3.6,  entry: "calc", field: "calcTurn" },
+  { key: "fin",    label: "Fin",      entryLabel: "Finished?", hint: "Yes / No / N/A", w: 4.4,  wd: 4.2,  entry: "tri", field: "segFin" },
+  { key: "savedToDrive", retired: true, label: "Drive", entryLabel: "Saved to Drive?", hint: "Yes / No / N/A", w: 4.6,  wd: 4.4,  entry: "tri", field: "segDrive" },
+  { key: "notes",  label: "Note",     entryLabel: "Notes", hint: "Anything worth remembering", w: 5.2,  wd: 5,    entry: "area", field: "fNotes", ph: "Install notes, contact, quirks…" },
+  { key: "acts",   label: "",         entryLabel: "Save", w: 8.2,  wd: 8,    entry: "acts" }
+];
+function activeColumns() {
+  var showDate = state.scope !== "day";
+  /* retired columns (Drive) stay in the data and backups, just not on screen */
+  return COLUMNS.filter(function (c) { return !c.retired && (!c.dateOnly || showDate); });
+}
+/* The raw widths add up to ~117-121%, which is what pushed the log past the
+   screen edge. Scale them so the visible columns always total exactly 100%. */
+/* Relative widths tuned so short values ("19", "RTR", "$1,234.56") never get
+   chopped mid-word on a laptop screen. Unknown keys fall back to 60. */
+var COL_WEIGHT = {
+  /* Rebalanced to match the entry form: # is readable, Placed / Req. Ship /
+     Event are tighter, and Type through Turn get enough room for their values. */
+  seq: 40, date: 68, placedDate: 90, orderId: 92, customer: 140, reqShipDate: 92, eventDate: 92,
+  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 88,
+  startTime: 64, completionTime: 64, taken: 46, proofRcvdTime: 64, turn: 52,
+  fin: 52, notes: 80, acts: 92
+};
+function columnWidth(c) {
+  var wOf = function (k) { return COL_WEIGHT[k.key] || 60; };
+  var total = activeColumns().reduce(function (t, k) { return t + wOf(k); }, 0) || 100;
+  return ((wOf(c) / total) * 100).toFixed(3) + "%";
+}
+
+/* Rebuilding the entry row throws away whatever is half-typed in it. The row
+   only needs rebuilding when the set of columns changes (the Date column comes
+   and goes with the scope), so everything else — a pill toggled in the table,
+   a day change, an undo — now leaves your typing exactly where it was. */
+var entrySig = "";
+function buildChrome() {
+  var cols = activeColumns();
+  var colgroup = $("cols");
+  colgroup.textContent = "";
+  var head = $("headRow");
+  head.textContent = "";
+  cols.forEach(function (c) {
+    var col = document.createElement("col");
+    col.style.width = columnWidth(c);
+    colgroup.appendChild(col);
+    var th = el("th", c.sort ? "sortable" : "", c.label);
+    if (c.sort) {
+      th.setAttribute("data-sort", c.sort);
+      th.appendChild(el("span", "arrow", "↕"));
+    }
+    if (c.key === "acts") th.className = "rowacts";
+    if (c.key === "notes") th.className = ((th.className || "") + " note-hd").trim();
+    head.appendChild(th);
+  });
+  var sig = cols.map(function (c) { return c.key; }).join("|");
+  if (sig !== entrySig || !$("fOrderId")) {
+    cacheFormValues();
+    entrySig = sig;
+    buildEntryRow(cols);
+    restoreFormValues();
+  }
+  refreshEntryMeta();
+}
+/* How many of the 12 grid columns each field gets. Mirroring the table's own
+   widths here squeezed several fields to ~4.5% of the screen, so the entry row
+   keeps the table's field ORDER but sizes each one to be readable. */
+/* Entry form layout. The table keeps its own column order; the form groups
+   fields into rows that each fill the grid exactly, so every row lines up.
+   Spans: [desktop of 24, mid of 12, small of 6]. */
+var ENTRY_GROUPS = [
+  { title: "Order",         keys: ["seq", "date", "orderId", "customer"] },
+  { title: "Dates & price", keys: ["placedDate", "reqShipDate", "eventDate", "otype", "qty", "amount"] },
+  { title: "Timing",        keys: ["startTime", "completionTime", "taken", "proofRcvdTime", "turn"] },
+  { title: "Checks",        keys: ["proof", "marking", "fin"] },
+  { title: "Status & notes", keys: ["status", "notes", "acts"] }
+];
+var ENTRY_SPAN = {
+  seq: [3, 2, 3, 2],  date: [4, 3, 3, 4],  orderId: [7, 3, 6, 6],  customer: [10, 4, 6, 6],
+  /* Keep the first row balanced: # gets enough room to stay visible, while
+     Placed / Req. Ship / Event no longer consume oversized chunks. */
+  placedDate: [3, 2, 2, 4], reqShipDate: [3, 2, 2, 3], eventDate: [3, 2, 2, 3],
+  /* Each group now fills the complete 24-column desktop grid. This prevents
+     the Dates & price and Checks groups from bunching against the left edge
+     while leaving an unexplained block of empty space on the right. */
+  otype: [5, 2, 2, 3], qty: [3, 2, 2, 3], amount: [7, 2, 2, 3],
+  startTime: [5, 3, 3, 3], completionTime: [5, 3, 3, 3], taken: [3, 2, 2, 3], proofRcvdTime: [5, 2, 2, 3], turn: [6, 2, 2, 3],
+  proof: [7, 4, 3, 6], marking: [10, 5, 3, 6], fin: [7, 3, 6, 6],
+  status: [11, 6, 6, 6], notes: [8, 4, 6, 6], acts: [5, 2, 6, 6]
+};
+/* When the Date column is hidden (single-day scope), give its space to the
+   neighbours so the first row still fills the grid. */
+var ENTRY_SPAN_NODATE = { seq: [3, 2, 2, 2], orderId: [9, 4, 4, 4], customer: [12, 6, 6, 6] };
+/* Every text-ish field in the entry row, in one place, so caching, clearing
+   and draft-saving can never drift out of sync with the fields on screen. */
+var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fPlacedDate", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
+                      "fStatus", "fStart", "fDone", "fBack", "fNotes"];
+var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive", "segMark"];
+function buildEntryRow(cols) {
+  var grid = $("entrygrid");
+  grid.textContent = "";
+  grid.style.gridTemplateColumns = "";        /* the stylesheet owns the grid now */
+  var byKey = {};
+  cols.forEach(function (c) { byKey[c.key] = c; });
+  var hasDate = !!byKey.date;
+  var ordered = [], placed = {};
+  ENTRY_GROUPS.forEach(function (g) {
+    var inGroup = g.keys.filter(function (k) { return byKey[k]; });
+    if (!inGroup.length) return;
+    ordered.push({ group: g.title });
+    inGroup.forEach(function (k) { ordered.push(byKey[k]); placed[k] = true; });
+  });
+  /* Anything not in the layout map still shows up, at the end. */
+  cols.forEach(function (c) { if (!placed[c.key]) ordered.push(c); });
+  ordered.forEach(function (c) {
+    if (c.group) {
+      grid.appendChild(el("div", "egroup", c.group));
+      return;
+    }
+    var cell = el("div", "ecell");
+    var sp = (!hasDate && ENTRY_SPAN_NODATE[c.key]) || ENTRY_SPAN[c.key];
+    if (sp) {
+      cell.style.setProperty("--span-l", sp[0]);
+      cell.style.setProperty("--span-m", sp[1]);
+      cell.style.setProperty("--span-s", sp[2]);
+      cell.style.setProperty("--span-p", sp[3] || 6);
+    }
+    if (c.entry !== "new" && c.entry !== "date" && c.entry !== "acts") {
+      var lb = el("label", null, c.entryLabel || c.label || " ");
+      if (c.field) lb.htmlFor = c.field;
+      cell.appendChild(lb);
+      if (c.hint) { var hn = el("div", "hint", c.hint); hn.title = c.hint; cell.appendChild(hn); }
+    }
+    if (c.entry === "new") {
+      cell.appendChild(el("label", null, c.entryLabel || "#"));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+      var n = el("div", "calcbox", "new");
+      n.id = "calcSeq";
+      cell.appendChild(n);
+    } else if (c.entry === "date") {
+      cell.appendChild(el("label", null, c.entryLabel || "Date"));
+      if (c.hint) cell.appendChild(el("div", "hint", c.hint));
+      var dv = el("div", "calcbox", "");
+      dv.id = "calcDate";
+      cell.appendChild(dv);
+    } else if (c.entry === "type") {
+      /* A datalist, not a select: RTR / INT / SAM are one keystroke away and
+         anything else can still just be typed in. */
+      var ti = document.createElement("input");
+      ti.type = "text"; ti.id = c.field; ti.placeholder = c.ph || "";
+      ti.spellcheck = false; ti.autocomplete = "off";
+      ti.className = "mono";
+      ti.setAttribute("list", "orderTypeList");
+      ti.addEventListener("input", function () {
+        var at = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        try { this.setSelectionRange(at, at); } catch (e) {}
+      });
+      cell.appendChild(ti);
+      if (!document.getElementById("orderTypeList")) {
+        var dl = document.createElement("datalist");
+        dl.id = "orderTypeList";
+        ORDER_TYPES.concat(["OTHER"]).forEach(function (t) {
+          var op = document.createElement("option");
+          op.value = t;
+          dl.appendChild(op);
+        });
+        cell.appendChild(dl);
+      }
+    } else if (c.entry === "dayfield") {
+      var wrap = el("div", "datefield");
+      var di = document.createElement("input");
+      di.type = "date";
+      di.id = c.field;
+      di.className = "mono";
+      /* Explicitly keep the date input as the only keyboard stop. */
+      di.setAttribute("tabindex", "0");
+      wrap.appendChild(di);
+      var cal = el("button", "calendar-btn");
+      cal.type = "button";
+      cal.tabIndex = -1;
+      cal.setAttribute("aria-label", "Open calendar");
+      cal.title = "Open calendar";
+      cal.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+      cal.addEventListener("click", function () {
+        di.focus({ preventScroll: true });
+        if (typeof di.showPicker === "function") {
+          try { di.showPicker(); return; } catch (e) {}
+        }
+        di.click();
+      });
+      wrap.appendChild(cal);
+      cell.appendChild(wrap);
+    } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
+      var input = document.createElement("input");
+      input.type = "text"; input.id = c.field; input.placeholder = c.ph || "";
+      input.spellcheck = false;
+      input.className = c.entry === "text" ? "" : "mono";
+      if (c.entry === "num") { input.className += " qty"; input.inputMode = "numeric"; }
+      if (c.entry === "money") { input.className += " money"; input.inputMode = "decimal"; }
+      if (c.entry === "time") {
+        var wrap = el("div", "timefield");
+        var stamp = el("button", "stamp", "now");
+        stamp.type = "button";
+        stamp.title = "Stamp the current time";
+        stamp.setAttribute("data-now", c.field);
+        wrap.appendChild(input); wrap.appendChild(stamp);
+        cell.appendChild(wrap);
+      } else {
+        cell.appendChild(input);
+      }
+    } else if (c.entry === "slog") {
+      var slog = el("div", "slog");
+      var list = el("div", "slog-list");
+      list.id = "slogList";
+      var add = el("div", "slog-add");
+      var code = document.createElement("input");
+      code.type = "text"; code.id = "fStatusCode"; code.placeholder = c.ph || "CLC";
+      var logBtn = el("button", "stamp", "Log now");
+      logBtn.type = "button"; logBtn.id = "btnLogStatus";
+      add.appendChild(code); add.appendChild(logBtn);
+      var hidden = document.createElement("textarea");
+      hidden.id = "fStatus"; hidden.hidden = true;
+      slog.appendChild(list); slog.appendChild(add); slog.appendChild(hidden);
+      cell.appendChild(slog);
+    } else if (c.entry === "mark") {
+      var quad = el("div", "quad");
+      quad.id = c.field;
+      MARKING_OPTS.forEach(function (opt) {
+        var b = el("button", null, opt.l);
+        b.type = "button";
+        b.setAttribute("data-v", opt.v);
+        quad.appendChild(b);
+      });
+      cell.appendChild(quad);
+    } else if (c.entry === "area") {
+      var ta = document.createElement("textarea");
+      ta.id = c.field; ta.rows = c.key === "customer" ? 1 : 2; ta.placeholder = c.ph || "";
+      cell.appendChild(ta);
+    } else if (c.entry === "tri") {
+      var tri = el("div", "tri" + (c.key === "fin" || c.key === "savedToDrive" ? " go" : "") +
+                            (c.key === "proof" ? " stopno proofyes" : ""));
+      tri.id = c.field;
+      tri.setAttribute("role", "group");
+      tri.setAttribute("aria-label", c.label);
+      var finNo = c.key === "fin" ? "Not Yet" : "No";
+      [["TRUE", "Yes"], ["FALSE", finNo], ["X", "N/A"]].forEach(function (pair) {
+        var b = el("button", null, pair[1]);
+        b.type = "button";
+        b.setAttribute("data-v", pair[0]);
+        tri.appendChild(b);
+      });
+      cell.appendChild(tri);
+    } else if (c.entry === "calc") {
+      var box = el("div", "calcbox", "—");
+      box.id = c.field;
+      cell.appendChild(box);
+    } else if (c.entry === "acts") {
+      cell.appendChild(el("label", null, "\u00a0"));
+      cell.appendChild(el("div", "hint", "\u00a0"));
+      var acts = el("div", "entry-actions");
+      var save = el("button", "btn", "Add");
+      save.type = "submit"; save.id = "btnSaveOrder";
+      var cancel = el("button", "btn ghost", "Clear");
+      cancel.type = "button"; cancel.id = "btnCancelEdit";
+      acts.appendChild(save); acts.appendChild(cancel);
+      cell.appendChild(acts);
+    }
+    grid.appendChild(cell);
+  });
+  wireEntryRow();
+}
+function wireEntryRow() {
+  ["segProof", "segFin", "segDrive", "segMark"].forEach(function (id) {
+    var seg = $(id);
+    if (!seg) return;
+    seg.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]");
+      if (b) {
+        setSeg(id, b.getAttribute("data-v"));
+        if (id === "segProof") { syncProofDependentFields(); updateCalcs(); queueDraft(); }
+      }
+    });
+  });
+  $("fStart").addEventListener("input", updateCalcs);
+  $("fDone").addEventListener("input", updateCalcs);
+  $("fBack").addEventListener("input", updateCalcs);
+  if ($("btnLogStatus")) {
+    $("btnLogStatus").addEventListener("click", addStatusStamp);
+    $("fStatusCode").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); addStatusStamp(); }
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-now]"), function (b) {
+    b.addEventListener("click", function () {
+      var input = $(b.getAttribute("data-now"));
+      input.value = prettyTime(nowClock());
+      updateCalcs();
+      input.focus();
+    });
+  });
+  $("btnCancelEdit").addEventListener("click", function () { clearForm(); });
+  /* Anything typed in the entry row is mirrored to a draft, so a refresh, a
+     crash or an accidental tab close does not take the half-entered order
+     with it. Restored on the next sign-in. */
+  var grid = $("entrygrid");
+  grid.addEventListener("input", queueDraft);
+  grid.addEventListener("click", function (e) {
+    if (e.target.closest("[data-v]")) queueDraft();
+  });
+}
+var draftTimer = null;
+function queueDraft() {
+  if (draftTimer) clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 400);
+}
+function draftKey() { return state.user ? "caot_draft_" + state.user.key : null; }
+function collectForm() {
+  if (!$("fOrderId")) return null;
+  var d = {};
+  ENTRY_TEXT_IDS.forEach(function (id) { d[id] = $(id) ? $(id).value : ""; });
+  ENTRY_SEG_IDS.forEach(function (id) { d[id] = segValue(id); });
+  return d;
+}
+function draftIsEmpty(d) {
+  if (!d) return true;
+  for (var i = 0; i < ENTRY_TEXT_IDS.length; i++) {
+    if (String(d[ENTRY_TEXT_IDS[i]] || "").trim()) return false;
+  }
+  return true;
+}
+function saveDraft() {
+  var k = draftKey();
+  if (!k) return;
+  var d = collectForm();
+  if (draftIsEmpty(d)) { clearDraft(); return; }
+  writeJson(k, { savedAt: nowIso(), date: state.scopeDate, form: d });
+}
+function clearDraft() {
+  var k = draftKey();
+  if (!k) return;
+  try { localStorage.removeItem(k); } catch (e) {}
+}
+function restoreDraft() {
+  var k = draftKey();
+  if (!k) return;
+  var d = readJson(k, null);
+  if (!d || !d.form || draftIsEmpty(d.form)) return;
+  formCache = d.form;
+  restoreFormValues();
+  toast("Restored the order you were part-way through typing.", {
+    label: "Discard", run: function () { clearForm(); }
+  }, 9000);
+}
+
+function render() {
+  buildChrome();
+  renderWeek();
+  renderRibbon();
+  renderChips();
+  renderTable();
+  renderFooter();
+  $("scopeSel").value = state.scope;
+  $("entryEyebrow").textContent = prettyDate(state.scopeDate);
+  updateCalcs();
+}
+/* buildChrome() rebuilds the inputs, so anything half-typed is carried over. */
+var formCache = null;
+function cacheFormValues() {
+  if (!$("fOrderId")) return;
+  formCache = collectForm();
+}
+function restoreFormValues() {
+  if (!$("fOrderId")) return;
+  if (!formCache) {
+    setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); setSeg("segMark", "NONE");
+    writeSlog([]);
+  }
+  else {
+    ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = formCache[id] || ""; });
+    setSeg("segProof", formCache.segProof || "TRUE");
+    setSeg("segFin", formCache.segFin || "FALSE");
+    setSeg("segDrive", formCache.segDrive || "FALSE");
+    setSeg("segMark", formCache.segMark || "NONE");
+    writeSlog(parseStatusLog(null, formCache.fStatus || ""));
+  }
+  refreshEntryMeta();
+}
+/* The read-only bits of the entry row (which date it will file under, which
+   number it will take) refresh on every render; the fields themselves do not. */
+function refreshEntryMeta() {
+  if ($("calcDate")) $("calcDate").textContent = shortDate(state.scopeDate);
+  if ($("calcSeq")) $("calcSeq").textContent = "#" + nextSeq(state.scopeDate);
+}
+function renderFooter() {
+  var scoped = state.orders.filter(inScope);
+  var shown = visibleOrders().length;
+  var live = scoped.filter(isLive).length;
+  var count = $("footCount");
+  count.textContent = "";
+  var scopeName = state.scope === "day" ? prettyDate(state.scopeDate)
+    : state.scope === "week" ? "week of " + shortDate(state.weekStart)
+    : "all dates";
+  var visible = visibleOrders();
+  var q = sumQty(visible), amt = sumAmount(visible);
+  count.appendChild(el("b", null, shown));
+  count.appendChild(document.createTextNode(
+    (shown === 1 ? " order" : " orders") + (shown !== scoped.length ? " of " + scoped.length : "") +
+    " shown for " + scopeName + (live ? " · " + live + " in progress" : "") +
+    (q ? " · " + q + " pc" + (q === 1 ? "" : "s") : "") +
+    (amt ? " · " + money(amt) : "")));
+  var listTitle = $("listTitle");
+  if (listTitle) {
+    listTitle.textContent = shown + (shown === 1 ? " order" : " orders") + " · " + scopeName;
+  }
+  /* A visible, running confirmation that writes are actually landing. */
+  var hint = state.user ? ((state.user.cloud ? "Live · " : "") + "Signed in as " + (state.user.email || state.user.username)) : "";
+  if (state.saveFailed) hint += " · NOT SAVED — back up now";
+  else if (state.lastSaved) hint += " · saved " + prettyTime(pad2(state.lastSaved.getHours()) + ":" +
+    pad2(state.lastSaved.getMinutes()) + ":" + pad2(state.lastSaved.getSeconds()));
+  var hintEl = $("footHint");
+  hintEl.textContent = "";
+  var dotState = (state.saveFailed || state.cloudError) ? "err" : (state.user && state.user.cloud ? "live" : "off");
+  var dot = el("span", "live-dot " + dotState);
+  dot.title = dotState === "live" ? "Live: saving to the cloud" :
+              dotState === "err" ? "Problem saving — check the message and back up" : "Saving on this device only";
+  hintEl.appendChild(dot);
+  hintEl.appendChild(document.createTextNode(hint));
+  hintEl.style.color = state.saveFailed ? "var(--stop)" : "";
+  hintEl.style.fontWeight = state.saveFailed ? "700" : "";
+}
+function renderWeek() {
+  var host = $("days");
+  var keys = weekdayKeys(state.weekStart);
+  var counts = {};
+  for (var i = 0; i < state.orders.length; i++) {
+    counts[state.orders[i].date] = (counts[state.orders[i].date] || 0) + 1;
+  }
+  var today = todayKey();
+  var frag = document.createDocumentFragment();
+  keys.forEach(function (key) {
+    var d = dateFromKey(key);
+    var b = el("button", "day" + (key === today ? " today" : ""));
+    b.type = "button";
+    b.setAttribute("role", "tab");
+    b.setAttribute("data-day", key);
+    b.setAttribute("aria-current", key === state.scopeDate ? "true" : "false");
+    b.appendChild(el("b", null, DAY_NAMES[d.getDay()].slice(0, 3)));
+    b.appendChild(el("span", "d", shortDate(key)));
+    if (counts[key]) b.appendChild(el("span", "cnt", counts[key]));
+    frag.appendChild(b);
+  });
+  host.textContent = "";
+  host.appendChild(frag);
+  var last = keys[4];
+  $("weekLabel").textContent = shortDate(state.weekStart) + " – " + shortDate(last) + ", " + dateFromKey(last).getFullYear();
+}
+function renderRibbon() {
+  var scoped = state.orders.filter(inScope);
+  var med = function (list) {
+    var v = list.filter(function (n) { return n !== null && n >= 0; }).sort(function (a, b) { return a - b; });
+    return v.length ? v[Math.floor(v.length / 2)] : null;
+  };
+  var medTaken = med(scoped.map(timeTaken));
+  var medTurn = med(scoped.map(turnaround));
+  var codes = scoped.filter(function (o) { return isCode(o, "CLC") || isCode(o, "LEC"); }).length;
+  var stats = [
+    { n: scoped.length, l: scoped.length === 1 ? "order logged" : "orders logged", cls: "" },
+    { n: scoped.filter(isLive).length, l: "in progress now", cls: "cool" },
+    { n: scoped.filter(function (o) { return o.fin !== "TRUE"; }).length, l: "not finished", cls: "flag" },
+    { n: scoped.filter(awaitingProof).length, l: "waiting on a proof", cls: "flag" },
+    { n: codes, l: "CLC or LEC", cls: "cool" },
+    { n: medTaken === null ? "—" : durationText(medTaken), l: "median time taken", cls: "good" },
+    { n: medTurn === null ? "—" : durationText(medTurn), l: "median proof turnaround", cls: "good" }
+  ];
+  var frag = document.createDocumentFragment();
+  stats.forEach(function (s) {
+    var d = el("div", "stat " + (s.n === 0 && s.cls === "flag" ? "good" : s.cls));
+    d.appendChild(el("b", null, s.n));
+    d.appendChild(el("span", null, s.l));
+    frag.appendChild(d);
+  });
+  var host = $("ribbon");
+  host.textContent = "";
+  host.appendChild(frag);
+}
+function renderChips() {
+  var scoped = state.orders.filter(inScope);
+  var defs = [
+    { k: "all", label: "Everything", n: scoped.length },
+    { k: "live", label: "In progress", n: scoped.filter(isLive).length },
+    { k: "await", label: "Waiting on a proof", n: scoped.filter(awaitingProof).length },
+    { k: "unfin", label: "Not finished", n: scoped.filter(function (o) { return o.fin !== "TRUE"; }).length },
+    { k: "codes", label: "CLC / LEC", n: scoped.filter(function (o) { return isCode(o, "CLC") || isCode(o, "LEC"); }).length },
+    { k: "held", label: "Held up", n: scoped.filter(isHeld).length }
+  ];
+  var frag = document.createDocumentFragment();
+  defs.forEach(function (d) {
+    var b = el("button", "chip");
+    b.type = "button";
+    b.setAttribute("data-filter", d.k);
+    b.setAttribute("aria-pressed", state.filter === d.k ? "true" : "false");
+    b.appendChild(document.createTextNode(d.label));
+    b.appendChild(el("span", "n", d.n));
+    frag.appendChild(b);
+  });
+  var host = $("chips");
+  host.textContent = "";
+  host.appendChild(frag);
+}
+function triPill(value, field, id) {
+  var noLabel = field === "fin" ? "Not Yet" : "No";
+  var b = el("button", "pill " + (value === "TRUE" ? "yes" : value === "FALSE" ? "no" : "na"),
+             value === "TRUE" ? "Yes" : value === "FALSE" ? noLabel : "N/A");
+  b.type = "button";
+  b.setAttribute("data-cycle", field);
+  b.setAttribute("data-id", id);
+  b.title = "Click to change";
+  return b;
+}
+function renderTable() {
+  var rows = visibleOrders();
+  var cols = activeColumns();
+
+  Array.prototype.forEach.call(document.querySelectorAll("thead th[data-sort]"), function (th) {
+    var arrow = th.querySelector(".arrow");
+    if (!arrow) return;
+    if (th.getAttribute("data-sort") === state.sortKey) {
+      th.setAttribute("aria-sort", state.sortDir === 1 ? "ascending" : "descending");
+      arrow.textContent = state.sortDir === 1 ? "↑" : "↓";
+    } else {
+      th.removeAttribute("aria-sort");
+      arrow.textContent = "↕";
+    }
+  });
+
+  var empty = $("emptyState");
+  if (!rows.length) {
+    empty.textContent = "";
+    var scopedCount = state.orders.filter(inScope).length;
+    var title, sub;
+    if (!state.orders.length) { title = "No orders yet"; sub = "Add the first one from the row above."; }
+    else if (!scopedCount) { title = "Nothing logged for " + prettyDate(state.scopeDate); sub = "Pick another day, or start an order above."; }
+    else { title = "No orders match"; sub = "Clear the search or pick a different filter."; }
+    empty.appendChild(el("b", null, title));
+    empty.appendChild(document.createTextNode(sub));
+    empty.hidden = false;
+    $("ledgerTable").hidden = true;
+    $("tbody").textContent = "";
+    return;
+  }
+  empty.hidden = true;
+  $("ledgerTable").hidden = false;
+
+  var frag = document.createDocumentFragment();
+  rows.forEach(function (o) {
+    frag.appendChild(o.id === state.inlineId ? inlineRow(o, cols) : readRow(o, cols));
+  });
+  var body = $("tbody");
+  body.textContent = "";
+  body.appendChild(frag);
+  state.flashId = null;
+}
+function timeCell(o, field) {
+  var td = el("td", "tm");
+  if ((field === "proofRcvdTime") && noProofNeeded(o)) {
+    td.textContent = "";
+    td.className = "tm muted-cell";
+    td.title = "No proof — proof return time is not used";
+    return td;
+  }
+  if (isClock(o[field]) || o[field]) {
+    td.textContent = prettyTime(o[field]);
+    if (field === "startTime" && isLive(o)) td.className = "tm running";
+  } else {
+    var b = el("button", "nowbtn", "now");
+    b.type = "button";
+    b.setAttribute("data-stamp", field);
+    b.setAttribute("data-id", o.id);
+    b.title = "Stamp the current time";
+    td.appendChild(b);
+  }
+  return td;
+}
+function rowBand(o) {
+  var accent = rowAccent(o);                 /* k-code | k-go | k-warn | k-hot | "" */
+  return accent ? "row-" + accent.slice(2) : "";
+}
+function readRow(o, cols) {
+  var tr = el("tr", rowBand(o));
+  if (o.id === state.flashId) tr.className += " flash";
+  cols.forEach(function (c) {
+    var td;
+    switch (c.key) {
+      case "seq":
+        td = el("td", "seq " + rowAccent(o), o.seq || "");
+        break;
+      case "date": td = el("td", "tm", shortDate(o.date)); break;
+      case "orderId": td = el("td", "oid", o.orderId); break;
+      case "customer": td = el("td", "cust", displayCustomer(o.customer)); td.title = o.customer || ""; break;
+      case "placedDate": td = el("td", "tm", o.placedDate ? shortDate(o.placedDate) : "—"); break;
+      case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
+      case "eventDate": td = el("td", "tm", o.eventDate ? shortDate(o.eventDate) : "—"); break;
+      case "otype":
+        td = el("td");
+        if (o.otype) td.appendChild(el("span", "otype " + typeClass(o.otype), o.otype));
+        break;
+      case "qty":
+        td = el("td", "num" + (o.qty === "" ? " zero" : ""), o.qty === "" ? "—" : o.qty);
+        break;
+      case "amount":
+        td = el("td", "num amt-editable" + (o.amount === "" ? " zero" : ""), o.amount === "" ? "—" : money(o.amount));
+        td.setAttribute("data-edit-amount", o.id);
+        td.title = o.amount === "" ? "Click to add a price" : "Click to edit the price";
+        break;
+      case "proof": case "fin": case "savedToDrive":
+        td = el("td");
+        td.appendChild(triPill(o[c.key], c.key, o.id));
+        break;
+      case "marking":
+        td = el("td");
+        var mb = el("button", "mark-chip " + normMarking(o.marking), markingLabel(o.marking));
+        mb.type = "button";
+        mb.setAttribute("data-cycle-mark", o.id);
+        mb.title = "Click to change etch / logo";
+        td.appendChild(mb);
+        break;
+      case "status":
+        td = el("td", "slog-cell");
+        var tags = el("div", "tags");
+        parseStatusLog(o.statusLog, o.status).forEach(function (e) {
+          var label = (e.t ? e.t + " · " : "") + e.code;
+          var tag = el("span", "tag " + (classifyStatus(e.code) || "t-plain"), label);
+          tag.title = label;
+          tags.appendChild(tag);
+        });
+        var mini = el("div", "slog-mini");
+        var inp = document.createElement("input");
+        inp.type = "text"; inp.placeholder = "CLC"; inp.setAttribute("data-slog-in", o.id);
+        var logb = el("button", "stamp", "Log");
+        logb.type = "button"; logb.setAttribute("data-slog-add", o.id);
+        mini.appendChild(inp); mini.appendChild(logb);
+        td.appendChild(tags); td.appendChild(mini);
+        break;
+      case "startTime": td = timeCell(o, "startTime"); break;
+      case "completionTime": td = timeCell(o, "completionTime"); break;
+      case "proofRcvdTime": td = timeCell(o, "proofRcvdTime"); break;
+      case "taken":
+        var taken = timeTaken(o);
+        td = el("td", "dur" + (taken !== null && taken >= 45 ? " slow" : ""),
+                taken === null && isLive(o) ? "R" : durationText(taken));
+        if (taken === null && isLive(o)) { td.className = "dur running"; td.title = "Running"; }
+        break;
+      case "turn":
+        if (noProofNeeded(o)) {
+          td = el("td", "dur muted-cell", "");
+          td.title = "No proof — proof turnaround is not used";
+          break;
+        }
+        var turn = turnaround(o);
+        td = el("td", "dur" + (turn !== null && turn >= 60 ? " slow" : ""), durationText(turn));
+        break;
+      case "notes":
+        td = el("td", "notes");
+        var hasNote = !!(o.notes && String(o.notes).trim());
+        var nb = el("button", "note-btn" + (hasNote ? " has" : ""));
+        nb.type = "button";
+        nb.setAttribute("data-note", o.id);
+        nb.appendChild(el("span", "note-txt", hasNote ? String(o.notes).trim() : "+ Add"));
+        nb.title = hasNote ? String(o.notes).trim() : "Add a note";
+        nb.setAttribute("aria-label", hasNote ? "Edit note" : "Add a note");
+        td.appendChild(nb);
+        break;
+      default:
+        td = el("td", "rowacts");
+        var grid = el("div", "acts");
+        var held = isHoldFlag(o);
+        var nPdf = (o.proofs && o.proofs.length) || 0;
+        [
+          ["email", "data-email", "Email", "Email proof for this order", ""],
+          ["pdf", "data-pdfs", "PDF", nPdf ? nPdf + " proof PDF" + (nPdf === 1 ? "" : "s") : "Attach a proof PDF", nPdf ? " has" : ""],
+          ["edit", "data-inline", "Edit", "Edit every field in place", ""],
+          ["hold", "data-hold", held ? "Held" : "Hold", held ? "Release this hold" : "Put this order on hold", held ? " on" : ""],
+          ["del", "data-del", "Delete", "Delete this order", ""]
+        ].forEach(function (a) {
+          var b = el("button", "act act-" + a[0] + a[4]);
+          b.type = "button";
+          b.setAttribute(a[1], o.id);
+          b.title = a[3];
+          b.setAttribute("aria-label", a[3]);
+          b.innerHTML = ACT_ICONS[a[0]];
+          b.appendChild(el("span", "lbl", a[2]));
+          if (a[0] === "pdf" && nPdf) b.appendChild(el("i", "badge", nPdf));
+          grid.appendChild(b);
+        });
+        td.appendChild(grid);
+    }
+    /* Feeds the mobile card layout's ::before label — unused, and harmless,
+       on the desktop table where the header row already labels the column. */
+    td.setAttribute("data-label", c.label || "");
+    tr.appendChild(td);
+  });
+  return tr;
+}
+/* Every field of a logged order is editable right in its own row. */
+function inlineRow(o, cols) {
+  var tr = el("tr", ("editing " + rowBand(o)).trim());
+  var mk = function (tag, cls, value, ph) {
+    var n = document.createElement(tag);
+    n.className = "cellinput" + (cls ? " " + cls : "");
+    n.value = value == null ? "" : value;
+    if (ph) n.placeholder = ph;
+    if (tag === "textarea") n.rows = 2;
+    n.setAttribute("data-edit-field", "");
+    return n;
+  };
+  var fields = {};
+  cols.forEach(function (c) {
+    var td = el("td");
+    switch (c.key) {
+      case "seq":
+        td.className = "seq " + rowAccent(o);
+        fields.seq = mk("input", "mono", o.seq);
+        fields.seq.style.textAlign = "right";
+        td.appendChild(fields.seq);
+        break;
+      case "date":
+        fields.date = document.createElement("input");
+        fields.date.type = "date";
+        fields.date.className = "cellinput mono";
+        fields.date.value = o.date;
+        td.appendChild(fields.date);
+        break;
+      case "orderId": fields.orderId = mk("input", "mono", o.orderId, "Order #"); td.appendChild(fields.orderId); break;
+      case "otype":
+        fields.otype = mk("input", "mono", o.otype, "RTR");
+        fields.otype.setAttribute("list", "orderTypeList");
+        fields.otype.addEventListener("input", function () { this.value = this.value.toUpperCase(); });
+        td.appendChild(fields.otype);
+        break;
+      case "qty":
+        fields.qty = mk("input", "mono", o.qty, "Qty");
+        fields.qty.style.textAlign = "right";
+        fields.qty.inputMode = "numeric";
+        td.appendChild(fields.qty);
+        break;
+      case "amount":
+        fields.amount = mk("input", "mono", o.amount === "" ? "" : Number(o.amount).toFixed(2), "0.00");
+        fields.amount.style.textAlign = "right";
+        fields.amount.inputMode = "decimal";
+        td.appendChild(fields.amount);
+        break;
+      case "customer": fields.customer = mk("textarea", "", o.customer, "Customer"); td.appendChild(fields.customer); break;
+      case "placedDate":
+        fields.placedDate = mk("input", "mono", o.placedDate || "", "YYYY-MM-DD");
+        fields.placedDate.type = "date";
+        td.appendChild(fields.placedDate);
+        break;
+      case "reqShipDate":
+        fields.reqShipDate = mk("input", "mono", o.reqShipDate || "", "YYYY-MM-DD");
+        fields.reqShipDate.type = "date";
+        td.appendChild(fields.reqShipDate);
+        break;
+      case "eventDate":
+        fields.eventDate = mk("input", "mono", o.eventDate || "", "YYYY-MM-DD");
+        fields.eventDate.type = "date";
+        td.appendChild(fields.eventDate);
+        break;
+      case "status": fields.status = mk("textarea", "", statusTextFromLog(parseStatusLog(o.statusLog, o.status)), "9:20 — CLC"); td.appendChild(fields.status); break;
+      case "marking":
+        var msel = document.createElement("select");
+        msel.className = "cellinput";
+        MARKING_OPTS.forEach(function (opt) {
+          var op = document.createElement("option");
+          op.value = opt.v; op.textContent = opt.l;
+          if (normMarking(o.marking) === opt.v) op.selected = true;
+          msel.appendChild(op);
+        });
+        fields.marking = msel;
+        td.appendChild(msel);
+        break;
+      case "notes": fields.notes = mk("textarea", "", o.notes, "Notes"); td.appendChild(fields.notes); break;
+      case "startTime": case "completionTime": case "proofRcvdTime":
+        if (c.key === "proofRcvdTime" && noProofNeeded(o)) {
+          td.textContent = "";
+          td.className = "tm muted-cell";
+          break;
+        }
+        fields[c.key] = mk("input", "mono", isClock(o[c.key]) ? prettyTime(o[c.key]) : o[c.key], "h:mm");
+        td.appendChild(fields[c.key]);
+        break;
+      case "proof": case "fin": case "savedToDrive":
+        var sel = document.createElement("select");
+        sel.className = "cellinput";
+        [["TRUE", "Yes"], ["FALSE", c.key === "fin" ? "Not Yet" : "No"], ["X", "N/A"]].forEach(function (pair) {
+          var opt = document.createElement("option");
+          opt.value = pair[0]; opt.textContent = pair[1];
+          if (o[c.key] === pair[0]) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        fields[c.key] = sel;
+        td.appendChild(sel);
+        break;
+      case "taken": case "turn":
+        td.className = "dur";
+        td.textContent = durationText(c.key === "taken" ? timeTaken(o) : turnaround(o));
+        td.setAttribute("data-calc", c.key);
+        break;
+      default:
+        td.className = "rowacts";
+        var save = el("button", "btn xs", "Save");
+        save.type = "button"; save.setAttribute("data-inline-save", o.id);
+        var cancel = el("button", "btn ghost xs", "✕");
+        cancel.type = "button"; cancel.setAttribute("data-inline-cancel", "1");
+        cancel.title = "Discard these changes";
+        cancel.setAttribute("aria-label", "Cancel editing");
+        td.appendChild(save); td.appendChild(cancel);
+    }
+    td.setAttribute("data-label", c.label || "");
+    tr.appendChild(td);
+  });
+  state.inlineFields = fields;
+  if (fields.proof) {
+    var syncInlineProof = function () {
+      var noProof = fields.proof.value === "FALSE";
+      if (fields.proofRcvdTime) {
+        fields.proofRcvdTime.disabled = noProof;
+        if (noProof) fields.proofRcvdTime.value = "";
+      }
+      var turnCell = tr.querySelector('[data-calc="turn"]');
+      if (turnCell && noProof) turnCell.textContent = "";
+    };
+    fields.proof.addEventListener("change", syncInlineProof);
+    syncInlineProof();
+  }
+
+  var recalc = function () {
+    var a = parseTime(fields.startTime.value), b = parseTime(fields.completionTime.value),
+        c2 = parseTime(fields.proofRcvdTime.value);
+    var takenCell = tr.querySelector('[data-calc="taken"]'), turnCell = tr.querySelector('[data-calc="turn"]');
+    if (takenCell) takenCell.textContent = (a.ok && b.ok) ? durationText(spanMinutes(a.value, b.value)) : "?";
+    if (turnCell) turnCell.textContent = noProofNeeded(o) ? "" : ((b.ok && c2.ok) ? durationText(spanMinutes(b.value, c2.value)) : "?");
+  };
+  ["startTime", "completionTime", "proofRcvdTime"].forEach(function (k) {
+    fields[k].addEventListener("input", recalc);
+  });
+  tr.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault(); saveInline(o.id);
+    } else if (e.key === "Escape") { e.preventDefault(); cancelInline(); }
+  });
+  setTimeout(function () { if (fields.orderId) fields.orderId.focus(); }, 0);
+  return tr;
+}
+function startInline(id) {
+  var o = byId(id);
+  if (!o) { toast("That order is no longer in the list."); return; }
+  state.inlineId = id;
+  var banner = $("editBanner");
+  banner.textContent = "Editing #" + o.seq + (o.orderId ? " · " + o.orderId : "") + " in the table below";
+  banner.hidden = false;
+  renderTable();
+}
+function cancelInline() {
+  state.inlineId = null;
+  state.inlineFields = null;
+  $("editBanner").hidden = true;
+  renderTable();
+}
+function saveInline(id) {
+  var o = byId(id), f = state.inlineFields;
+  if (!o || !f) { cancelInline(); return; }
+  var start = parseTime(f.startTime.value), done = parseTime(f.completionTime.value);
+  var back = f.proofRcvdTime ? parseTime(f.proofRcvdTime.value) : { ok: true, value: o.proofRcvdTime || "" };
+  if (!start.ok) { toast("Start time should look like 9:20, 1:14 PM, or N/A."); f.startTime.focus(); return; }
+  if (!done.ok) { toast("End time should look like 9:35, 1:14 PM, or N/A."); f.completionTime.focus(); return; }
+  if (f.proofRcvdTime && !back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); f.proofRcvdTime.focus(); return; }
+  var seq = parseInt(f.seq.value, 10);
+  var before = JSON.parse(JSON.stringify(o));
+  o.seq = seq > 0 ? seq : o.seq;
+  if (f.date && /^\d{4}-\d{2}-\d{2}$/.test(f.date.value)) o.date = snapToWeekday(f.date.value);
+  o.orderId = f.orderId.value.trim();
+  o.customer = f.customer.value.trim();
+  if (f.placedDate) o.placedDate = parseDay(f.placedDate.value);
+  if (f.reqShipDate) o.reqShipDate = parseDay(f.reqShipDate.value);
+  if (f.eventDate) o.eventDate = parseDay(f.eventDate.value);
+  if (f.otype) o.otype = normType(f.otype.value);
+  if (f.qty) o.qty = parseQty(f.qty.value);
+  if (f.amount) o.amount = parseMoney(f.amount.value);
+  o.status = f.status.value.trim();
+  o.statusLog = parseStatusLog(null, o.status);
+  if (f.marking) o.marking = normMarking(f.marking.value);
+  o.notes = f.notes.value.trim();
+  o.startTime = start.value;
+  o.completionTime = done.value;
+  o.proof = f.proof.value;
+  o.proofRcvdTime = o.proof === "FALSE" ? "" : back.value;
+  o.fin = f.fin.value;
+  if (f.savedToDrive) o.savedToDrive = f.savedToDrive.value;
+  o.updatedAt = nowIso();
+  if (!persistOrders()) {
+    /* Put the row back the way it was rather than leave the screen and the
+       storage disagreeing about what is saved. */
+    for (var rk in before) o[rk] = before[rk];
+    scheduleRender();
+    saveFailedModal("edit");
+    return;
+  }
+  state.inlineId = null;
+  state.inlineFields = null;
+  $("editBanner").hidden = true;
+  state.flashId = o.id;
+  toast("Saved #" + o.seq + (o.orderId ? " · " + o.orderId : "") + ".", {
+    label: "Undo",
+    run: function () {
+      var cur = byId(id);
+      if (!cur) return;
+      for (var k in before) cur[k] = before[k];
+      persistOrders(); scheduleRender();
+    }
+  }, 6000);
+  scheduleRender();
+}
+function stampNow(id, field) {
+  var o = byId(id);
+  if (!o) return;
+  if (field === "proofRcvdTime" && noProofNeeded(o)) {
+    toast("CLC / LEC orders do not take a proof time.");
+    return;
+  }
+  if (field === "completionTime" && isHoldFlag(o)) {
+    toast("Release the hold before completing this order.");
+    return;
+  }
+  var prev = o[field];
+  o[field] = nowClock();
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("time stamp"); return; }
+  scheduleRender();
+  var names = { startTime: "Started", completionTime: "Ended", proofRcvdTime: "Proof back" };
+  toast(names[field] + " on #" + o.seq + " set to " + prettyTime(o[field]) + ".", {
+    label: "Undo",
+    run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
+  }, 5000);
+}
+function addLogStamp(id, code) {
+  var o = byId(id);
+  if (!o) return;
+  code = String(code || "").trim();
+  if (!code) return;
+  var log = parseStatusLog(o.statusLog, o.status);
+  log.push({ t: prettyTime(nowClock()), code: code });
+  o.statusLog = log;
+  o.status = statusTextFromLog(log);
+  o.updatedAt = nowIso();
+  if (noProofNeeded(o)) {
+    o.proofRcvdTime = o.proofRcvdTime && o.proofRcvdTime !== "N/A" ? o.proofRcvdTime : "";
+  }
+  if (!persistOrders()) { saveFailedModal("status log"); return; }
+  scheduleRender();
+}
+function closeNotePop() {
+  var pop = $("notePop");
+  if (!pop) return;
+  if (pop._save) pop._save();
+  if (pop.parentNode) pop.parentNode.removeChild(pop);
+}
+/* Click a note to read and edit it in place. Saves when you click away,
+   press Ctrl/Cmd+Enter or Save; Esc throws the edit away. */
+function openNotePop(id, anchor) {
+  var already = $("notePop");
+  var same = already && already._id === id;
+  closeNotePop();
+  if (same) return;
+  var o = byId(id);
+  if (!o) return;
+  var pop = el("div", "note-pop");
+  pop.id = "notePop";
+  pop._id = id;
+  pop.appendChild(el("b", null, "Note · #" + o.seq + (o.orderId ? " · " + o.orderId : "")));
+  var ta = document.createElement("textarea");
+  ta.value = o.notes || "";
+  ta.placeholder = "Install notes, contact, quirks…";
+  pop.appendChild(ta);
+  var foot = el("div", "foot");
+  foot.appendChild(el("span", null, "Ctrl+Enter to save · Esc to cancel"));
+  foot.appendChild(el("div", "spacer"));
+  var saveB = el("button", "btn sm", "Save");
+  saveB.type = "button";
+  foot.appendChild(saveB);
+  pop.appendChild(foot);
+  var original = o.notes || "";
+  pop._save = function () {
+    pop._save = null;
+    var next = ta.value.replace(/\s+$/, "");
+    if (next === original.replace(/\s+$/, "")) return;
+    var cur = byId(id);
+    if (!cur) return;
+    var prev = cur.notes;
+    cur.notes = next;
+    cur.updatedAt = nowIso();
+    if (!persistOrders()) { cur.notes = prev; saveFailedModal("note"); return; }
+    scheduleRender();
+    toast(next ? "Note saved on #" + cur.seq + "." : "Note cleared on #" + cur.seq + ".");
+  };
+  saveB.addEventListener("click", closeNotePop);
+  ta.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); pop._save = null; closeNotePop(); }
+    else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); e.stopPropagation(); closeNotePop(); }
+  });
+  document.body.appendChild(pop);
+  /* page coordinates, so it scrolls with the row it belongs to */
+  var r = anchor.getBoundingClientRect();
+  var sx = window.pageXOffset, sy = window.pageYOffset;
+  var left = Math.min(sx + window.innerWidth - pop.offsetWidth - 8, Math.max(sx + 8, sx + r.right - pop.offsetWidth));
+  var top = sy + r.bottom + 6;
+  if (r.bottom + 6 + pop.offsetHeight > window.innerHeight - 8) top = Math.max(sy + 8, sy + r.top - pop.offsetHeight - 6);
+  pop.style.left = left + "px";
+  pop.style.top = top + "px";
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+function proofDb() {
+  return new Promise(function (resolve, reject) {
+    var req = indexedDB.open("caot_proofs_v1", 1);
+    req.onupgradeneeded = function () { req.result.createObjectStore("files"); };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error); };
+  });
+}
+function idbPutProof(key, blob) {
+  return proofDb().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction("files", "readwrite");
+      tx.objectStore("files").put(blob, key);
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  });
+}
+function idbGetProof(key) {
+  return proofDb().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction("files", "readonly");
+      var q = tx.objectStore("files").get(key);
+      q.onsuccess = function () { resolve(q.result || null); };
+      q.onerror = function () { reject(q.error); };
+    });
+  });
+}
+function idbDelProof(key) {
+  return proofDb().then(function (db) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction("files", "readwrite");
+      tx.objectStore("files").delete(key);
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { reject(tx.error); };
+    });
+  });
+}
+function closeProofPop() {
+  var host = $("modalHost");
+  if (host && host.querySelector(".proof-modal")) host.innerHTML = "";
+}
+function prettyBytes(n) {
+  n = Number(n) || 0;
+  if (n < 1024) return n + " B";
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+  return (n / (1024 * 1024)).toFixed(1) + " MB";
+}
+function openProofPop(id) {
+  var o = byId(id);
+  if (!o) return;
+  var host = $("modalHost");
+  host.innerHTML = "";
+  var overlay = el("div", "scrim");
+  var box = el("div", "modal proof-modal");
+  box.appendChild(el("h3", null, "Proof PDFs"));
+  box.appendChild(el("p", "sub", "#" + o.seq + (o.orderId ? " · " + o.orderId : "") + (o.customer ? " · " + o.customer : "")));
+  var list = el("div");
+  (o.proofs || []).forEach(function (p) {
+    var row = el("div", "proof-item");
+    var meta = el("div", "nm");
+    meta.appendChild(el("b", null, p.name || "proof.pdf"));
+    meta.appendChild(document.createElement("br"));
+    meta.appendChild(el("span", "sz", prettyBytes(p.size) + (p.stored === "cloud" ? " · live" : " · this device")));
+    var open = el("button", "btn quiet xs", "Open");
+    open.type = "button";
+    open.addEventListener("click", function () { openProofFile(p); });
+    var rm = el("button", "btn quiet xs", "Remove");
+    rm.type = "button";
+    rm.style.color = "var(--stop)";
+    rm.addEventListener("click", function () { removeProofFile(id, p.id); });
+    row.appendChild(meta); row.appendChild(open); row.appendChild(rm);
+    list.appendChild(row);
+  });
+  if (!(o.proofs && o.proofs.length)) list.appendChild(el("p", "sub", "No proof PDFs on this order yet."));
+  var drop = el("div", "proof-drop", "Drop PDFs here, or click to choose files");
+  function takeFiles(files) {
+    Array.prototype.forEach.call(files || [], function (f) { attachProofPdf(id, f); });
+  }
+  drop.addEventListener("click", function () {
+    var inp = $("proofFile");
+    inp.setAttribute("data-order", id);
+    inp.click();
+  });
+  drop.addEventListener("dragover", function (e) { e.preventDefault(); drop.classList.add("hot"); });
+  drop.addEventListener("dragleave", function () { drop.classList.remove("hot"); });
+  drop.addEventListener("drop", function (e) {
+    e.preventDefault();
+    drop.classList.remove("hot");
+    takeFiles(e.dataTransfer && e.dataTransfer.files);
+  });
+  var actions = el("div", "photo-actions");
+  var close = el("button", "btn ghost", "Close");
+  close.type = "button";
+  close.addEventListener("click", closeProofPop);
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) closeProofPop(); });
+  actions.appendChild(close);
+  box.appendChild(list); box.appendChild(drop); box.appendChild(actions);
+  overlay.appendChild(box);
+  host.appendChild(overlay);
+}
+function openProofFile(meta) {
+  if (!meta) return;
+  if (meta.path && window.CAOTCloud && CAOTCloud.enabled() && CAOTCloud.signProof) {
+    CAOTCloud.signProof(meta.path).then(function (url) { window.open(url, "_blank"); })
+      .catch(function (err) { toast(err.message || "Could not open that PDF."); });
+    return;
+  }
+  idbGetProof(meta.idbKey || meta.id).then(function (blob) {
+    if (!blob) { toast("That file is not on this device."); return; }
+    var url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  }).catch(function () { toast("Could not open that PDF."); });
+}
+function removeProofFile(orderId, fileId) {
+  var o = byId(orderId);
+  if (!o) return;
+  var hit = (o.proofs || []).filter(function (p) { return p.id === fileId; })[0];
+  o.proofs = (o.proofs || []).filter(function (p) { return p.id !== fileId; });
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { saveFailedModal("proof remove"); return; }
+  if (hit && hit.path && window.CAOTCloud && CAOTCloud.deleteProofFile) {
+    CAOTCloud.deleteProofFile(hit.path).catch(function () {});
+  }
+  if (hit && (hit.idbKey || hit.id)) idbDelProof(hit.idbKey || hit.id).catch(function () {});
+  scheduleRender();
+  toast("Removed proof PDF.");
+  openProofPop(orderId);
+}
+function attachProofPdf(orderId, file) {
+  var o = byId(orderId);
+  if (!o) { toast("Save the order first, then attach the PDF."); return; }
+  if (!file || (file.type && file.type !== "application/pdf" && !/\.pdf$/i.test(file.name || ""))) {
+    toast("Only PDF files can be attached as proofs.");
+    return;
+  }
+  if (file.size > 15 * 1024 * 1024) { toast("Keep proof PDFs under 15 MB."); return; }
+  var rec = {
+    id: uid(),
+    name: file.name || "proof.pdf",
+    size: file.size,
+    uploadedAt: nowIso()
+  };
+  toast("Uploading " + rec.name + "…");
+  var done = function () {
+    o.proofs = (o.proofs || []).concat([rec]);
+    o.updatedAt = nowIso();
+    if (!persistOrders()) { saveFailedModal("proof upload"); return; }
+    scheduleRender();
+    toast("Attached " + rec.name + ".");
+    openProofPop(orderId);
+  };
+  if (window.CAOTCloud && CAOTCloud.enabled() && state.user && state.user.cloud && CAOTCloud.uploadProof) {
+    CAOTCloud.uploadProof(state.user.key, o.id, rec.id, file).then(function (path) {
+      rec.path = path;
+      rec.stored = "cloud";
+      done();
+    }).catch(function (err) {
+      toast((err && err.message) || "Cloud upload failed — saving on this device.");
+      rec.idbKey = rec.id;
+      rec.stored = "local";
+      idbPutProof(rec.id, file).then(done).catch(function () { toast("Could not save that PDF."); });
+    });
+    return;
+  }
+  rec.idbKey = rec.id;
+  rec.stored = "local";
+  idbPutProof(rec.id, file).then(done).catch(function () { toast("Could not save that PDF."); });
+}
+/* --------------------------------------------------------- entry panel */
+function segValue(id) {
+  if (!$(id)) return "X";
+  var on = $(id).querySelector('[aria-pressed="true"]');
+  return on ? on.getAttribute("data-v") : "X";
+}
+function readSlog() {
+  var rows = document.querySelectorAll("#slogList .slog-row");
+  var log = [];
+  Array.prototype.forEach.call(rows, function (row) {
+    log.push({ t: row.getAttribute("data-t") || "", code: row.getAttribute("data-code") || "" });
+  });
+  return log;
+}
+function writeSlog(log) {
+  var list = $("slogList");
+  if (!list) return;
+  list.textContent = "";
+  (log || []).forEach(function (e) {
+    var row = el("div", "slog-row");
+    row.setAttribute("data-t", e.t || "");
+    row.setAttribute("data-code", e.code || "");
+    row.appendChild(el("span", "t", e.t || "—"));
+    row.appendChild(el("span", "c", e.code));
+    var x = el("button", "btn ghost xs", "✕");
+    x.type = "button";
+    x.addEventListener("click", function () {
+      list.removeChild(row);
+      syncStatusField();
+    });
+    row.appendChild(x);
+    list.appendChild(row);
+  });
+  syncStatusField();
+}
+function syncStatusField() {
+  if ($("fStatus")) $("fStatus").value = statusTextFromLog(readSlog());
+}
+function addStatusStamp() {
+  var input = $("fStatusCode");
+  if (!input) return;
+  var code = input.value.trim();
+  if (!code) { input.focus(); return; }
+  var log = readSlog();
+  log.push({ t: prettyTime(nowClock()), code: code });
+  writeSlog(log);
+  input.value = "";
+  input.focus();
+}
+function setSeg(id, value) {
+  if (!$(id)) return;
+  Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) {
+    b.setAttribute("aria-pressed", b.getAttribute("data-v") === value ? "true" : "false");
+  });
+}
+function syncProofDependentFields() {
+  var noProof = segValue("segProof") === "FALSE";
+  var back = $("fBack");
+  if (back) {
+    back.disabled = noProof;
+    back.setAttribute("aria-disabled", noProof ? "true" : "false");
+    if (noProof) back.value = "";
+  }
+  var turn = $("calcTurn");
+  if (turn && noProof) { turn.textContent = ""; turn.className = "calcbox"; }
+  if (noProof) updateCalcs();
+}
+function updateCalcs() {
+  var a = parseTime($("fStart").value), b = parseTime($("fDone").value), c = parseTime($("fBack").value);
+  var taken = $("calcTaken"), turn = $("calcTurn");
+  if (!taken || !turn) return;
+  var show = function (box, from, to) {
+    if (!from.ok || !to.ok) { box.textContent = "?"; box.className = "calcbox warn"; return; }
+    if (!isClock(from.value) || !isClock(to.value)) { box.textContent = "—"; box.className = "calcbox"; return; }
+    var mins = spanMinutes(from.value, to.value);
+    box.textContent = mins < 0 ? "backwards" : durationText(mins);
+    box.className = "calcbox" + (mins < 0 ? " warn" : "");
+  };
+  show(taken, a, b);
+  if (segValue("segProof") === "FALSE") {
+    turn.textContent = "";
+    turn.className = "calcbox";
+  } else {
+    show(turn, b, c);
+  }
+}
+function clearForm() {
+  ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = ""; });
+  setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); setSeg("segMark", "NONE");
+  writeSlog([]);
+  formCache = null;
+  clearDraft();
+  $("entryTitle").textContent = "Add an order";
+  $("btnSaveOrder").textContent = "Add";
+  refreshEntryMeta();
+  updateCalcs();
+  scheduleTable();
+}
+function submitOrder(e) {
+  e.preventDefault();
+  var start = parseTime($("fStart").value);
+  var done = parseTime($("fDone").value);
+  var noProof = segValue("segProof") === "FALSE";
+  var back = noProof ? { ok: true, value: "" } : parseTime($("fBack").value);
+  if (!start.ok) { toast("Start time should look like 9:20, 1:14 PM, or N/A."); $("fStart").focus(); return; }
+  if (!done.ok) { toast("End time should look like 9:35, 1:14 PM, or N/A."); $("fDone").focus(); return; }
+  if (!back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); $("fBack").focus(); return; }
+
+  var orderId = $("fOrderId").value.trim();
+  var customer = $("fCustomer").value.trim();
+  if (!orderId && !customer) { toast("Add an order number or a customer before saving."); $("fOrderId").focus(); return; }
+
+  var rawAmount = $("fAmount") ? $("fAmount").value.trim() : "";
+  var rawQty = $("fQty") ? $("fQty").value.trim() : "";
+  if (rawAmount && parseMoney(rawAmount) === "") {
+    toast("The amount should be a number, like 48 or 48.50."); $("fAmount").focus(); return;
+  }
+  if (rawQty && parseQty(rawQty) === "") {
+    toast("The quantity should be a whole number."); $("fQty").focus(); return;
+  }
+
+  var fields = {
+    orderId: orderId, customer: customer,
+    placedDate: parseDay($("fPlacedDate") ? $("fPlacedDate").value : ""),
+    reqShipDate: parseDay($("fShipDate") ? $("fShipDate").value : ""),
+    eventDate: parseDay($("fEventDate") ? $("fEventDate").value : ""),
+    otype: normType($("fType") ? $("fType").value : ""),
+    qty: parseQty(rawQty),
+    amount: parseMoney(rawAmount),
+    proof: segValue("segProof"),
+    marking: $("segMark") ? segValue("segMark") : "NONE",
+    statusLog: readSlog(),
+    status: statusTextFromLog(readSlog()) || ($("fStatus") ? $("fStatus").value.trim() : ""),
+    startTime: start.value,
+    completionTime: done.value,
+    proofRcvdTime: noProof ? "" : back.value,
+    fin: segValue("segFin"),
+    savedToDrive: segValue("segDrive"),
+    held: "FALSE",
+    notes: $("fNotes").value.trim(),
+    updatedAt: nowIso()
+  };
+
+  var dupe = null;
+  if (orderId) {
+    dupe = state.orders.filter(function (o) {
+      return o.orderId && o.orderId.toLowerCase() === orderId.toLowerCase() && o.date === state.scopeDate;
+    })[0] || null;
+  }
+  var write = function () {
+    var rec = normalizeOrder(fields);
+    rec.date = state.scopeDate;
+    rec.seq = nextSeq(state.scopeDate);
+    rec.createdAt = nowIso();
+    state.orders.push(rec);
+    if (!persistOrders()) {
+      /* Leave the typed values in the form so nothing has to be re-keyed. */
+      state.orders.pop();
+      reindex();
+      saveFailedModal("order");
+      return;
+    }
+    state.flashId = rec.id;
+    clearForm();
+    render();
+    setPanel(true, true);
+    var prefsHide = readJson(KEY_PREFS, {});
+    prefsHide.panelHidden = true;
+    writeJson(KEY_PREFS, prefsHide);
+
+    /* An order added while a filter or a search is active lands in the ledger
+       but not on screen, which reads exactly like a failed save. Say so, and
+       offer one click back to it. */
+    var terms = state.query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    var visible = inScope(rec) && matchesFilter(rec) && matchesQuery(rec, terms);
+    if (visible) {
+      toast("Added #" + rec.seq + (rec.orderId ? " · " + rec.orderId : "") + ".");
+    } else {
+      toast("Saved #" + rec.seq + " on " + prettyDate(rec.date) +
+            ", but the current filter or search is hiding it.", {
+        label: "Show it",
+        run: function () {
+          state.filter = "all";
+          state.query = ""; $("search").value = "";
+          state.scopeDate = rec.date;
+          state.weekStart = mondayOf(rec.date);
+          state.flashId = rec.id;
+          render();
+        }
+      }, 9000);
+    }
+  };
+  if (dupe) {
+    confirmModal("Order " + orderId + " is already on this date",
+      "It is logged as #" + dupe.seq + ". Add it again anyway?", "Add anyway", write);
+    return;
+  }
+  write();
+}
+function cyclePill(id, field) {
+  var o = byId(id);
+  if (!o) return;
+  var order = ["TRUE", "FALSE", "X"];
+  var prev = o[field];
+  var next = order[(order.indexOf(prev) + 1) % 3];
+  o[field] = next;
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("change"); return; }
+  scheduleRender();
+  var names = { proof: "Send proof", fin: "Finished", savedToDrive: "Saved to drive" };
+  var shown = { TRUE: "Yes", FALSE: field === "fin" ? "Not Yet" : "No", X: "N/A" };
+  toast(names[field] + " on #" + o.seq + " set to " + shown[next] + ".", {
+    label: "Undo",
+    run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
+  }, 5000);
+}
+function cycleMarking(id) {
+  var o = byId(id);
+  if (!o) return;
+  var order = ["NONE", "ETCH", "LOGO", "BOTH"];
+  var prev = normMarking(o.marking);
+  var next = order[(order.indexOf(prev) + 1) % order.length];
+  o.marking = next;
+  o.updatedAt = nowIso();
+  if (!persistOrders()) { o.marking = prev; scheduleRender(); saveFailedModal("change"); return; }
+  scheduleRender();
+  toast("#" + o.seq + " marking set to " + markingLabel(next) + ".");
+}
+/* Quick, single-field price edit straight from the table — no need to open
+   full row editing just to fill in or fix an Amount. */
+function editAmountInPlace(id, td) {
+  if (state.inlineId) return;               /* a full row edit is already open elsewhere */
+  if (td.querySelector(".amt-edit-input")) return; /* already editing this cell */
+  var o = byId(id);
+  if (!o) { toast("That order is no longer in the list."); return; }
+  var prev = o.amount;
+  td.textContent = "";
+  td.classList.remove("zero");
+  var input = document.createElement("input");
+  input.type = "text";
+  input.className = "amt-edit-input";
+  input.inputMode = "decimal";
+  input.placeholder = "0.00";
+  input.value = prev === "" ? "" : Number(prev).toFixed(2);
+  td.appendChild(input);
+  input.focus();
+  input.select();
+  var done = false;
+  function commit() {
+    if (done) return;
+    done = true;
+    var raw = input.value.trim();
+    if (raw && parseMoney(raw) === "") {
+      toast("The amount should be a number, like 48 or 48.50.");
+      done = false;
+      input.focus();
+      return;
+    }
+    var next = parseMoney(raw);
+    if (next === prev) { scheduleTable(); return; }
+    o.amount = next;
+    o.updatedAt = nowIso();
+    if (!persistOrders()) { o.amount = prev; scheduleTable(); saveFailedModal("edit"); return; }
+    scheduleTable();
+    toast((prev === "" ? "Price set for #" : "Price updated for #") + o.seq + (o.orderId ? " · " + o.orderId : "") + ".", {
+      label: "Undo",
+      run: function () { o.amount = prev; o.updatedAt = nowIso(); persistOrders(); scheduleTable(); }
+    }, 5000);
+  }
+  function cancel() {
+    if (done) return;
+    done = true;
+    scheduleTable();
+  }
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+    else if (e.key === "Escape") { e.preventDefault(); cancel(); }
+  });
+}
+function deleteOrder(id) {
+  var idx = -1;
+  for (var i = 0; i < state.orders.length; i++) if (state.orders[i].id === id) idx = i;
+  if (idx === -1) return;
+  var removed = state.orders[idx];
+  state.orders.splice(idx, 1);
+  state.deleted[id] = true;
+  if (state.inlineId === id) { state.inlineId = null; state.inlineFields = null; }
+  if (!persistOrders()) {
+    state.orders.splice(idx, 0, removed);
+    delete state.deleted[id];
+    reindex();
+    scheduleRender();
+    saveFailedModal("deletion");
+    return;
+  }
+  scheduleRender();
+  toast("Deleted #" + removed.seq + (removed.orderId ? " · " + removed.orderId : "") + ".", {
+    label: "Undo",
+    run: function () {
+      state.orders.splice(idx, 0, removed);
+      delete state.deleted[removed.id];
+      persistOrders();
+      state.flashId = removed.id;
+      scheduleRender();
+    }
+  }, 8000);
+}
+
+/* --------------------------------------------------------------- summary */
+function summarize(orders) {
+  var med = function (list) {
+    var v = list.filter(function (n) { return n !== null && n >= 0; }).sort(function (a, b) { return a - b; });
+    return v.length ? v[Math.floor(v.length / 2)] : null;
+  };
+  var takens = orders.map(timeTaken), turns = orders.map(turnaround);
+  var totalTaken = takens.reduce(function (s, n) { return s + (n !== null && n > 0 ? n : 0); }, 0);
+  var ends = orders.map(function (o) { return minutesOf(o.completionTime); })
+                   .filter(function (n) { return n !== null; });
+  var starts = orders.map(function (o) { return minutesOf(o.startTime) ; })
+                     .filter(function (n) { return n !== null; });
+  var firstMark = starts.concat(ends).length ? Math.min.apply(null, starts.concat(ends)) : null;
+  var buckets = {};
+  orders.forEach(function (o) {
+    var m = minutesOf(o.completionTime);
+    if (m === null) return;
+    var h = Math.floor(m / 60);
+    buckets[h] = (buckets[h] || 0) + 1;
+  });
+  var tally = { "t-code": 0, "t-go": 0, "t-warn": 0, "t-hot": 0, "t-plain": 0 };
+  orders.forEach(function (o) {
+    var seen = {};
+    statusParts(o.status).forEach(function (p) {
+      if (!seen[p.cls]) { tally[p.cls]++; seen[p.cls] = true; }
+    });
+  });
+  return {
+    count: orders.length,
+    finished: orders.filter(function (o) { return o.fin === "TRUE"; }).length,
+    open: orders.filter(function (o) { return o.fin !== "TRUE"; }).length,
+    proofs: orders.filter(function (o) { return o.proof === "TRUE"; }).length,
+    awaiting: orders.filter(awaitingProof).length,
+    clc: orders.filter(function (o) { return isCode(o, "CLC"); }).length,
+    lec: orders.filter(function (o) { return isCode(o, "LEC"); }).length,
+    held: orders.filter(isHeld).length,
+    notDrive: orders.filter(function (o) { return o.savedToDrive === "FALSE"; }).length,
+    qty: sumQty(orders), amount: sumAmount(orders),
+    types: (function () {
+      var t = {};
+      orders.forEach(function (o) { if (o.otype) t[o.otype] = (t[o.otype] || 0) + 1; });
+      return t;
+    })(),
+    medTaken: med(takens), medTurn: med(turns), totalTaken: totalTaken,
+    timed: takens.filter(function (n) { return n !== null && n >= 0; }).length,
+    first: firstMark, last: ends.length ? Math.max.apply(null, ends) : null,
+    buckets: buckets, tally: tally
+  };
+}
+function clockFromMinutes(m) {
+  if (m === null || m === undefined) return "—";
+  return prettyTime(pad2(Math.floor(m / 60)) + ":" + pad2(Math.round(m % 60)) + ":00");
+}
+function summaryText(dateKey, s) {
+  var lines = [
+    "Award Order Tracker — " + prettyDate(dateKey),
+    "Orders: " + s.count + " (" + s.finished + " finished, " + s.open + " open)",
+    "Proofs: " + s.proofs + " sent out, " + s.awaiting + " still waiting to come back",
+    "CLC: " + s.clc + "   LEC: " + s.lec + "   Held up: " + s.held,
+    "Median time taken: " + (s.medTaken === null ? "—" : durationText(s.medTaken)) +
+      "   Median proof turnaround: " + (s.medTurn === null ? "—" : durationText(s.medTurn)),
+    "Tracked working time: " + durationText(s.totalTaken) + " across " + s.timed + " timed orders",
+    "Pieces: " + (s.qty || 0) + "   Order value: " + (s.amount ? money(s.amount) : "$0.00"),
+    "First activity: " + clockFromMinutes(s.first) + "   Last completion: " + clockFromMinutes(s.last)
+  ];
+  return lines.join("\n");
+}
+function openSummary() {
+  var dateKey = state.scopeDate;
+  var dayOrders = state.orders.filter(function (o) { return o.date === dateKey; });
+  var s = summarize(dayOrders);
+
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal sum-modal");
+  box.appendChild(el("h3", null, "Summary for " + prettyDate(dateKey)));
+  box.appendChild(el("p", "sub", s.count
+    ? s.finished + " of " + s.count + " orders finished."
+    : "Nothing logged on this day yet."));
+
+  var grid = el("div", "sum-grid");
+  [
+    [s.count, "orders"], [s.finished, "finished"], [s.open, "still open"],
+    [s.proofs, "proofs sent"], [s.awaiting, "proofs outstanding"],
+    [s.medTaken === null ? "—" : durationText(s.medTaken), "median time taken"],
+    [s.medTurn === null ? "—" : durationText(s.medTurn), "median proof turnaround"],
+    [durationText(s.totalTaken), "tracked working time"],
+    [s.qty || "—", "pieces"],
+    [s.amount ? money(s.amount) : "—", "order value"]
+  ].forEach(function (pair) {
+    var c = el("div", "sum-cell");
+    c.appendChild(el("b", null, pair[0]));
+    c.appendChild(el("span", null, pair[1]));
+    grid.appendChild(c);
+  });
+  box.appendChild(grid);
+  /* Four small panels in a 2x2 grid instead of one tall column that ran off
+     the top and bottom of the screen. */
+  var panels = el("div", "sum-panels");
+  var pHours = el("section", "sum-panel"), pWeek = el("section", "sum-panel"),
+      pTypes = el("section", "sum-panel"), pMix = el("section", "sum-panel");
+  panels.appendChild(pHours); panels.appendChild(pWeek);
+  panels.appendChild(pTypes); panels.appendChild(pMix);
+
+  pHours.appendChild(el("div", "sum-h", "Orders completed by hour"));
+  var wrap = el("div", "barwrap");
+  var bars = el("div", "bars");
+  var hours = [], max = 1;
+  for (var h = 7; h <= 18; h++) {
+    var n = s.buckets[h] || 0;
+    hours.push([h, n]);
+    if (n > max) max = n;
+  }
+  hours.forEach(function (pair) {
+    var bar = el("div", pair[1] ? "on" : "");
+    bar.style.height = Math.round((pair[1] / max) * 100) + "%";
+    bar.title = pair[1] + " completed between " + (pair[0] % 12 === 0 ? 12 : pair[0] % 12) +
+                (pair[0] < 12 ? "am" : "pm") + " and the next hour";
+    var lbl = el("span", null, pair[0] % 12 === 0 ? 12 : pair[0] % 12);
+    bar.appendChild(lbl);
+    bars.appendChild(bar);
+  });
+  wrap.appendChild(bars);
+  pHours.appendChild(wrap);
+
+  var typeKeys = Object.keys(s.types).sort();
+  pTypes.appendChild(el("div", "sum-h", "Order types"));
+  if (!typeKeys.length) pTypes.appendChild(el("div", "sum-empty", "No order types logged."));
+  if (typeKeys.length) {
+    typeKeys.forEach(function (t) {
+      var row = el("div", "sum-row");
+      row.appendChild(el("span", null, t));
+      row.appendChild(el("span", null, s.types[t]));
+      pTypes.appendChild(row);
+    });
+  }
+
+  pMix.appendChild(el("div", "sum-h", "Status mix"));
+  [["Routing codes (CLC, LEC, WEE, ILS)", s.tally["t-code"]],
+   ["Approved or sent", s.tally["t-go"]],
+   ["Proof required or requested", s.tally["t-warn"]],
+   ["Held up or waiting", s.tally["t-hot"]],
+   ["CLC", s.clc], ["LEC", s.lec]].forEach(function (pair) {
+    var row = el("div", "sum-row");
+    row.appendChild(el("span", null, pair[0]));
+    row.appendChild(el("span", null, pair[1] || 0));
+    pMix.appendChild(row);
+  });
+
+  pWeek.classList.add("sum-financial");
+  pWeek.appendChild(el("div", "sum-h", "Week financial summary"));
+  var weekRows = weekdayKeys(state.weekStart).map(function (key) {
+    var ordersForDay = state.orders.filter(function (o) { return o.date === key; });
+    var ds = summarize(ordersForDay);
+    return { key: key, summary: ds };
+  });
+  var weekAmount = weekRows.reduce(function (sum, d) { return sum + (d.summary.amount || 0); }, 0);
+  var weekQty = weekRows.reduce(function (sum, d) { return sum + (d.summary.qty || 0); }, 0);
+  var activeDays = weekRows.filter(function (d) { return d.summary.count > 0; }).length;
+  var avgDay = activeDays ? weekAmount / activeDays : 0;
+
+  var financialGrid = el("div", "sum-grid financial-grid");
+  [
+    [money(weekAmount), "week order value"],
+    [activeDays ? money(avgDay) : "—", "avg value / active day"],
+    [money(s.amount || 0), "selected day"],
+    [weekQty || "—", "week pieces"]
+  ].forEach(function (pair) {
+    var c = el("div", "sum-cell");
+    c.appendChild(el("b", null, pair[0]));
+    c.appendChild(el("span", null, pair[1]));
+    financialGrid.appendChild(c);
+  });
+  pWeek.appendChild(financialGrid);
+
+  pWeek.appendChild(el("div", "sum-h", "Daily comparison"));
+  weekRows.forEach(function (d) {
+    var label = DAY_NAMES[dateFromKey(d.key).getDay()] + ", " + shortDate(d.key);
+    var row = el("div", "sum-row" + (d.key === dateKey ? " cur" : ""));
+    var left = el("span", null, label + (d.key === dateKey ? " · selected" : ""));
+    var right = el("span", null, money(d.summary.amount || 0));
+    row.appendChild(left);
+    row.appendChild(right);
+    row.title = d.key === dateKey ? "Selected day" :
+      "Difference from selected day: " + money((d.summary.amount || 0) - (s.amount || 0));
+    pWeek.appendChild(row);
+  });
+  var totalRow = el("div", "sum-row total");
+  totalRow.appendChild(el("span", null, "Week total"));
+  totalRow.appendChild(el("span", null, money(weekAmount)));
+  pWeek.appendChild(totalRow);
+  box.appendChild(panels);
+
+  var acts = el("div", "modal-actions");
+  var copy = el("button", "btn ghost", "Copy as text");
+  copy.type = "button";
+  copy.addEventListener("click", function () {
+    var text = summaryText(dateKey, s);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast("Summary copied."); },
+        function () { toast("Copying is blocked in this browser."); });
+    } else toast("Copying is blocked in this browser.");
+  });
+  var close = el("button", "btn", "Close");
+  close.type = "button";
+  close.addEventListener("click", closeModal);
+  acts.appendChild(copy); acts.appendChild(close);
+  box.appendChild(acts);
+
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  close.focus({ preventScroll: true });
+  scrim.scrollTop = 0;
+}
+
+/* ------------------------------------------------------- export / import */
+function csvCell(v) {
+  var s = String(v == null ? "" : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportCsv() {
+  var rows = visibleOrders();
+  if (!rows.length) { toast("There is nothing in view to export."); return; }
+  var head = ["#", "Date", "Date Placed", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
+              "PROOF?", "Marking", "Status",
+              "Time Started", "Time of Completion", "Time Taken (min)",
+              "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
+  var lines = [head.map(csvCell).join(",")];
+  rows.forEach(function (o) {
+    var taken = timeTaken(o), turn = turnaround(o);
+    lines.push([o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+                o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.marking, o.status,
+                o.startTime, o.completionTime, taken === null ? "" : taken,
+                o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
+               .map(csvCell).join(","));
+  });
+  /* Totals row, so the export matches what the footer says. */
+  lines.push(["", "", "", "TOTALS", "", sumQty(rows), sumAmount(rows).toFixed(2)]
+             .map(csvCell).join(","));
+  var name = "crown-orders-" + (state.scope === "day" ? state.scopeDate :
+             state.scope === "week" ? "week-of-" + state.weekStart : "all-dates") + ".csv";
+  download(name, "\ufeff" + lines.join("\r\n"), "text/csv;charset=utf-8");
+  toast("Exported " + rows.length + " row" + (rows.length === 1 ? "" : "s") + ".");
+}
+function syncPayload() {
+  return {
+    app: "Award Order Tracker", version: 3, exportedAt: nowIso(),
+    username: state.user ? state.user.username : "",
+    orders: state.orders.map(stripInternal)
+  };
+}
+function backupJson() {
+  var payload = syncPayload();
+  download("crown-orders-backup-" + todayKey() + ".json", JSON.stringify(payload, null, 2), "application/json");
+  toast("Backed up " + state.orders.length + " orders.");
+}
+function copySyncPack() {
+  var text = JSON.stringify(syncPayload());
+  var done = function () { toast("Sync pack copied. Paste it on your other device."); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); });
+  } else fallbackCopy(text);
+  function fallbackCopy(s) {
+    var ta = document.createElement("textarea");
+    ta.value = s; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); }
+    catch (e) { toast("Copy failed — use Back up instead."); }
+    document.body.removeChild(ta);
+  }
+}
+function applyIncomingOrders(incoming, mode) {
+  var clean = incoming.map(normalizeOrder);
+  if (mode === "replace") {
+    state.orders = clean;
+    if (!persistOrders()) { saveFailedModal("restore"); return; }
+    scheduleRender();
+    toast("Replaced the ledger with " + clean.length + " orders.");
+    return;
+  }
+  var seenId = {}, seenJob = {};
+  state.orders.forEach(function (o) {
+    seenId[o.id] = true;
+    if (o.orderId) seenJob[o.date + "|" + String(o.orderId).toLowerCase()] = true;
+  });
+  var added = 0;
+  clean.forEach(function (o) {
+    var job = o.orderId ? o.date + "|" + String(o.orderId).toLowerCase() : "";
+    if (seenId[o.id] || (job && seenJob[job])) return;
+    state.orders.push(o);
+    seenId[o.id] = true;
+    if (job) seenJob[job] = true;
+    added++;
+  });
+  if (!persistOrders()) { saveFailedModal("restore"); return; }
+  scheduleRender();
+  toast("Merged " + added + " order" + (added === 1 ? "" : "s") + ".");
+}
+function parseSyncText(raw) {
+  var data;
+  try { data = JSON.parse(raw); }
+  catch (e) { return null; }
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.orders)) return data.orders;
+  return null;
+}
+function offerRestore(incoming) {
+  if (!incoming || !incoming.length) { toast("No orders found in that pack."); return; }
+  confirmModal("Bring in " + incoming.length + " orders",
+    "This device stores orders only in its own browser. Merge adds anything this phone is missing. Replace overwrites this login's ledger here.",
+    "Merge", function () { applyIncomingOrders(incoming, "merge"); },
+    "Replace", function () { applyIncomingOrders(incoming, "replace"); });
+}
+function pasteSyncPack() {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, "Paste a sync pack"));
+  box.appendChild(el("p", "sub", "On the other device tap Copy sync, then paste the whole block here."));
+  var ta = document.createElement("textarea");
+  ta.rows = 8; ta.style.width = "100%"; ta.style.marginTop = "10px";
+  ta.placeholder = "{ \"app\": \"Award Order Tracker\", ... }";
+  box.appendChild(ta);
+  var actions = el("div", "modal-actions");
+  var go = el("button", "btn", "Read pack");
+  go.type = "button";
+  go.addEventListener("click", function () {
+    var incoming = parseSyncText(ta.value);
+    closeModal();
+    offerRestore(incoming);
+  });
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", closeModal);
+  actions.appendChild(go); actions.appendChild(cancel);
+  box.appendChild(actions);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  ta.focus();
+}
+function restoreJson(file) {
+  var reader = new FileReader();
+  reader.onload = function () {
+    var incoming = parseSyncText(reader.result);
+    if (!incoming) { toast("No orders found in that file."); return; }
+    offerRestore(incoming);
+  };
+  reader.onerror = function () { toast("That file could not be read."); };
+  reader.readAsText(file);
+}
+function download(filename, text, mime) {
+  var blob = new Blob([text], { type: mime });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+/* ------------------------------------------------------- email proof
+   Crown's email portal can't be driven from here (browsers keep sites apart),
+   so this gathers everything to paste: order #, first name, subject, and the
+   right approval template, filled in from what's logged on the order. */
+var EP_OPENING = "Thank you for choosing us at Crown Awards. We really appreciate your business!";
+var EP_REVIEW = "Please review the attached proof(s) and kindly let us know if you would like any changes to the engraving.";
+var EP_WAIT = "We will wait for your approval to get started on your order.";
+var EP_SIGN = "Sincerely,\n\nCrown Awards Engraving Experts";
+var EP_TYPES = {
+  h24: { title: "24 hour proof approval" },
+  std: { title: "Standard proof approval" }
+};
+function copyText(text, label) {
+  var ok = function () { toast((label || "Text") + " copied."); };
+  var fallback = function () {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); ok(); } catch (e) { toast("Copying is blocked in this browser."); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok).catch(fallback);
+  } else fallback();
+}
+function titleCase(w) {
+  w = String(w || "").toLowerCase();
+  return w.replace(/(^|[-'])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); });
+}
+/* First name from the Customer field: a name if there is one, otherwise a
+   best guess from the email address (flagged so it gets a second look). */
+function customerFirstName(customer) {
+  var lines = String(customer || "").split(/\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+  var nameLine = lines.filter(function (l) { return l.indexOf("@") === -1; })[0];
+  if (nameLine) {
+    var words = nameLine.replace(/[,;].*$/, "").split(/\s+/).filter(function (w) {
+      return !/^(mr|mrs|ms|miss|dr|coach)\.?$/i.test(w);
+    });
+    if (words.length) return { name: titleCase(words[0].replace(/[^A-Za-z'\-]/g, "")), guessed: false };
+  }
+  var email = (lines.join(" ").match(/[^\s@]+@[^\s@]+/) || [""])[0];
+  if (email) {
+    var local = email.split("@")[0];
+    var part = (local.split(/[._\-+0-9]+/).filter(function (x) { return x.length > 1; })[0]) || "";
+    return { name: titleCase(part), guessed: true };
+  }
+  return { name: "", guessed: false };
+}
+/* Which template fits: looks at the order type, notes and status log. */
+function detectProofType(o) {
+  if (!o) return { type: null, why: "" };
+  var text = [o.otype, o.notes].concat(parseStatusLog(o.statusLog, o.status).map(function (e) { return e.code; }))
+    .join(" \n ");
+  var is24 = /\b24\s*-?\s*(h|hr|hrs|hour|hours)\b|\b24hrs?\b/i.test(text);
+  var isStd = /\bpbp\b|approval\s*proof|proof\s*(before|b4)\s*production|standard\s*proof/i.test(text);
+  if (is24 && !isStd) return { type: "h24", why: "Found a 24 hour mention in this order." };
+  if (isStd && !is24) return { type: "std", why: "Found a standard / PBP / approval proof mention in this order." };
+  if (is24 && isStd) return { type: null, why: "This order mentions both a 24 hour and a standard proof, so both are shown." };
+  return { type: null, why: "Nothing on this order says which proof it is, so both are shown. Add \"24HR\" or \"PBP\" to the type, notes, or status log to pick one automatically." };
+}
+function buildProofEmail(kind, info, repeat) {
+  var parts = [];
+  if (info.first) parts.push("Hi " + info.first + ",");
+  parts.push(repeat ? EP_OPENING.replace("your business", "your repeat business") : EP_OPENING);
+  parts.push(EP_REVIEW);
+  var d = [];
+  if (info.orderId) d.push("Order #: " + info.orderId);
+  if (info.qty !== "" && info.qty != null) d.push("Quantity: " + info.qty);
+  if (info.eventDate) d.push("Event date: " + prettyDate(info.eventDate));
+  if (info.reqShipDate) d.push("Requested ship date: " + prettyDate(info.reqShipDate));
+  if (d.length) parts.push(d.join("\n"));
+  if (kind === "std") parts.push(EP_WAIT);
+  parts.push(EP_SIGN);
+  return parts.join("\n\n");
+}
+function recentOrders() {
+  return state.orders.slice().sort(function (a, b) {
+    return String(b.date).localeCompare(String(a.date)) || (b.seq - a.seq);
+  });
+}
+function openEmailProof(orderId) {
+  var current = orderId ? byId(orderId) : null;
+  var showBoth = false;
+  var repeat = { h24: false, std: false };
+
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal ep");
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-label", "Email proof");
+  box.appendChild(el("h3", null, "Email proof"));
+
+  /* picker: orders in view first, then everything else, newest first */
+  var pick = el("div", "ep-pick");
+  var pWrap = el("div"); pWrap.appendChild(el("label", null, "Order from your log"));
+  var sel = document.createElement("select");
+  var none = document.createElement("option"); none.value = ""; none.textContent = "Choose an order…";
+  sel.appendChild(none);
+  var seen = {};
+  var addGroup = function (label, list) {
+    list = list.filter(function (o) { return !seen[o.id]; });
+    if (!list.length) return;
+    var g = document.createElement("optgroup"); g.label = label;
+    list.forEach(function (o) {
+      seen[o.id] = true;
+      var op = document.createElement("option");
+      op.value = o.id;
+      op.textContent = "#" + o.seq + " · " + (o.orderId || "no order #") + " · " +
+        (String(o.customer || "").split("\n")[0] || "no customer") +
+        (o.date && o.date !== state.scopeDate ? " · " + shortDate(o.date) : "");
+      g.appendChild(op);
+    });
+    sel.appendChild(g);
+  };
+  addGroup("In view", visibleOrders());
+  addGroup("All orders", recentOrders().slice(0, 300));
+  pWrap.appendChild(sel);
+  var fWrap = el("div"); fWrap.appendChild(el("label", null, "Or find by order #"));
+  var find = document.createElement("input");
+  find.type = "text"; find.inputMode = "numeric"; find.placeholder = "16248803"; find.className = "mono";
+  fWrap.appendChild(find);
+  pick.appendChild(pWrap); pick.appendChild(fWrap);
+  box.appendChild(pick);
+
+  /* recent order numbers for the Order # dropdown */
+  var dl = document.createElement("datalist");
+  dl.id = "epRecentIds";
+  var usedIds = {};
+  recentOrders().forEach(function (o) {
+    var id = String(o.orderId || "").trim();
+    if (!id || usedIds[id] || Object.keys(usedIds).length >= 40) return;
+    usedIds[id] = true;
+    var op = document.createElement("option");
+    op.value = id;
+    op.label = (String(o.customer || "").split("\n")[0] || "") + (o.date ? " · " + shortDate(o.date) : "");
+    dl.appendChild(op);
+  });
+  box.appendChild(dl);
+
+  var body = el("div");
+  box.appendChild(body);
+
+  var acts = el("div", "modal-actions");
+  var logBtn = el("button", "btn ghost", "Log \u201cProof sent\u201d");
+  logBtn.type = "button";
+  logBtn.title = "Stamp \u201cProof sent\u201d on this order's status log";
+  logBtn.addEventListener("click", function () {
+    if (!current) return;
+    addLogStamp(current.id, "Proof sent");
+    toast("Logged \u201cProof sent\u201d on #" + current.seq + ".");
+    closeModal();
+  });
+  var close = el("button", "btn", "Done");
+  close.type = "button";
+  close.addEventListener("click", closeModal);
+  acts.appendChild(logBtn); acts.appendChild(close);
+  box.appendChild(acts);
+
+  function pickByOrderId(raw) {
+    var q = String(raw || "").replace(/\D/g, "");
+    if (q.length < 4) return false;
+    var hits = state.orders.filter(function (o) { return String(o.orderId || "").replace(/\D/g, "") === q; });
+    if (!hits.length && q.length >= 8) {
+      hits = state.orders.filter(function (o) { return String(o.orderId || "").indexOf(q) !== -1; });
+    }
+    if (!hits.length) return false;
+    hits.sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+    current = hits[0];
+    sel.value = current.id;
+    find.value = current.orderId || "";
+    showBoth = false;
+    draw();
+    return true;
+  }
+
+  function copyRow(label, input, copyLabel) {
+    var f = el("div", "ep-fact");
+    f.appendChild(el("span", null, label));
+    var row = el("div", "row");
+    var b = el("button", "stamp", "Copy");
+    b.type = "button";
+    b.addEventListener("click", function () {
+      if (!input.value.trim()) { toast("Nothing to copy yet."); return; }
+      copyText(input.value.trim(), copyLabel);
+    });
+    row.appendChild(input); row.appendChild(b);
+    f.appendChild(row);
+    return f;
+  }
+
+  function draw() {
+    body.textContent = "";
+    logBtn.hidden = !current;
+    var o = current || {};
+    var fn = customerFirstName(o.customer);
+    var det = detectProofType(current);
+    var kinds = det.type && !showBoth ? [det.type] : ["h24", "std"];
+
+    var facts = el("div", "ep-facts");
+    var idIn = document.createElement("input");
+    idIn.type = "text"; idIn.className = "mono"; idIn.value = o.orderId || "";
+    idIn.placeholder = "Pick a recent order #"; idIn.setAttribute("list", "epRecentIds");
+    idIn.autocomplete = "off";
+    idIn.addEventListener("change", function () { pickByOrderId(idIn.value); });
+    facts.appendChild(copyRow("Order #", idIn, "Order #"));
+    var nameIn = document.createElement("input");
+    nameIn.type = "text"; nameIn.value = fn.name; nameIn.placeholder = "First name";
+    facts.appendChild(copyRow(fn.guessed ? "First name (guessed from email)" : "First name", nameIn, "First name"));
+    body.appendChild(facts);
+
+    var noteText = !current ? "No order picked. The templates are ready without order details." : det.why;
+    var note = el("div", "ep-note");
+    note.appendChild(document.createTextNode(noteText + " "));
+    if (det.type) {
+      var other = el("button", "ep-other", showBoth ? "Show one template" : "Show both templates");
+      other.type = "button";
+      other.addEventListener("click", function () { showBoth = !showBoth; draw(); });
+      note.appendChild(other);
+    }
+    body.appendChild(note);
+    if (current && (o.proof === "FALSE" || o.proof === "X" || noProofNeeded(o))) {
+      body.appendChild(el("div", "ep-note warn",
+        noProofNeeded(o) ? "Heads up: this order is logged as CLC / LEC, which usually doesn't need a proof."
+                         : "Heads up: \u201cSend proof?\u201d on this order is set to " + (o.proof === "FALSE" ? "No" : "N/A") + "."));
+    }
+
+    var grid = el("div", "ep-tpls" + (kinds.length > 1 ? " two" : ""));
+    var areas = [];
+    kinds.forEach(function (k) {
+      var card = el("div", "ep-tpl");
+      var head = el("div", "ep-tpl-head");
+      head.appendChild(el("b", null, EP_TYPES[k].title));
+      var lb = el("label", "ep-repeat");
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = repeat[k];
+      lb.appendChild(cb); lb.appendChild(document.createTextNode("Repeat customer"));
+      head.appendChild(lb);
+      head.appendChild(el("div", "spacer"));
+      var cp = el("button", "btn sm", "Copy email");
+      cp.type = "button";
+      head.appendChild(cp);
+      var ta = document.createElement("textarea");
+      ta.spellcheck = true;
+      cb.addEventListener("change", function () { repeat[k] = cb.checked; refreshText(); });
+      cp.addEventListener("click", function () { copyText(ta.value, EP_TYPES[k].title + " email"); });
+      ta.addEventListener("input", function () { fit(ta); });
+      card.appendChild(head);
+      card.appendChild(ta);
+      grid.appendChild(card);
+      areas.push({ kind: k, ta: ta });
+    });
+    body.appendChild(grid);
+
+    function fit(ta) { ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 4) + "px"; }
+    function refreshText() {
+      var info = { first: nameIn.value.trim(), orderId: o.orderId, qty: o.qty,
+                   eventDate: o.eventDate, reqShipDate: o.reqShipDate };
+      areas.forEach(function (a) { a.ta.value = buildProofEmail(a.kind, info, repeat[a.kind]); });
+      /* measure after the modal is on the page; match heights side by side */
+      requestAnimationFrame(function () {
+        var h = 0;
+        areas.forEach(function (a) { a.ta.style.height = "auto"; h = Math.max(h, a.ta.scrollHeight + 4); });
+        areas.forEach(function (a) { a.ta.style.height = h + "px"; });
+      });
+    }
+    nameIn.addEventListener("input", refreshText);
+    refreshText();
+  }
+
+  sel.addEventListener("change", function () {
+    current = sel.value ? byId(sel.value) : null;
+    showBoth = false;
+    find.value = current ? (current.orderId || "") : "";
+    draw();
+  });
+  find.addEventListener("input", function () { pickByOrderId(find.value); });
+
+  if (current) { sel.value = current.id; find.value = current.orderId || ""; }
+  draw();
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  (current ? close : sel).focus({ preventScroll: true });
+}
+
+/* ------------------------------------------------------- toasts / modals */
+function toast(message, action, ms) {
+  var host = $("toasts");
+  var t = el("div", "toast");
+  t.appendChild(document.createTextNode(message));
+  if (action) {
+    var b = el("button", "link", action.label);
+    b.type = "button";
+    b.addEventListener("click", function () { action.run(); dismiss(); });
+    t.appendChild(b);
+  }
+  function dismiss() {
+    if (!t.parentNode) return;
+    t.classList.add("out");
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 200);
+  }
+  host.appendChild(t);
+  setTimeout(dismiss, ms || 3600);
+}
+function closeModal() { $("modalHost").textContent = ""; }
+function confirmModal(title, body, okLabel, onOk, altLabel, onAlt) {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, title));
+  box.appendChild(el("p", "sub", body));
+  var acts = el("div", "modal-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", closeModal);
+  acts.appendChild(cancel);
+  if (altLabel) {
+    var alt = el("button", "btn ghost", altLabel);
+    alt.type = "button";
+    alt.addEventListener("click", function () { closeModal(); onAlt(); });
+    acts.appendChild(alt);
+  }
+  var ok = el("button", "btn", okLabel);
+  ok.type = "button";
+  ok.addEventListener("click", function () { closeModal(); onOk(); });
+  acts.appendChild(ok);
+  box.appendChild(acts);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  ok.focus();
+}
+
+/* ------------------------------------------------------------ auth views */
+function showPane(which) {
+  ["paneSignin", "paneRegister", "paneForgot"].forEach(function (p) { $(p).hidden = true; });
+  var id = "pane" + which.charAt(0).toUpperCase() + which.slice(1);
+  $(id).hidden = false;
+  ["signinErr", "signinOk", "regErr", "fgErr"].forEach(function (i) { if ($(i)) $(i).hidden = true; });
+  if (which === "forgot") resetForgot();
+  var first = $(id).querySelector("input");
+  if (first) first.focus();
+}
+function showAlert(id, message, kind) {
+  var n = $(id);
+  n.textContent = message;
+  n.className = "alert " + (kind || "err");
+  n.hidden = false;
+}
+function lockMessage(until) {
+  var secs = Math.ceil((until - Date.now()) / 1000);
+  if (secs > 90) return "Too many failed attempts. Try again in " + Math.ceil(secs / 60) + " minutes.";
+  return "Too many failed attempts. Try again in " + secs + " seconds.";
+}
+function doSignin(e) {
+  e.preventDefault();
+  var name = $("siUser").value.trim();
+  var pass = $("siPass").value;
+  var btn = $("siSubmit");
+  if (!name || !pass) { showAlert("signinErr", "Enter your username and password."); return; }
+  if (window.CAOTCloud && CAOTCloud.enabled()) {
+    var email = name.indexOf("@") !== -1 ? name : "";
+    if (!email) { showAlert("signinErr", "Live mode uses your email address as the login."); return; }
+    btn.disabled = true; btn.textContent = "Checking…";
+    CAOTCloud.signIn(email, pass).then(function (user) {
+      btn.disabled = false; btn.textContent = "Sign in";
+      startSession(user, $("siRemember").checked);
+      $("siPass").value = "";
+      enterApp(user);
+    }).catch(function (err) {
+      btn.disabled = false; btn.textContent = "Sign in";
+      showAlert("signinErr", err.message || "Could not sign in.");
+    });
+    return;
+  }
+  var user = getUser(name);
+  if (user && user.lockUntil && user.lockUntil > Date.now()) {
+    showAlert("signinErr", lockMessage(user.lockUntil)); return;
+  }
+  btn.disabled = true; btn.textContent = "Checking…";
+  var t0 = Date.now();
+  var work = user
+    ? hashSecret(pass, user.salt, user.iterations || PBKDF2_ITERATIONS)
+    : hashSecret(pass, toB64(randomBytes(16)), PBKDF2_ITERATIONS);
+  work.then(function (hash) {
+    var wait = Math.max(0, 260 - (Date.now() - t0));
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "Sign in";
+      if (!user || !sameSecret(hash, user.hash)) {
+        if (user) {
+          user.failedAttempts = (user.failedAttempts || 0) + 1;
+          if (user.failedAttempts >= 5) {
+            var step = Math.min(user.failedAttempts - 4, 3);
+            user.lockUntil = Date.now() + [5, 15, 60][step - 1] * 60 * 1000;
+          }
+          putUser(user);
+          if (user.lockUntil > Date.now()) { showAlert("signinErr", lockMessage(user.lockUntil)); return; }
+          var left = 5 - user.failedAttempts;
+          showAlert("signinErr", "That username and password do not match." +
+            (left > 0 && left <= 2 ? " " + left + " attempt" + (left === 1 ? "" : "s") + " left before a lockout." : ""));
+        } else {
+          showAlert("signinErr", "That username and password do not match.");
+        }
+        return;
+      }
+      user.failedAttempts = 0; user.lockUntil = 0;
+      putUser(user);
+      startSession(user, $("siRemember").checked);
+      $("siPass").value = "";
+      enterApp(user);
+    }, wait);
+  });
+}
+function doRegister(e) {
+  e.preventDefault();
+  var name = $("rgUser").value.trim();
+  var email = $("rgEmail").value.trim();
+  var p1 = $("rgPass").value, p2 = $("rgPass2").value;
+  if (!validUsername(name)) { showAlert("regErr", "Usernames are 3 to 20 characters: letters, numbers, dot, dash, underscore."); return; }
+  if (!validEmail(email)) { showAlert("regErr", "That email address does not look right."); return; }
+  if (!passwordOk(p1)) { showAlert("regErr", "Use at least 10 characters with three of: uppercase, lowercase, number, symbol."); return; }
+  if (p1 !== p2) { showAlert("regErr", "The two passwords do not match."); return; }
+  if (window.CAOTCloud && CAOTCloud.enabled()) {
+    var rbtn = $("rgSubmit");
+    rbtn.disabled = true; rbtn.textContent = "Creating…";
+    CAOTCloud.signUp(email, p1, name).then(function (user) {
+      rbtn.disabled = false; rbtn.textContent = "Create account";
+      startSession(user, true);
+      enterApp(user);
+    }).catch(function (err) {
+      rbtn.disabled = false; rbtn.textContent = "Create account";
+      showAlert("regErr", err.message || "Could not create the live account.");
+    });
+    return;
+  }
+  if (getUser(name)) { showAlert("regErr", "That username is taken."); return; }
+  if (findByEmail(email)) { showAlert("regErr", "That email is already on another account."); return; }
+  var btn = $("rgSubmit");
+  btn.disabled = true; btn.textContent = "Creating…";
+  var salt = toB64(randomBytes(16));
+  hashSecret(p1, salt, PBKDF2_ITERATIONS).then(function (hash) {
+    var rec = {
+      key: name.toLowerCase(), username: name, email: email,
+      salt: salt, hash: hash, iterations: PBKDF2_ITERATIONS,
+      createdAt: nowIso(), passwordChangedAt: nowIso(), tokenVersion: 1,
+      seedVersion: SEED_VERSION, failedAttempts: 0, lockUntil: 0, reset: null
+    };
+    putUser(rec);
+    writeOrdersRaw(rec.key, [], 1);
+    startSession(rec, false);
+    btn.disabled = false; btn.textContent = "Create account";
+    $("rgPass").value = ""; $("rgPass2").value = "";
+    enterApp(rec);
+  });
+}
+
+/* ------------------------------------------------------- password reset */
+var forgotCtx = { key: null, code: null };
+function resetForgot() {
+  forgotCtx = { key: null, code: null };
+  $("formForgot1").hidden = false;
+  $("formForgot2").hidden = true;
+  $("formForgot3").hidden = true;
+  $("stepA").className = "on"; $("stepB").className = ""; $("stepC").className = "";
+  $("fgId").value = ""; $("fgCodeIn").value = ""; $("fgNew").value = ""; $("fgNew2").value = "";
+}
+function maskEmail(e) {
+  var at = e.indexOf("@");
+  if (at < 1) return e;
+  var name = e.slice(0, at), dom = e.slice(at);
+  var keep = name.slice(0, Math.min(2, name.length));
+  return keep + new Array(Math.max(3, name.length - keep.length + 1)).join("•") + dom;
+}
+function doForgot1(e) {
+  e.preventDefault();
+  var id = $("fgId").value.trim();
+  if (!id) { showAlert("fgErr", "Enter the username or email on the account."); return; }
+  var user = getUser(id) || findByEmail(id);
+  if (!user) { showAlert("fgErr", "No account matches that username or email."); return; }
+  $("fgErr").hidden = true;
+  var code = String(Math.floor(100000 + (randomBytes(4)[0] / 256) * 900000));
+  var salt = toB64(randomBytes(16));
+  hashSecret(code, salt, 20000).then(function (hash) {
+    user.reset = { salt: salt, hash: hash, iterations: 20000, expires: Date.now() + 15 * 60 * 1000, attempts: 0 };
+    putUser(user);
+    forgotCtx.key = user.key;
+    $("fgMasked").textContent = maskEmail(user.email || "");
+    $("fgCode").textContent = code.slice(0, 3) + " " + code.slice(3);
+    $("formForgot1").hidden = true;
+    $("formForgot2").hidden = false;
+    $("stepB").className = "on";
+    $("fgCodeIn").focus();
+  });
+}
+function doForgot2(e) {
+  e.preventDefault();
+  var entered = $("fgCodeIn").value.replace(/\D/g, "");
+  var user = getUsers()[forgotCtx.key];
+  if (!user || !user.reset) { showAlert("fgErr", "That reset expired. Start again."); resetForgot(); return; }
+  if (user.reset.expires < Date.now()) {
+    user.reset = null; putUser(user);
+    showAlert("fgErr", "That code expired. Request a new one."); resetForgot(); return;
+  }
+  if (user.reset.attempts >= 5) {
+    user.reset = null; putUser(user);
+    showAlert("fgErr", "Too many wrong codes. Request a new one."); resetForgot(); return;
+  }
+  if (entered.length !== 6) { showAlert("fgErr", "The code is six digits."); return; }
+  hashSecret(entered, user.reset.salt, user.reset.iterations).then(function (hash) {
+    if (!sameSecret(hash, user.reset.hash)) {
+      user.reset.attempts++;
+      putUser(user);
+      showAlert("fgErr", "That code is not right. " + (5 - user.reset.attempts) + " tries left.");
+      return;
+    }
+    $("fgErr").hidden = true;
+    forgotCtx.code = entered;
+    $("formForgot2").hidden = true;
+    $("formForgot3").hidden = false;
+    $("stepC").className = "on";
+    $("fgNew").focus();
+  });
+}
+function doForgot3(e) {
+  e.preventDefault();
+  var p1 = $("fgNew").value, p2 = $("fgNew2").value;
+  var user = getUsers()[forgotCtx.key];
+  if (!user || !user.reset || !forgotCtx.code) { showAlert("fgErr", "That reset expired. Start again."); resetForgot(); return; }
+  if (user.reset.expires < Date.now()) { user.reset = null; putUser(user); showAlert("fgErr", "That code expired. Request a new one."); resetForgot(); return; }
+  if (!passwordOk(p1)) { showAlert("fgErr", "Use at least 10 characters with three of: uppercase, lowercase, number, symbol."); return; }
+  if (p1 !== p2) { showAlert("fgErr", "The two passwords do not match."); return; }
+  var salt = toB64(randomBytes(16));
+  hashSecret(p1, salt, PBKDF2_ITERATIONS).then(function (hash) {
+    user.salt = salt; user.hash = hash; user.iterations = PBKDF2_ITERATIONS;
+    user.passwordChangedAt = nowIso();
+    user.tokenVersion = (user.tokenVersion || 1) + 1;
+    user.failedAttempts = 0; user.lockUntil = 0; user.reset = null;
+    putUser(user);
+    endSession();
+    resetForgot();
+    showPane("signin");
+    $("siUser").value = user.username;
+    showAlert("signinOk", "Password updated. Sign in with the new one.", "ok");
+    $("siPass").focus();
+  });
+}
+
+/* ------------------------------------------------------- account actions */
+function changePasswordModal() {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, "Change your password"));
+  box.appendChild(el("p", "sub", "Everywhere else you are signed in will be signed out."));
+  var err = el("div", "alert err"); err.hidden = true;
+  box.appendChild(err);
+  function field(labelText, id) {
+    var f = el("div", "field");
+    var l = el("label", "fl", labelText); l.setAttribute("for", id);
+    var i = document.createElement("input");
+    i.type = "password"; i.id = id; i.autocomplete = "off";
+    f.appendChild(l); f.appendChild(i);
+    box.appendChild(f);
+    return i;
+  }
+  var cur = field("Current password", "cpCur");
+  var nw = field("New password", "cpNew");
+  var cf = field("Confirm new password", "cpCf");
+  var acts = el("div", "modal-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button"; cancel.addEventListener("click", closeModal);
+  var save = el("button", "btn", "Change password");
+  save.type = "button";
+  save.addEventListener("click", function () {
+    var user = getUsers()[state.user.key];
+    if (!passwordOk(nw.value)) {
+      err.textContent = "Use at least 10 characters with three of: uppercase, lowercase, number, symbol.";
+      err.hidden = false; return;
+    }
+    if (nw.value !== cf.value) { err.textContent = "The two new passwords do not match."; err.hidden = false; return; }
+    save.disabled = true; save.textContent = "Checking…";
+    hashSecret(cur.value, user.salt, user.iterations).then(function (h) {
+      if (!sameSecret(h, user.hash)) {
+        save.disabled = false; save.textContent = "Change password";
+        err.textContent = "That is not your current password."; err.hidden = false; return;
+      }
+      var salt = toB64(randomBytes(16));
+      hashSecret(nw.value, salt, PBKDF2_ITERATIONS).then(function (hash) {
+        user.salt = salt; user.hash = hash; user.iterations = PBKDF2_ITERATIONS;
+        user.passwordChangedAt = nowIso();
+        user.tokenVersion = (user.tokenVersion || 1) + 1;
+        putUser(user);
+        state.user = user;
+        startSession(user, false);
+        closeModal();
+        toast("Password changed.");
+      });
+    });
+  });
+  acts.appendChild(cancel); acts.appendChild(save);
+  box.appendChild(acts);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  cur.focus();
+}
+function closeMenu() { $("menuHost").textContent = ""; $("btnMenu").setAttribute("aria-expanded", "false"); }
+function openMenu() {
+  var host = $("menuHost");
+  if (host.children.length) { closeMenu(); return; }
+  var menu = el("div", "menu");
+  var head = el("div", "head");
+  head.appendChild(el("b", null, state.user.username));
+  head.appendChild(el("span", null, state.user.email || ""));
+  menu.appendChild(head);
+  function item(label, kbd, run) {
+    var b = el("button", null, label);
+    b.type = "button";
+    if (kbd) b.appendChild(el("kbd", null, kbd));
+    b.addEventListener("click", function () { closeMenu(); run(); });
+    menu.appendChild(b);
+  }
+  item("Day summary", "Ctrl+D", openSummary);
+  item("Change password", null, changePasswordModal);
+  item("Profile photo", null, openPhotoModal);
+  item("Renumber this date", null, function () {
+    confirmModal("Renumber " + prettyDate(state.scopeDate),
+      "Orders on this date will be numbered 1 upward in their current order.",
+      "Renumber", function () { renumberDate(state.scopeDate); toast("Renumbered."); });
+  });
+  item("Keyboard shortcuts", null, function () {
+    confirmModal("Keyboard shortcuts",
+      "Ctrl+K focuses search. Ctrl+Enter saves the entry form. Ctrl+D opens the day summary. " +
+      "Alt+Left and Alt+Right step through weekdays. Esc cancels an edit or closes a dialog.",
+      "Got it", function () {});
+  });
+  menu.appendChild(el("hr"));
+  item("Sign out", null, signOut);
+  host.appendChild(menu);
+  /* sit right under the Account button, wherever the header puts it */
+  var br = $("btnMenu").getBoundingClientRect();
+  if (window.innerWidth > 760) menu.style.right = Math.max(8, window.innerWidth - br.right) + "px";
+  menu.style.top = (br.bottom + 6 + window.pageYOffset) + "px";
+  $("btnMenu").setAttribute("aria-expanded", "true");
+  setTimeout(function () { document.addEventListener("click", outsideMenu); }, 0);
+}
+function outsideMenu(e) {
+  if (!e.target.closest(".menu") && e.target.id !== "btnMenu") {
+    closeMenu();
+    document.removeEventListener("click", outsideMenu);
+  }
+}
+function signOut() {
+  if (window.CAOTCloud && CAOTCloud.enabled()) CAOTCloud.signOut();
+  endSession();
+  state.user = null; state.orders = []; state.byId = {}; state.inlineId = null;
+  $("appView").hidden = true;
+  $("authView").hidden = false;
+  $("siPass").value = "";
+  showPane("signin");
+  toast("Signed out.");
+}
+
+/* ------------------------------------------------------------ app entry */
+function avatarKey() {
+  return state.user ? "caot_avatar_" + state.user.key : null;
+}
+function paintAvatar() {
+  var el = $("avatar");
+  if (!el || !state.user) return;
+  var initials = (state.user.username || state.user.email || "?").slice(0, 2).toUpperCase();
+  var stored = avatarKey() ? readJson(avatarKey(), null) : null;
+  var src = (stored && stored.data) || (state.user.avatar || "");
+  if (src) {
+    el.textContent = "";
+    var img = document.createElement("img");
+    img.alt = initials;
+    img.src = src;
+    el.appendChild(img);
+  } else {
+    el.textContent = initials;
+  }
+}
+function openPhotoModal() {
+  if (!state.user) return;
+  var host = $("modalHost");
+  host.innerHTML = "";
+  var overlay = el("div", "scrim");
+  var box = el("div", "modal photo-modal");
+  box.appendChild(el("h3", null, "Profile photo"));
+  var currentSrc = currentAvatarSrc();
+  box.appendChild(el("p", "sub", currentSrc ? "Drag or zoom to reframe your photo, or choose a new one."
+                                            : "Choose a photo, drag to frame it, then save."));
+  var pick = el("button", "btn ghost sm", "Choose photo");
+  pick.type = "button";
+  var fileIn = document.createElement("input");
+  fileIn.type = "file"; fileIn.accept = "image/*"; fileIn.hidden = true;
+  var stage = el("div", "crop-stage");
+  var img = document.createElement("img");
+  img.alt = "";
+  img.hidden = true;               /* an <img> with no src showed a broken-image icon */
+  var ph = el("div", "crop-ph", (state.user.username || state.user.email || "?").slice(0, 2).toUpperCase());
+  stage.appendChild(ph);
+  stage.appendChild(img);
+  var dirty = false;
+  var zoom = document.createElement("input");
+  zoom.type = "range"; zoom.min = "1"; zoom.max = "3"; zoom.step = "0.02"; zoom.value = "1"; zoom.className = "crop-zoom";
+  zoom.disabled = true;
+  var crop = { img: null, x: 0, y: 0, scale: 1, min: 1, drag: false, sx: 0, sy: 0, ox: 0, oy: 0 };
+  function layout() {
+    if (!crop.img) return;
+    var boxW = stage.clientWidth, boxH = stage.clientHeight;
+    var w = crop.img.naturalWidth * crop.scale;
+    var h = crop.img.naturalHeight * crop.scale;
+    crop.x = Math.min(0, Math.max(boxW - w, crop.x));
+    crop.y = Math.min(0, Math.max(boxH - h, crop.y));
+    img.style.width = w + "px";
+    img.style.height = h + "px";
+    img.style.left = crop.x + "px";
+    img.style.top = crop.y + "px";
+  }
+  function loadFile(file) {
+    if (!file || !file.type || file.type.indexOf("image/") !== 0) { toast("Choose an image file."); return; }
+    dirty = true;
+    loadSrc(URL.createObjectURL(file));
+  }
+  function loadSrc(url) {
+    img.onload = function () {
+      img.hidden = false; ph.hidden = true;
+      save.disabled = !dirty;
+      var boxW = stage.clientWidth || 280, boxH = stage.clientHeight || 280;
+      crop.min = Math.max(boxW / img.naturalWidth, boxH / img.naturalHeight);
+      crop.scale = crop.min;
+      zoom.min = String(crop.min);
+      zoom.max = String(crop.min * 3);
+      zoom.value = String(crop.min);
+      zoom.disabled = false;
+      crop.x = (boxW - img.naturalWidth * crop.scale) / 2;
+      crop.y = (boxH - img.naturalHeight * crop.scale) / 2;
+      crop.img = img;
+      layout();
+    };
+    img.src = url;
+  }
+  pick.addEventListener("click", function () { fileIn.click(); });
+  fileIn.addEventListener("change", function () {
+    var f = this.files && this.files[0];
+    this.value = "";
+    if (f) loadFile(f);
+  });
+  zoom.addEventListener("input", function () {
+    if (!crop.img) return;
+    var next = Number(zoom.value);
+    var cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+    var px = (cx - crop.x) / crop.scale, py = (cy - crop.y) / crop.scale;
+    crop.scale = next;
+    dirty = true; save.disabled = false;
+    crop.x = cx - px * crop.scale;
+    crop.y = cy - py * crop.scale;
+    layout();
+  });
+  stage.addEventListener("pointerdown", function (e) {
+    if (!crop.img) return;
+    crop.drag = true; dirty = true; save.disabled = false; crop.sx = e.clientX; crop.sy = e.clientY; crop.ox = crop.x; crop.oy = crop.y;
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", function (e) {
+    if (!crop.drag) return;
+    crop.x = crop.ox + (e.clientX - crop.sx);
+    crop.y = crop.oy + (e.clientY - crop.sy);
+    layout();
+  });
+  stage.addEventListener("pointerup", function () { crop.drag = false; });
+  var actions = el("div", "photo-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  var save = el("button", "btn", "Save");
+  cancel.type = "button"; save.type = "button"; save.disabled = true;
+  img.addEventListener("error", function () { img.hidden = true; ph.hidden = false; crop.img = null; });
+  cancel.addEventListener("click", function () { host.innerHTML = ""; });
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) host.innerHTML = ""; });
+  save.addEventListener("click", function () {
+    if (!crop.img) return;
+    var out = 256;
+    var canvas = document.createElement("canvas");
+    canvas.width = out; canvas.height = out;
+    var ctx = canvas.getContext("2d");
+    var factor = out / stage.clientWidth;
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, out, out);
+    ctx.drawImage(crop.img, crop.x * factor, crop.y * factor, crop.img.naturalWidth * crop.scale * factor, crop.img.naturalHeight * crop.scale * factor);
+    var out64;
+    try { out64 = canvas.toDataURL("image/jpeg", 0.84); }
+    catch (err) { toast("That photo can't be reframed here. Choose it again from your computer."); return; }
+    setProfilePhoto(out64);
+    host.innerHTML = "";
+  });
+  actions.appendChild(cancel); actions.appendChild(save);
+  box.appendChild(stage); box.appendChild(zoom);
+  var pickRow = el("div", "crop-pick");
+  pickRow.appendChild(pick);
+  if (currentSrc) {
+    var rm = el("button", "btn quiet sm", "Remove photo");
+    rm.type = "button";
+    rm.style.color = "var(--stop)";
+    rm.addEventListener("click", function () { clearProfilePhoto(); host.innerHTML = ""; });
+    pickRow.appendChild(rm);
+  }
+  box.appendChild(pickRow); box.appendChild(fileIn); box.appendChild(actions);
+  overlay.appendChild(box);
+  host.appendChild(overlay);
+  /* start from the photo already on the account */
+  if (currentSrc) { pick.textContent = "Choose a new photo"; loadSrc(currentSrc); }
+}
+function currentAvatarSrc() {
+  var stored = avatarKey() ? readJson(avatarKey(), null) : null;
+  return (stored && stored.data) || (state.user && state.user.avatar) || "";
+}
+function clearProfilePhoto() {
+  var k = avatarKey();
+  if (!k) return;
+  try { localStorage.removeItem(k); } catch (e) {}
+  state.user.avatar = "";
+  paintAvatar();
+  if (window.CAOTCloud && CAOTCloud.enabled() && CAOTCloud.saveAvatar) {
+    CAOTCloud.saveAvatar("").catch(function () {});
+  }
+  toast("Profile photo removed.");
+}
+function setProfilePhoto(dataUrl) {
+  var k = avatarKey();
+  if (!k) return;
+  writeJson(k, { data: dataUrl, updatedAt: nowIso() });
+  state.user.avatar = dataUrl;
+  paintAvatar();
+  if (window.CAOTCloud && CAOTCloud.enabled() && CAOTCloud.saveAvatar) {
+    CAOTCloud.saveAvatar(dataUrl).catch(function () {});
+  }
+  toast("Profile photo updated.");
+}
+function enterApp(user) {
+  state.user = user;
+  state.query = ""; $("search").value = "";
+  state.filter = "all";
+  state.sortKey = "seq"; state.sortDir = 1;
+  loadOrders();
+  var prefs = readJson(KEY_PREFS, {});
+  applyTheme(prefs.theme || "light");
+  setPanel(!!prefs.panelHidden, false);
+  var dates = state.orders.map(function (o) { return o.date; }).sort();
+  var today = snapToWeekday(todayKey());
+  state.scopeDate = dates.indexOf(today) !== -1 ? today : (dates.length ? dates[dates.length - 1] : today);
+  state.scopeDate = snapToWeekday(state.scopeDate);
+  state.weekStart = mondayOf(state.scopeDate);
+  $("authView").hidden = true;
+  $("appView").hidden = false;
+  paintAvatar();
+  if (window.CAOTCloud && CAOTCloud.enabled() && CAOTCloud.loadAvatar && user.cloud) {
+    CAOTCloud.loadAvatar(user.key).then(function (url) {
+      if (!url) return;
+      writeJson(avatarKey(), { data: url, updatedAt: nowIso() });
+      state.user.avatar = url;
+      paintAvatar();
+    });
+  }
+  formCache = null;
+  state.inlineId = null;
+  state.saveFailed = false;
+  state.lastSaved = null;
+  entrySig = "";
+  buildChrome();
+  clearForm();
+  render();
+  restoreDraft();
+  if (!state.orders.length) {
+    confirmModal("This device has no orders yet",
+      "The login is the same, but each phone and computer keeps its own copy. On the device that already has today's log, tap Copy sync (or Back up). Then come back here and tap Paste sync (or Restore).",
+      "Paste sync", pasteSyncPack,
+      "Restore file", function () { $("fileRestore").click(); });
+  }
+  if (bootstrapReport && bootstrapReport.added && user.key === BOOTSTRAP_USER.key) {
+    toast("Added " + bootstrapReport.added + " new orders from your updated sheet.", null, 6000);
+    bootstrapReport = null;
+  }
+}
+/* Themes. Add one here and give it a CSS block in <style id="themes">.
+   tone:"dark" switches on the dark-mode contrast fixes. */
+var THEMES = [
+  { v: "light",   l: "Light",            sub: "Crown blue",               tone: "light", group: "Classic", note: "Default", sw: ["#0E3A78", "#C99A34", "#EEF0F3"] },
+  { v: "dark",    l: "Dark",             sub: "Night shift",              tone: "dark",  group: "Classic", sw: ["#0A2A5A", "#E5BC68", "#1B212A"] },
+  { v: "rose",    l: "Dark White Rose",  sub: "Falling cherry blossoms",  tone: "dark",  group: "Moods", fx: "petals",
+    font: "Cormorant+Garamond:ital,wght@1,500;1,600", sw: ["#2A1622", "#F2A7C3", "#F6EAF0"] },
+  { v: "arizona", l: "Arizona Cyan Tea", sub: "Vaporwave sunset",         tone: "dark",  group: "Moods",
+    font: "Righteous", sw: ["#5B1A8C", "#3FF3E6", "#FF8AE2"] },
+  { v: "castles", l: "Crystal Castles",  sub: "Witchcore static",         tone: "dark",  group: "Moods",
+    font: "VT323", sw: ["#050409", "#C9B6FF", "#7CE7FF"] },
+  { v: "trophy",  l: "Trophy Room",      sub: "Black lacquer, gold leaf", tone: "dark",  group: "Moods",
+    font: "Cinzel:wght@600;700", sw: ["#0B0A07", "#D4AF37", "#F4EEDC"] },
+  { v: "abyss",   l: "Abyss",            sub: "Deep sea, rising bubbles", tone: "dark",  group: "Moods", fx: "bubbles",
+    sw: ["#06273A", "#2FD4C0", "#6CC6FF"] },
+  { v: "moss",    l: "Moss & Linen",     sub: "Cottage greens on cream",  tone: "light", group: "Moods",
+    font: "Fraunces:opsz,wght@9..144,500;9..144,600", sw: ["#566D42", "#8A5A2B", "#FBF9F1"] },
+  { v: "ink",     l: "Ink & Paper",      sub: "Print-shop proof sheet",   tone: "light", group: "Moods",
+    font: "DM+Serif+Display", sw: ["#151412", "#C8321E", "#FFFDF7"] }
+];
+function themeDef(v) { return THEMES.filter(function (t) { return t.v === v; })[0] || THEMES[0]; }
+function fxEnabled() { var p = readJson(KEY_PREFS, {}); return p.fx !== false; }
+function loadThemeFont(t) {
+  if (!t.font || document.getElementById("font-" + t.v)) return;
+  var l = document.createElement("link");
+  l.id = "font-" + t.v; l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=" + t.font + "&display=swap";
+  document.head.appendChild(l);
+}
+/* Petals / bubbles: a few dozen CSS-animated elements, above the page but
+   never in the way of clicks. Rebuilt on theme change; skipped when the
+   device asks for reduced motion or effects are switched off. */
+function setAmbient(kind) {
+  var old = $("ambient");
+  if (old) old.parentNode.removeChild(old);
+  if (!kind || !fxEnabled()) return;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var box = el("div", kind);
+  box.id = "ambient";
+  box.setAttribute("aria-hidden", "true");
+  var n = kind === "petals" ? (window.innerWidth < 700 ? 14 : 24) : (window.innerWidth < 700 ? 10 : 18);
+  for (var i = 0; i < n; i++) {
+    var it = document.createElement("i");
+    var inner = document.createElement("b");
+    var dur = kind === "petals" ? 10 + Math.random() * 12 : 12 + Math.random() * 14;
+    it.style.left = (Math.random() * 100) + "%";
+    it.style.animationDuration = dur + "s";
+    it.style.animationDelay = (-Math.random() * dur) + "s";
+    it.style.setProperty("--drift", ((Math.random() - 0.3) * 160) + "px");
+    var sc = 0.6 + Math.random() * 0.9;
+    inner.style.animationDuration = (2.5 + Math.random() * 3) + "s";
+    inner.style.transform = "scale(" + sc + ")";
+    it.style.opacity = String(0.45 + Math.random() * 0.5);
+    if (kind === "bubbles") { inner.style.width = inner.style.height = (5 + Math.random() * 12) + "px"; }
+    else { inner.style.width = (12 + Math.random() * 9) + "px"; inner.style.height = (9 + Math.random() * 6) + "px"; }
+    it.appendChild(inner);
+    box.appendChild(it);
+  }
+  document.body.appendChild(box);
+}
+function renderThemeMenu(theme) {
+  var list = $("themeList");
+  if (!list) return;
+  list.textContent = "";
+  var lastGroup = "";
+  THEMES.forEach(function (t) {
+    if (t.group !== lastGroup) { list.appendChild(el("div", "grp", t.group)); lastGroup = t.group; }
+    var b = el("button", t.v === theme ? "on" : "");
+    b.type = "button";
+    b.setAttribute("role", "menuitemradio");
+    b.setAttribute("aria-checked", t.v === theme ? "true" : "false");
+    b.setAttribute("data-theme-pick", t.v);
+    b.appendChild(el("span", "chk", t.v === theme ? "✓" : ""));
+    var nm = el("span", "nm");
+    nm.appendChild(el("span", null, t.l + (t.note ? " (" + t.note + ")" : "")));
+    if (t.sub) nm.appendChild(el("span", "sub", t.sub));
+    b.appendChild(nm);
+    var sw = el("span", "sw");
+    (t.sw || []).forEach(function (c) { var d = document.createElement("i"); d.style.background = c; sw.appendChild(d); });
+    b.appendChild(sw);
+    list.appendChild(b);
+  });
+  var hr = document.createElement("hr");
+  list.appendChild(hr);
+  var fx = el("label", "fxrow");
+  var cb = document.createElement("input");
+  cb.type = "checkbox"; cb.checked = fxEnabled(); cb.id = "fxToggle";
+  cb.addEventListener("change", function () {
+    var pr = readJson(KEY_PREFS, {}); pr.fx = cb.checked; writeJson(KEY_PREFS, pr);
+    applyTheme(document.documentElement.getAttribute("data-theme") || "light");
+  });
+  fx.appendChild(cb);
+  fx.appendChild(document.createTextNode("Animated effects"));
+  list.appendChild(fx);
+  $("themeLabel").textContent = themeDef(theme).l;
+}
+function applyTheme(theme) {
+  var t = themeDef(theme);
+  var root = document.documentElement;
+  root.setAttribute("data-theme", t.v);
+  root.setAttribute("data-tone", t.tone);
+  root.classList.toggle("fx", fxEnabled());
+  loadThemeFont(t);
+  setAmbient(t.fx);
+  renderThemeMenu(t.v);
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.theme = t.v;
+  writeJson(KEY_PREFS, prefs);
+}
+function toggleHold(id) {
+  var o = byId(id);
+  if (!o) return;
+  var wasHeld = isHoldFlag(o);
+  var prevHeld = o.held, prevStarted = o.heldStartedAt || "", prevMinutes = Number(o.heldMinutes) || 0;
+  if (wasHeld) {
+    /* Close the current pause interval before releasing the hold. */
+    if (o.heldStartedAt && isClock(o.startTime) && !isClock(o.completionTime)) {
+      var started = Date.parse(o.heldStartedAt);
+      if (!isNaN(started)) o.heldMinutes = prevMinutes + Math.max(0, (Date.now() - started) / 60000);
+    }
+    o.held = "FALSE";
+    o.heldStartedAt = "";
+  } else {
+    o.held = "TRUE";
+    /* Only a running order has working time to pause. */
+    o.heldStartedAt = isClock(o.startTime) && !isClock(o.completionTime) ? nowIso() : "";
+  }
+  o.updatedAt = nowIso();
+  if (!persistOrders()) {
+    o.held = prevHeld;
+    o.heldStartedAt = prevStarted;
+    o.heldMinutes = prevMinutes;
+    saveFailedModal("hold");
+    return;
+  }
+  toast(o.held === "TRUE" ? "Held #" + o.seq + " — timer paused." : "Released #" + o.seq + ".");
+  scheduleRender();
+}
+function applyEntryHeight(px) {
+  var bar = $("entrybar");
+  if (!bar || bar.classList.contains("collapsed")) return;
+  /* Up to ~65% of the window, so the log always keeps a usable strip. */
+  var min = 120, max = Math.max(160, Math.floor(window.innerHeight * 0.65));
+  var h = Math.max(min, Math.min(max, px));
+  bar.style.height = h + "px";
+  bar.style.maxHeight = h + "px";
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.entryHeight = h;
+  writeJson(KEY_PREFS, prefs);
+}
+function bindSplitter() {
+  var split = $("splitbar");
+  var bar = $("entrybar");
+  if (!split || !bar || split._bound) return;
+  split._bound = true;
+  var startY = 0, startH = 0;
+  var move = function (e) {
+    var y = e.touches ? e.touches[0].clientY : e.clientY;
+    applyEntryHeight(startH + (y - startY));
+  };
+  var up = function () {
+    document.removeEventListener("mousemove", move);
+    document.removeEventListener("mouseup", up);
+    document.removeEventListener("touchmove", move);
+    document.removeEventListener("touchend", up);
+    split.classList.remove("dragging");
+    bar.classList.remove("dragging");
+    document.querySelector(".shell").classList.remove("dragging");
+  };
+  var down = function (e) {
+    if (bar.classList.contains("collapsed")) return;
+    e.preventDefault();
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    startH = bar.getBoundingClientRect().height;
+    split.classList.add("dragging");
+    bar.classList.add("dragging");
+    document.querySelector(".shell").classList.add("dragging");
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+    document.addEventListener("touchmove", move, { passive: false });
+    document.addEventListener("touchend", up);
+  };
+  split.addEventListener("mousedown", down);
+  split.addEventListener("touchstart", down, { passive: false });
+  /* Double-click the bar to go back to the default height. */
+  split.addEventListener("dblclick", function () {
+    var prefs = readJson(KEY_PREFS, {});
+    delete prefs.entryHeight;
+    writeJson(KEY_PREFS, prefs);
+    bar.style.height = "";
+    bar.style.maxHeight = "";
+  });
+  /* A stored height can be taller than a smaller window allows; re-clamp. */
+  var rz = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(rz);
+    rz = setTimeout(function () {
+      var prefs = readJson(KEY_PREFS, {});
+      if (prefs.entryHeight && !bar.classList.contains("collapsed")) applyEntryHeight(prefs.entryHeight);
+    }, 120);
+  });
+}
+function setPanel(collapsed, animate) {
+  var bar = $("entrybar");
+  var btn = $("btnPanel");
+  /* Animate from a real pixel height. max-height:none cannot ease down to 0,
+     which is why Hide entry row used to snap shut. */
+  if (collapsed) bar.style.height = "";
+  if (!animate) {
+    var prev = bar.style.transition;
+    bar.style.transition = "none";
+    bar.classList.toggle("collapsed", collapsed);
+    bar.style.maxHeight = collapsed ? "0px" : "";
+    void bar.offsetWidth;
+    bar.style.transition = prev;
+  } else if (collapsed) {
+    var from = bar.getBoundingClientRect().height;
+    bar.style.maxHeight = from + "px";
+    bar.classList.remove("collapsed");
+    void bar.offsetHeight;
+    bar.classList.add("collapsed");
+    bar.style.maxHeight = "0px";
+  } else {
+    var openPrefs = readJson(KEY_PREFS, {});
+    var capPx = Math.floor(window.innerHeight * (openPrefs.entryHeight ? 0.65 : 0.42));
+    var target = openPrefs.entryHeight ? Math.min(openPrefs.entryHeight, capPx) : null;
+    bar.classList.remove("collapsed");
+    bar.style.maxHeight = "0px";
+    void bar.offsetHeight;
+    bar.style.maxHeight = (target || Math.max(Math.min(bar.scrollHeight, capPx), 120)) + "px";
+    var done = function (e) {
+      if (e && e.propertyName && e.propertyName !== "max-height") return;
+      bar.removeEventListener("transitionend", done);
+      clearTimeout(bar._openFallback);
+      if (bar.classList.contains("collapsed")) return;
+      if (target) applyEntryHeight(target);
+      else bar.style.maxHeight = "";
+    };
+    bar.addEventListener("transitionend", done);
+    /* reduced-motion / hidden tab: transitionend may never fire */
+    clearTimeout(bar._openFallback);
+    bar._openFallback = setTimeout(done, 700);
+  }
+  document.documentElement.classList.toggle("page-flow", !collapsed);
+  document.documentElement.classList.remove("page-scroll");
+  bar.setAttribute("aria-hidden", collapsed ? "true" : "false");
+  btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  $("btnPanelLabel").textContent = collapsed ? "Show entry row" : "Hide entry row";
+  btn.title = collapsed ? "Show the entry row" : "Hide the entry row";
+  var split = $("splitbar");
+  if (split) split.hidden = !!collapsed;
+  if (collapsed) {
+    bar.style.height = "";
+    bar.style.maxHeight = "0px";
+  } else if (!animate) {
+    var prefs = readJson(KEY_PREFS, {});
+    if (prefs.entryHeight) applyEntryHeight(prefs.entryHeight);
+    else bar.style.maxHeight = "";
+  }
+}
+function panelCollapsed() { return $("entrybar").classList.contains("collapsed"); }
+function togglePanel() {
+  var collapsed = !panelCollapsed();
+  setPanel(collapsed, true);
+  var prefs = readJson(KEY_PREFS, {});
+  prefs.panelHidden = collapsed;
+  writeJson(KEY_PREFS, prefs);
+}
+function swipe(direction) {
+  var wrap = $("tablewrap");
+  if (!wrap || !direction) return;
+  wrap.classList.remove("in-left", "in-right");
+  void wrap.offsetWidth;                       /* restart the animation */
+  wrap.classList.add(direction > 0 ? "in-right" : "in-left");
+}
+function selectDay(key) {
+  var next = snapToWeekday(key);
+  var direction = next === state.scopeDate ? 0 : (next > state.scopeDate ? 1 : -1);
+  state.scopeDate = next;
+  state.weekStart = mondayOf(state.scopeDate);
+  state.inlineId = null;
+  render();
+  swipe(direction);
+}
+function stepWeekday(delta) {
+  var keys = weekdayKeys(state.weekStart);
+  var i = keys.indexOf(state.scopeDate);
+  if (i === -1) { selectDay(state.scopeDate); return; }
+  var next = i + delta;
+  if (next < 0) { shiftWeek(-1); selectDay(weekdayKeys(state.weekStart)[4]); return; }
+  if (next > 4) { shiftWeek(1); selectDay(weekdayKeys(state.weekStart)[0]); return; }
+  selectDay(keys[next]);
+}
+function shiftWeek(delta) {
+  state.inlineId = null;
+  var d = dateFromKey(state.weekStart);
+  d.setDate(d.getDate() + delta * 7);
+  state.weekStart = todayKey(d);
+  var keys = weekdayKeys(state.weekStart);
+  var idx = weekdayKeys(mondayOf(state.scopeDate)).indexOf(state.scopeDate);
+  state.scopeDate = keys[idx === -1 ? 0 : idx];
+  render();
+  swipe(delta);
+}
+
+/* ------------------------------------------------------------ listeners */
+function wire() {
+  /* Two tabs open on the same ledger used to overwrite each other silently.
+     This one notices the other's write and folds it in. */
+  window.addEventListener("storage", function (e) {
+    if (!state.user || !e.key || e.key !== ordersKey(state.user.key)) return;
+    var stored = readOrdersRaw(state.user.key);
+    if (stored.rev === state.rev) return;
+    var before = state.orders.length;
+    var merged = mergeForeign(stored.orders);
+    state.rev = Math.max(state.rev, stored.rev);
+    if (merged || state.orders.length !== before) {
+      scheduleRender();
+      toast("This ledger changed in another tab — the new rows are here too.", null, 6000);
+    }
+  });
+  /* Last chance to flush a half-typed order before the tab goes away. */
+  window.addEventListener("beforeunload", function () {
+    if (draftTimer) clearTimeout(draftTimer);
+    saveDraft();
+  });
+  document.addEventListener("click", function (e) {
+    var go = e.target.closest("[data-go]");
+    if (go) { showPane(go.getAttribute("data-go")); return; }
+    var peek = e.target.closest("[data-peek]");
+    if (peek) {
+      var input = $(peek.getAttribute("data-peek"));
+      var showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      peek.textContent = showing ? "Show" : "Hide";
+    }
+  });
+  $("formSignin").addEventListener("submit", doSignin);
+  $("formRegister").addEventListener("submit", doRegister);
+  $("formForgot1").addEventListener("submit", doForgot1);
+  $("formForgot2").addEventListener("submit", doForgot2);
+  $("formForgot3").addEventListener("submit", doForgot3);
+  wirePasswordMeter("rgPass", "rgMeter", "rgRules");
+  wirePasswordMeter("fgNew", "fgMeter", "fgRules");
+
+  $("days").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-day]");
+    if (b) selectDay(b.getAttribute("data-day"));
+  });
+  $("weekPrev").addEventListener("click", function () { shiftWeek(-1); });
+  $("weekNext").addEventListener("click", function () { shiftWeek(1); });
+  $("btnThisWeek").addEventListener("click", function () { selectDay(todayKey()); render(); });
+  $("scopeSel").addEventListener("change", function () {
+    state.scope = this.value;
+    state.inlineId = null;
+    cacheFormValues();
+    render();
+  });
+
+  var searchTimer = null;
+  $("search").addEventListener("input", function () {
+    var v = this.value;
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () { state.query = v; scheduleTable(); }, 90);
+  });
+  var thm = $("themeMenu");
+  /* close with a short fade instead of vanishing */
+  var closeTheme = function () {
+    if (!thm.open || thm.classList.contains("closing")) return;
+    var instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (instant) { thm.open = false; return; }
+    thm.classList.add("closing");
+    setTimeout(function () { thm.open = false; thm.classList.remove("closing"); }, 140);
+  };
+  /* keep the panel inside the screen on narrow windows */
+  thm.addEventListener("toggle", function () {
+    var pnl = $("themeList");
+    pnl.style.left = ""; pnl.style.right = ""; pnl.style.marginLeft = "";
+    if (!thm.open) return;
+    var sr = thm.getBoundingClientRect(), w = pnl.offsetWidth, vw = window.innerWidth;
+    var left = Math.min(Math.max(8, sr.right - w), vw - w - 8);
+    pnl.style.left = (left - sr.left) + "px";
+    pnl.style.right = "auto";
+    pnl.style.marginLeft = "0";
+  });
+  thm.querySelector("summary").addEventListener("click", function (e) {
+    if (thm.open) { e.preventDefault(); closeTheme(); }
+  });
+  thm.addEventListener("click", function (e) {
+    var pickT = e.target.closest("[data-theme-pick]");
+    if (!pickT) return;
+    applyTheme(pickT.getAttribute("data-theme-pick"));
+    closeTheme();
+  });
+  document.addEventListener("click", function (e) { if (thm.open && !thm.contains(e.target)) closeTheme(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && thm.open) closeTheme(); });
+  applyTheme(document.documentElement.getAttribute("data-theme") || "light");
+  $("btnPanel").addEventListener("click", togglePanel);
+  bindSplitter();
+  $("btnSummary").addEventListener("click", openSummary);
+  $("btnEmailProof").addEventListener("click", function () { openEmailProof(null); });
+  $("btnMenu").addEventListener("click", function (e) { e.stopPropagation(); openMenu(); });
+  $("avatar").addEventListener("click", openPhotoModal);
+  $("btnEntryPdf").addEventListener("click", function () {
+    if (state.inlineId) { $("proofFile").setAttribute("data-order", state.inlineId); $("proofFile").click(); return; }
+    toast("Add the order first, then attach the PDF from the row’s PDF button.");
+  });
+  $("proofFile").addEventListener("change", function () {
+    var files = this.files ? Array.prototype.slice.call(this.files) : [];
+    var id = this.getAttribute("data-order");
+    this.value = "";
+    this.removeAttribute("data-order");
+    if (id) files.forEach(function (file) { attachProofPdf(id, file); });
+  });
+  $("formOrder").addEventListener("submit", submitOrder);
+
+  $("chips").addEventListener("click", function (e) {
+    var c = e.target.closest("[data-filter]");
+    if (!c) return;
+    state.filter = c.getAttribute("data-filter");
+    scheduleRender();
+  });
+  $("headRow").addEventListener("click", function (e) {
+    var th = e.target.closest("th[data-sort]");
+    if (!th) return;
+    var key = th.getAttribute("data-sort");
+    if (state.sortKey === key) state.sortDir *= -1;
+    else { state.sortKey = key; state.sortDir = 1; }
+    scheduleTable();
+  });
+  $("tbody").addEventListener("click", function (e) {
+    var save = e.target.closest("[data-inline-save]");
+    if (save) { saveInline(save.getAttribute("data-inline-save")); return; }
+    if (e.target.closest("[data-inline-cancel]")) { cancelInline(); return; }
+    var stamp = e.target.closest("[data-stamp]");
+    if (stamp) { stampNow(stamp.getAttribute("data-id"), stamp.getAttribute("data-stamp")); return; }
+    var cyc = e.target.closest("[data-cycle]");
+    if (cyc) { cyclePill(cyc.getAttribute("data-id"), cyc.getAttribute("data-cycle")); return; }
+    var mk = e.target.closest("[data-cycle-mark]");
+    if (mk) { cycleMarking(mk.getAttribute("data-cycle-mark")); return; }
+    var note = e.target.closest("[data-note]");
+    if (note) { openNotePop(note.getAttribute("data-note"), note); return; }
+    var pdfs = e.target.closest("[data-pdfs]");
+    if (pdfs) { openProofPop(pdfs.getAttribute("data-pdfs"), pdfs); return; }
+    var slogAdd = e.target.closest("[data-slog-add]");
+    if (slogAdd) {
+      var sid = slogAdd.getAttribute("data-slog-add");
+      var box = slogAdd.parentNode && slogAdd.parentNode.querySelector("[data-slog-in]");
+      addLogStamp(sid, box ? box.value : "");
+      return;
+    }
+    var inl = e.target.closest("[data-inline]");
+    if (inl) { startInline(inl.getAttribute("data-inline")); return; }
+    var amtCell = e.target.closest("[data-edit-amount]");
+    if (amtCell) { editAmountInPlace(amtCell.getAttribute("data-edit-amount"), amtCell); return; }
+
+    var em = e.target.closest("[data-email]");
+    if (em) { openEmailProof(em.getAttribute("data-email")); return; }
+    var hd = e.target.closest("[data-hold]");
+    if (hd) { toggleHold(hd.getAttribute("data-hold")); return; }
+    var dl = e.target.closest("[data-del]");
+    if (dl) {
+      var id = dl.getAttribute("data-del");
+      var o = byId(id);
+      if (!o) return;
+      confirmModal("Delete #" + o.seq + (o.orderId ? " · " + o.orderId : "") + "?",
+        "You can undo this from the toast for a few seconds.", "Delete",
+        function () { deleteOrder(id); });
+    }
+  });
+  $("tbody").addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var box = e.target.closest("[data-slog-in]");
+    if (!box) return;
+    e.preventDefault();
+    addLogStamp(box.getAttribute("data-slog-in"), box.value);
+  });
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".note-pop") && !e.target.closest("[data-note]")) closeNotePop();
+  });
+  $("tbody").addEventListener("dblclick", function (e) {
+    if (state.inlineId) return;
+    if (e.target.closest("[data-edit-amount], .amt-edit-input")) return;
+    var tr = e.target.closest("tr");
+    if (!tr) return;
+    var btn = tr.querySelector("[data-inline]");
+    if (btn) startInline(btn.getAttribute("data-inline"));
+  });
+  /* Tools menu: close after picking something, or on a click elsewhere. */
+  var tm = $("toolMenu");
+  tm.addEventListener("click", function (e) { if (e.target.closest(".toolmenu-panel button")) tm.open = false; });
+  document.addEventListener("click", function (e) { if (tm.open && !tm.contains(e.target)) tm.open = false; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && tm.open) tm.open = false; });
+  $("btnExportCsv").addEventListener("click", exportCsv);
+  $("btnBackup").addEventListener("click", backupJson);
+  $("btnRecoverLocal").addEventListener("click", function () { recoverLocalLedgers(false); });
+  $("btnCopySync").addEventListener("click", copySyncPack);
+  $("btnPasteSync").addEventListener("click", pasteSyncPack);
+  $("btnRestore").addEventListener("click", function () { $("fileRestore").click(); });
+  $("fileRestore").addEventListener("change", function () {
+    if (this.files && this.files[0]) restoreJson(this.files[0]);
+    this.value = "";
+  });
+  $("btnPrint").addEventListener("click", function () { window.print(); });
+
+  document.addEventListener("keydown", function (e) {
+    var meta = e.ctrlKey || e.metaKey;
+    var inApp = !$("appView").hidden;
+    if (!inApp) return;
+    if (meta && e.key.toLowerCase() === "k") {
+      e.preventDefault(); $("search").focus(); $("search").select();
+    } else if (meta && e.key === "Enter") {
+      e.preventDefault();
+      $("formOrder").dispatchEvent(new Event("submit", { cancelable: true }));
+    } else if (meta && e.key.toLowerCase() === "d") {
+      e.preventDefault(); openSummary();
+    } else if (e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      e.preventDefault(); stepWeekday(e.key === "ArrowRight" ? 1 : -1);
+    } else if (e.key === "Escape") {
+      if ($("modalHost").children.length) { closeModal(); return; }
+      if ($("menuHost").children.length) { closeMenu(); return; }
+      if (state.inlineId) { cancelInline(); return; }
+      clearForm();
+    }
+  });
+}
+
+/* ---------------------------------------------------------------- start */
+function boot() {
+  try { localStorage.setItem("caot_probe", "1"); localStorage.removeItem("caot_probe"); }
+  catch (e) {
+    alert("This browser is blocking local storage, so accounts and orders cannot be saved. Turn off private browsing or allow site data, then reload.");
+  }
+  bootstrapReport = installBootstrap();
+  if (window.CAOTCloud && CAOTCloud.enabled() && $("siUserLabel")) {
+    $("siUserLabel").textContent = "Email";
+    $("siUser").setAttribute("autocomplete", "email");
+    $("siUser").type = "email";
+  }
+  wire();
+  if (window.CAOTCloud && CAOTCloud.enabled()) {
+    CAOTCloud.sessionUser().then(function (user) {
+      if (user) enterApp(user);
+      else { $("authView").hidden = false; $("appView").hidden = true; showPane("signin"); }
+    });
+    return;
+  }
+  var user = restoreSession();
+  if (user) enterApp(user);
+  else { $("authView").hidden = false; $("appView").hidden = true; showPane("signin"); }
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();
+
+/* test hook — harmless in the browser, used by the headless debug pass */
+window.__CAOT__ = {
+  state: state, parseTime: parseTime, passwordOk: passwordOk, sha256: sha256,
+  pbkdf2Js: pbkdf2Js, hashSecret: hashSecret, turnaround: turnaround, timeTaken: timeTaken,
+  normalizeOrder: normalizeOrder, visibleOrders: visibleOrders, getUsers: getUsers,
+  toB64: toB64, fromB64: fromB64, maskEmail: maskEmail, csvCell: csvCell,
+  nextSeq: nextSeq, prettyTime: prettyTime, classifyStatus: classifyStatus,
+  statusParts: statusParts, rowAccent: rowAccent, mondayOf: mondayOf,
+  weekdayKeys: weekdayKeys, snapToWeekday: snapToWeekday, durationText: durationText,
+  summarize: summarize, summaryText: summaryText, installBootstrap: installBootstrap,
+  holdMinutes: holdMinutes, renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
+  setPanel: setPanel, panelCollapsed: panelCollapsed,
+  isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
+  startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
+  BOOTSTRAP_ORDERS: BOOTSTRAP_ORDERS,
+  persistOrders: persistOrders, loadOrders: loadOrders, mergeForeign: mergeForeign,
+  parseQty: parseQty, parseMoney: parseMoney, money: money, normType: normType,
+  sumQty: sumQty, sumAmount: sumAmount, readOrdersRaw: readOrdersRaw,
+  writeOrdersRaw: writeOrdersRaw, stripInternal: stripInternal,
+  collectForm: collectForm, clearForm: clearForm, submitOrderForm: function () {
+    $("formOrder").dispatchEvent(new Event("submit", { cancelable: true }));
+  },
+  deleteOrder: deleteOrder, cyclePill: cyclePill, exportCsv: exportCsv,
+  enterApp: enterApp, buildChrome: buildChrome, render: render
+};
+})();
+
+</script>
+
+<a class="cm-hub-btn" href="https://consistency.ink/" title="Back to landing page">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M4 11.5L12 4l8 7.5"/>
+    <path d="M7 10.5V20h10v-9.5"/>
+  </svg>
+  Hub
+</a>
+
+</body>
+</html>
