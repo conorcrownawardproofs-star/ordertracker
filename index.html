@@ -11,7 +11,7 @@ if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fon
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Crown Awards Order Tracker</title>
+<title>Award Order Tracker — Crown Awards International HQ</title>
 <!-- App/tab identity: the same crown mark is used for browser tabs and iPhone home-screen installs. -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230E3A78'/%3E%3Cpath d='M4 22V12l6 5 6-9 6 9 6-5v10H4Z' fill='%23D9B45F'/%3E%3Crect x='4' y='24' width='24' height='4' rx='1' fill='%23D9B45F'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='32' fill='%230E3A78'/%3E%3Cpath d='M22 124V68l34 28 34-52 34 52 34-28v56H22Z' fill='%23D9B45F'/%3E%3Crect x='22' y='136' width='136' height='22' rx='5' fill='%23D9B45F'/%3E%3C/svg%3E">
@@ -479,6 +479,7 @@ td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 td.dur{font-family:var(--mono);font-size:12px}
 td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
 td.num.zero{color:var(--muted)}
+td.oid{user-select:text;-webkit-user-select:text;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 td.amt-editable{cursor:pointer;transition:none}
 /* No second hover layer: the normal row hover above supplies the same tint as
    every other cell, so Amount cannot appear darker than the rest of the row. */
@@ -1571,8 +1572,8 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
         <rect x="4" y="24" width="24" height="4" rx="1" style="fill:var(--crest)"/>
       </svg>
       <div class="marktext">
-        <b>Crown Awards Order Tracker</b>
-        <span>International HQ</span>
+        <b>Award Order Tracker</b>
+        <span>Crown Awards, International HQ</span>
       </div>
     </div>
     <div class="spacer"></div>
@@ -2993,8 +2994,8 @@ function activeColumns() {
 var COL_WEIGHT = {
   /* Rebalanced to match the entry form: # is readable, Placed / Req. Ship /
      Event are tighter, and Type through Turn get enough room for their values. */
-  seq: 40, date: 68, placedDate: 90, orderId: 92, customer: 140, reqShipDate: 92, eventDate: 92,
-  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 120,
+  seq: 40, date: 68, placedDate: 82, orderId: 62, customer: 175, reqShipDate: 68, eventDate: 68,
+  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 145,
   startTime: 64, completionTime: 64, taken: 68, proofRcvdTime: 64, turn: 52,
   fin: 52, notes: 68, acts: 80
 };
@@ -3571,7 +3572,7 @@ function readRow(o, cols) {
         td = el("td", "seq " + rowAccent(o), o.seq || "");
         break;
       case "date": td = el("td", "tm", shortDate(o.date)); break;
-      case "orderId": td = el("td", "oid", o.orderId); break;
+      case "orderId": td = el("td", "oid", o.orderId); td.title = "Double-click to select · Ctrl/Cmd+C to copy"; break;
       case "customer": td = el("td", "cust", displayCustomer(o.customer)); td.title = o.customer || ""; break;
       case "placedDate": td = el("td", "tm", o.placedDate ? shortDate(o.placedDate) : "—"); break;
       case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
@@ -3864,6 +3865,8 @@ function saveInline(id) {
   if (f.amount) o.amount = parseMoney(f.amount.value);
   o.status = f.status.value.trim();
   o.statusLog = parseStatusLog(null, o.status);
+  if (isCode(o, "CLC")) completeFromCode(o, "CLC");
+  else if (isCode(o, "LEC")) completeFromCode(o, "LEC");
   if (f.marking) o.marking = normMarking(f.marking.value);
   o.notes = f.notes.value.trim();
   o.startTime = start.value;
@@ -3918,6 +3921,16 @@ function stampNow(id, field) {
     run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
   }, 5000);
 }
+function completeFromCode(o, code) {
+  if (!o || !/^(CLC|LEC)$/i.test(String(code || '').trim())) return false;
+  var changed = false;
+  if (o.fin !== "TRUE") { o.fin = "TRUE"; changed = true; }
+  if (!isClock(o.completionTime)) {
+    o.completionTime = nowClock();
+    changed = true;
+  }
+  return changed;
+}
 function addLogStamp(id, code) {
   var o = byId(id);
   if (!o) return;
@@ -3931,6 +3944,7 @@ function addLogStamp(id, code) {
   if (noProofNeeded(o)) {
     o.proofRcvdTime = o.proofRcvdTime && o.proofRcvdTime !== "N/A" ? o.proofRcvdTime : "";
   }
+  completeFromCode(o, code);
   if (!persistOrders()) { saveFailedModal("status log"); return; }
   scheduleRender();
 }
@@ -6208,6 +6222,9 @@ function wire() {
   });
   $("tbody").addEventListener("dblclick", function (e) {
     if (state.inlineId) return;
+    /* Order # is intentionally text-selectable for fast copy/paste; a
+       double-click on it must never trigger whole-row editing. */
+    if (e.target.closest("td.oid")) return;
     if (e.target.closest("[data-edit-amount], .amt-edit-input")) return;
     var tr = e.target.closest("tr");
     if (!tr) return;
