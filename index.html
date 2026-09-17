@@ -359,11 +359,12 @@ html[data-tone="dark"] .quad button[aria-pressed="true"]{background:var(--code);
 
 /* ---------------- ribbon + toolbar ---------------- */
 .ribbon{display:flex;background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;overflow:hidden}
-/* Keep the KPI ribbon visible while the document scrolls, then let the
-   column header sit directly beneath it. */
+/* The shell already keeps the KPI ribbon in view while the ledger's own
+   scroll area moves. Keep the ribbon in normal flow so it cannot cover the
+   column header; the table header is sticky inside #tablewrap. */
 @media (min-width:761px){
-  .ribbon{position:sticky;top:0;z-index:30;box-shadow:0 2px 8px -7px rgba(18,22,28,.45)}
-  html.page-scroll thead,html.page-scroll thead th{top:62px;z-index:25}
+  .ribbon{position:relative;z-index:20;box-shadow:0 2px 8px -7px rgba(18,22,28,.45)}
+  #tablewrap thead, #tablewrap thead th{top:0;z-index:30}
 }
 .stat{padding:12px 20px;border-right:1px solid var(--line);flex:1;min-width:0}
 .stat b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.25}
