@@ -3674,6 +3674,7 @@ function readRow(o, cols) {
     /* Feeds the mobile card layout's ::before label — unused, and harmless,
        on the desktop table where the header row already labels the column. */
     td.setAttribute("data-label", c.label || "");
+    td.setAttribute("data-edit-key", c.key);
     tr.appendChild(td);
   });
   return tr;
@@ -3825,10 +3826,15 @@ function inlineRow(o, cols) {
       e.preventDefault(); saveInline(o.id);
     } else if (e.key === "Escape") { e.preventDefault(); cancelInline(); }
   });
-  setTimeout(function () { if (fields.orderId) fields.orderId.focus(); }, 0);
+  setTimeout(function () {
+    var target = focusKey && fields[focusKey] ? fields[focusKey] : null;
+    /* Never force focus back to Order #. When editing is opened from a
+       particular cell, keep the keyboard exactly where the user started. */
+    if (target) { target.focus(); if (target.select) target.select(); }
+  }, 0);
   return tr;
 }
-function startInline(id) {
+function startInline(id, focusKey) {
   var o = byId(id);
   if (!o) { toast("That order is no longer in the list."); return; }
   state.inlineId = id;
@@ -3836,6 +3842,10 @@ function startInline(id) {
   banner.textContent = "Editing #" + o.seq + (o.orderId ? " · " + o.orderId : "") + " in the table below";
   banner.hidden = false;
   renderTable();
+}
+function switchInline(id, focusKey) {
+  if (state.inlineId && state.inlineId !== id) cancelInline();
+  startInline(id, focusKey);
 }
 function cancelInline() {
   state.inlineId = null;
@@ -6192,7 +6202,7 @@ function wire() {
       return;
     }
     var inl = e.target.closest("[data-inline]");
-    if (inl) { startInline(inl.getAttribute("data-inline")); return; }
+    if (inl) { switchInline(inl.getAttribute("data-inline"), null); return; }
     var amtCell = e.target.closest("[data-edit-amount]");
     if (amtCell) { editAmountInPlace(amtCell.getAttribute("data-edit-amount"), amtCell); return; }
 
@@ -6217,6 +6227,15 @@ function wire() {
     e.preventDefault();
     addLogStamp(box.getAttribute("data-slog-in"), box.value);
   });
+  document.addEventListener("pointerdown", function (e) {
+    if (!state.inlineId) return;
+    var editingRow = $("tbody").querySelector("tr.editing");
+    if (editingRow && editingRow.contains(e.target)) return;
+    /* Tapping/clicking anywhere outside the active edit row closes it.
+       A different order can then be opened normally. */
+    if (e.target.closest(".modal") || e.target.closest("[role=dialog]") || e.target.closest(".note-pop")) return;
+    cancelInline();
+  });
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".note-pop") && !e.target.closest("[data-note]")) closeNotePop();
   });
@@ -6236,12 +6255,14 @@ function wire() {
       }
       return;
     }
-    if (state.inlineId) return;
     if (e.target.closest("[data-edit-amount], .amt-edit-input")) return;
     var tr = e.target.closest("tr");
     if (!tr) return;
-    var btn = tr.querySelector("[data-inline]");
-    if (btn) startInline(btn.getAttribute("data-inline"));
+    var id = tr.querySelector("[data-inline]") && tr.querySelector("[data-inline]").getAttribute("data-inline");
+    if (!id) return;
+    var cell = e.target.closest("td[data-edit-key]");
+    var focusKey = cell ? cell.getAttribute("data-edit-key") : null;
+    switchInline(id, focusKey);
   });
   /* Tools menu: close after picking something, or on a click elsewhere. */
   var tm = $("toolMenu");
