@@ -1430,6 +1430,16 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
 .theme-panel .nm{display:flex;flex-direction:column}
 .theme-panel .fxrow{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;font-size:12.5px;color:var(--text-2);cursor:pointer}
 .theme-panel .fxrow input{width:auto;margin:0}
+
+/* Desktop sticky log chrome: the KPI stats and column titles form one
+   continuous pinned unit while the expanded order log scrolls. */
+@media (min-width:761px){
+  html{--kpi-ribbon-height:0px}
+  html.page-flow .ribbon{position:sticky;top:0;z-index:40;box-shadow:none}
+  html.page-flow #tablewrap thead,
+  html.page-flow #tablewrap thead th{top:var(--kpi-ribbon-height);z-index:39}
+  html.page-flow #tablewrap thead th{box-shadow:0 3px 8px -7px rgba(18,22,28,.5)}
+}
 </style>
 </head>
 <body>
@@ -3431,6 +3441,18 @@ function renderWeek() {
   var last = keys[4];
   $("weekLabel").textContent = shortDate(state.weekStart) + " – " + shortDate(last) + ", " + dateFromKey(last).getFullYear();
 }
+function syncKpiRibbonHeight() {
+  var root = document.documentElement;
+  var ribbon = $("ribbon");
+  if (!ribbon) return;
+  if (window.matchMedia && !window.matchMedia("(min-width:761px)").matches) {
+    root.style.removeProperty("--kpi-ribbon-height");
+    return;
+  }
+  var h = Math.ceil(ribbon.getBoundingClientRect().height);
+  root.style.setProperty("--kpi-ribbon-height", h + "px");
+}
+
 function renderRibbon() {
   var scoped = state.orders.filter(inScope);
   var med = function (list) {
@@ -3459,6 +3481,9 @@ function renderRibbon() {
   var host = $("ribbon");
   host.textContent = "";
   host.appendChild(frag);
+  /* Measure after the stats have been rendered so the sticky table header
+     always starts immediately below the actual ribbon height. */
+  syncKpiRibbonHeight();
 }
 function renderChips() {
   var scoped = state.orders.filter(inScope);
@@ -6337,6 +6362,24 @@ function wire() {
 }
 
 /* ---------------------------------------------------------------- start */
+function wireKpiRibbonResize() {
+  var ribbon = $("ribbon");
+  if (!ribbon) return;
+  syncKpiRibbonHeight();
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function () { syncKpiRibbonHeight(); });
+    ro.observe(ribbon);
+  } else {
+    var lastW = window.innerWidth;
+    window.addEventListener("resize", function () {
+      if (window.innerWidth !== lastW) {
+        lastW = window.innerWidth;
+        syncKpiRibbonHeight();
+      }
+    });
+  }
+}
+
 function boot() {
   try { localStorage.setItem("caot_probe", "1"); localStorage.removeItem("caot_probe"); }
   catch (e) {
@@ -6349,6 +6392,7 @@ function boot() {
     $("siUser").type = "email";
   }
   wire();
+  wireKpiRibbonResize();
   if (window.CAOTCloud && CAOTCloud.enabled()) {
     CAOTCloud.sessionUser().then(function (user) {
       if (user) enterApp(user);
