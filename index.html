@@ -277,7 +277,7 @@ html[data-tone="dark"] .day[aria-current="true"]{color:var(--code);border-bottom
 .ecell input::placeholder,.ecell textarea::placeholder{opacity:.9}
 /* Time field: the "now" stamp sits beside its input instead of under it,
    so the row keeps one consistent baseline. */
-.timefield{display:flex;gap:6px;align-items:stretch}
+.timefield{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}
 .timefield input{flex:1;min-width:0}
 .stamp{background:var(--surface-2);border:1px solid var(--line);color:var(--text-2);border-radius:8px;
   font:700 11px var(--sans);cursor:pointer;padding:0 12px;flex:0 0 auto;letter-spacing:.04em;
@@ -482,6 +482,10 @@ td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 .tm-date{display:block;font-family:var(--sans);font-size:9.5px;line-height:12px;
   letter-spacing:.2px;color:var(--text-2);opacity:.62;white-space:nowrap}
 .tm-date.rolled{opacity:1;color:var(--hold)}
+.stampdate{font-size:10.5px;padding:2px 4px;width:100%;box-sizing:border-box;margin-top:3px;
+  color:var(--text-2);background:transparent;border:1px solid var(--line);border-radius:4px}
+.stampdate:focus{color:var(--text);border-color:var(--crown-dim);outline:none}
+.timefield .stampdate{flex:0 0 100%;order:3;margin-top:4px}
 .nextday{display:inline-block;margin-left:4px;padding:0 3px;border-radius:3px;font-size:9px;
   line-height:13px;vertical-align:top;background:var(--hold-bg);color:var(--hold);
   border:1px solid var(--hold);font-family:var(--sans)}
@@ -2619,15 +2623,40 @@ function spanMinutes(a, b, limit) {
 }
 /* Which calendar day a given stamp belongs to. Start is always the order's own
    day; a finish or proof return that crossed midnight belongs to the next one. */
+/* Each stamp may carry its own date. Empty means "same day as the row", with a
+   midnight crossing inferred from the clocks as a fallback. */
+var STAMP_DATE_KEY = {
+  startTime: "startDate", completionTime: "completionDate", proofRcvdTime: "proofRcvdDate"
+};
+function isDayKey(v) { return /^\d{4}-\d{2}-\d{2}$/.test(v || ""); }
+function explicitStampDay(o, field) {
+  var k = STAMP_DATE_KEY[field];
+  return (k && isDayKey(o[k])) ? o[k] : "";
+}
 function stampDayKey(o, field) {
   if (!o || !o.date) return "";
+  var set = explicitStampDay(o, field);
+  if (set) return set;
   var day = o.date;
   if (field === "startTime") return day;
-  if (crossesMidnight(o.startTime, o.completionTime)) day = nextDayKey(day);
+  if (!explicitStampDay(o, "completionTime") && crossesMidnight(o.startTime, o.completionTime)) day = nextDayKey(day);
   if (field === "completionTime") return day;
   var base = isClock(o.completionTime) ? o.completionTime : o.startTime;
   if (crossesMidnight(base, o.proofRcvdTime, ROLL_PROOF)) day = nextDayKey(day);
   return day;
+}
+/* Minutes since the epoch for a stamp, so a span can cross any number of days. */
+function absMinutes(o, field) {
+  var v = o ? o[field] : "";
+  if (!isClock(v)) return null;
+  var d = dateFromKey(stampDayKey(o, field));
+  if (isNaN(d.getTime())) return minutesOf(v);
+  return Math.round(d.getTime() / 60000) + minutesOf(v);
+}
+function stampSpan(o, a, b) {
+  var x = absMinutes(o, a), y = absMinutes(o, b);
+  if (x === null || y === null) return null;
+  return Math.round(y - x);
 }
 function nextDayKey(key) {
   var d = dateFromKey(key);
@@ -2654,11 +2683,11 @@ function holdMinutes(o) {
   return Math.max(0, total);
 }
 function timeTaken(o) {
-  var span = spanMinutes(o.startTime, o.completionTime);
+  var span = stampSpan(o, "startTime", "completionTime");
   if (span === null) return null;
   return Math.max(0, Math.round(span - holdMinutes(o)));
 }
-function turnaround(o) { return spanMinutes(o.completionTime, o.proofRcvdTime, ROLL_PROOF); }
+function turnaround(o) { return stampSpan(o, "completionTime", "proofRcvdTime"); }
 function durationText(min) {
   if (min === null || min === undefined) return "";
   if (min < 0) return "—";
@@ -3103,6 +3132,9 @@ function normalizeOrder(o) {
     startTime: txt(o.startTime),
     completionTime: txt(o.completionTime),
     proofRcvdTime: txt(o.proofRcvdTime),
+    startDate: parseDay(o.startDate),
+    completionDate: parseDay(o.completionDate),
+    proofRcvdDate: parseDay(o.proofRcvdDate),
     fin: tri(o.fin),
     savedToDrive: tri(o.savedToDrive),
     held: o.held === "TRUE" || o.held === true ? "TRUE" : "FALSE",
@@ -3356,7 +3388,8 @@ var ENTRY_SPAN_NODATE = { seq: [3, 2, 2, 2], orderId: [9, 4, 4, 4], customer: [1
 /* Every text-ish field in the entry row, in one place, so caching, clearing
    and draft-saving can never drift out of sync with the fields on screen. */
 var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fPlacedDate", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
-                      "fStatus", "fStart", "fDone", "fBack", "fNotes", "fPGroupOther"];
+                      "fStatus", "fStart", "fDone", "fBack", "fNotes", "fPGroupOther",
+                      "fStartDate", "fDoneDate", "fBackDate"];
 var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive", "segMark", "segPGroup"];
 function buildEntryRow(cols) {
   var grid = $("entrygrid");
@@ -3477,6 +3510,14 @@ function buildEntryRow(cols) {
         stamp.title = "Stamp the current time";
         stamp.setAttribute("data-now", c.field);
         wrap.appendChild(input); wrap.appendChild(stamp);
+        /* The day this stamp belongs to. Left blank it follows the row's own
+           date, so nothing changes for the ordinary same-day case. */
+        var sd = document.createElement("input");
+        sd.type = "date";
+        sd.id = c.field + "Date";
+        sd.className = "mono stampdate";
+        sd.title = (c.entryLabel || c.label) + " date — leave blank for " + prettyDate(state.scopeDate);
+        wrap.appendChild(sd);
         cell.appendChild(wrap);
       } else {
         cell.appendChild(input);
@@ -3560,6 +3601,9 @@ function wireEntryRow() {
     $("fOrderId").addEventListener("blur", function () { checkPriorOrderId($("fOrderId").value, false); });
   }
   $("fStart").addEventListener("input", updateCalcs);
+  ["fStartDate", "fDoneDate", "fBackDate"].forEach(function (id) {
+    if ($(id)) $(id).addEventListener("change", updateCalcs);
+  });
   $("fDone").addEventListener("input", updateCalcs);
   $("fBack").addEventListener("input", updateCalcs);
   if ($("btnLogStatus")) {
@@ -3867,8 +3911,15 @@ function renderTable() {
 /* The date is shown on the face of the cell whenever it tells you something the
    column header does not: in week/everything views rows come from several days,
    and a stamp that rolled past midnight belongs to a different day than its row. */
+/* How many calendar days past the row's own date a stamp sits. */
+function stampDayOffset(o, field) {
+  var a = dateFromKey(o.date), b = dateFromKey(stampDayKey(o, field));
+  if (isNaN(a.getTime()) || isNaN(b.getTime())) return 0;
+  return Math.round((b - a) / 86400000);
+}
 function stampDateNeeded(o, field) {
   if (!isClock(o[field]) || !o.date) return false;
+  if (explicitStampDay(o, field)) return true;
   if (stampDayKey(o, field) !== o.date) return true;
   return state.scope !== "day";
 }
@@ -3881,14 +3932,16 @@ function timeCell(o, field) {
     return td;
   }
   if (isClock(o[field]) || o[field]) {
-    var rolled = isClock(o[field]) && o.date && stampDayKey(o, field) !== o.date;
+    var off = (isClock(o[field]) && o.date) ? stampDayOffset(o, field) : 0;
     var line = el("span", "tm-clock", prettyTime(o[field]));
     td.appendChild(line);
     if (isClock(o[field])) {
-      td.title = stampLabel(o, field) + (rolled ? " (next day)" : "");
-      if (rolled) line.appendChild(el("span", "nextday", "+1"));
+      td.title = stampLabel(o, field) +
+        (off === 0 ? "" : off === 1 ? " (next day)" :
+         off > 1 ? " (" + off + " days later)" : " (" + Math.abs(off) + " day(s) earlier)");
+      if (off) line.appendChild(el("span", "nextday", (off > 0 ? "+" : "") + off));
       if (stampDateNeeded(o, field)) {
-        td.appendChild(el("span", "tm-date" + (rolled ? " rolled" : ""),
+        td.appendChild(el("span", "tm-date" + (off ? " rolled" : ""),
                           shortDate(stampDayKey(o, field))));
       }
     }
@@ -4148,6 +4201,16 @@ function inlineRow(o, cols, focusKey) {
         }
         fields[c.key] = mk("input", "mono", isClock(o[c.key]) ? prettyTime(o[c.key]) : o[c.key], "h:mm");
         td.appendChild(fields[c.key]);
+        var dkey = STAMP_DATE_KEY[c.key];
+        if (dkey) {
+          var dIn = document.createElement("input");
+          dIn.type = "date";
+          dIn.className = "cellinput stampdate";
+          dIn.value = o[dkey] || "";
+          dIn.title = "Date for this stamp — blank follows the row date (" + shortDate(o.date) + ")";
+          fields[dkey] = dIn;
+          td.appendChild(dIn);
+        }
         break;
       case "proof": case "fin": case "savedToDrive":
         var sel = document.createElement("select");
@@ -4276,8 +4339,12 @@ function saveInline(id) {
   o.notes = f.notes.value.trim();
   o.startTime = start.value;
   o.completionTime = done.value;
+  if (f.startDate) o.startDate = parseDay(f.startDate.value);
+  if (f.completionDate) o.completionDate = parseDay(f.completionDate.value);
   o.proof = f.proof.value;
   o.proofRcvdTime = o.proof === "FALSE" ? "" : back.value;
+  o.proofRcvdDate = o.proof === "FALSE" ? "" :
+    (f.proofRcvdDate ? parseDay(f.proofRcvdDate.value) : (o.proofRcvdDate || ""));
   o.fin = f.fin.value;
   applyCompletionFlags(o);
   if (f.savedToDrive) o.savedToDrive = f.savedToDrive.value;
@@ -4718,20 +4785,31 @@ function updateCalcs() {
   var a = parseTime($("fStart").value), b = parseTime($("fDone").value), c = parseTime($("fBack").value);
   var taken = $("calcTaken"), turn = $("calcTurn");
   if (!taken || !turn) return;
-  var show = function (box, from, to) {
+  /* Build a throwaway order so the preview honours whatever dates are typed
+     into the stamp date boxes, exactly as the saved row will. */
+  var previewOrder = function () {
+    return {
+      date: state.scopeDate,
+      startTime: a.value, completionTime: b.value, proofRcvdTime: c.value,
+      startDate: parseDay($("fStartDate") ? $("fStartDate").value : ""),
+      completionDate: parseDay($("fDoneDate") ? $("fDoneDate").value : ""),
+      proofRcvdDate: parseDay($("fBackDate") ? $("fBackDate").value : "")
+    };
+  };
+  var show = function (box, from, to, fa, fb) {
     if (!from.ok || !to.ok) { box.textContent = "?"; box.className = "calcbox warn"; return; }
     if (!isClock(from.value) || !isClock(to.value)) { box.textContent = "—"; box.className = "calcbox"; return; }
-    var mins = spanMinutes(from.value, to.value);
+    var mins = stampSpan(previewOrder(), fa, fb);
     box.textContent = mins < 0 ? "backwards" : durationText(mins);
     box.className = "calcbox" + (mins < 0 ? " warn" : "");
   };
   if (b.ok && isClock(b.value) && $("segFin")) setSeg("segFin", "TRUE");
-  show(taken, a, b);
+  show(taken, a, b, "startTime", "completionTime");
   if (segValue("segProof") === "FALSE") {
     turn.textContent = "";
     turn.className = "calcbox";
   } else {
-    show(turn, b, c);
+    show(turn, b, c, "completionTime", "proofRcvdTime");
   }
 }
 function clearForm() {
@@ -4791,6 +4869,9 @@ function fillFormFromOrder(o) {
   if ($("fStart")) $("fStart").value = o.startTime ? prettyTime(o.startTime) : "";
   if ($("fDone")) $("fDone").value = o.completionTime ? prettyTime(o.completionTime) : "";
   if ($("fBack")) $("fBack").value = o.proofRcvdTime ? prettyTime(o.proofRcvdTime) : "";
+  if ($("fStartDate")) $("fStartDate").value = o.startDate || "";
+  if ($("fDoneDate")) $("fDoneDate").value = o.completionDate || "";
+  if ($("fBackDate")) $("fBackDate").value = o.proofRcvdDate || "";
   if ($("fNotes")) $("fNotes").value = o.notes || "";
   setSeg("segProof", o.proof || "TRUE");
   setSeg("segFin", o.fin || "FALSE");
@@ -4896,6 +4977,9 @@ function submitOrder(e) {
     startTime: start.value,
     completionTime: done.value,
     proofRcvdTime: noProof ? "" : back.value,
+    startDate: parseDay($("fStartDate") ? $("fStartDate").value : ""),
+    completionDate: parseDay($("fDoneDate") ? $("fDoneDate").value : ""),
+    proofRcvdDate: noProof ? "" : parseDay($("fBackDate") ? $("fBackDate").value : ""),
     fin: segValue("segFin"),
     savedToDrive: segValue("segDrive"),
     held: "FALSE",
@@ -5302,15 +5386,17 @@ function exportCsv() {
   if (!rows.length) { toast("There is nothing in view to export."); return; }
   var head = ["#", "Date", "Date Placed", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "PGroup", "Qty", "Amount",
               "PROOF?", "Marking", "Status",
-              "Time Started", "Time of Completion", "Time Taken (min)",
-              "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
+              "Time Started", "Start Date", "Time of Completion", "End Date", "Time Taken (min)",
+              "Proof RCVD Time", "Proof RCVD Date", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
   var lines = [head.map(csvCell).join(",")];
   rows.forEach(function (o) {
     var taken = timeTaken(o), turn = turnaround(o);
+    var sday = function (f) { return isClock(o[f]) ? stampDayKey(o, f) : ""; };
     lines.push([o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.pgroup, o.qty,
                 o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.marking, o.status,
-                o.startTime, o.completionTime, taken === null ? "" : taken,
-                o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
+                o.startTime, sday("startTime"),
+                o.completionTime, sday("completionTime"), taken === null ? "" : taken,
+                o.proofRcvdTime, sday("proofRcvdTime"), turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
                .map(csvCell).join(","));
   });
   /* Totals row, so the export matches what the footer says. */
@@ -6647,8 +6733,9 @@ function shiftWeek(delta) {
    empty, the button asks for it once and remembers it in this browser. */
 var BINGO_URL_DEFAULT = "";
 var BINGO_FRIDAY_ONLY = true;          /* set false to try it on any weekday */
-var BINGO_SIZE = { width: 420, height: 560 };
-var bingoWin = null, bingoWatch = null;
+var BINGO_SIZE = { width: 250, height: 250 };
+var BINGO_ZOOM = 0.5;                  /* the framed page is drawn at half size */
+var bingoWin = null, bingoWatch = null, bingoTrack = null;
 
 function bingoUrl() {
   var p = readJson(KEY_PREFS, {});
@@ -6669,7 +6756,13 @@ function safeBingoUrl() {
     return (u.protocol === "http:" || u.protocol === "https:") ? u.href : "";
   } catch (e) { return ""; }
 }
-function isBingoDay() { return !BINGO_FRIDAY_ONLY || new Date().getDay() === 5; }
+/* Tied to the day selected in the week bar, not the wall clock, so stepping
+   back to a past Friday brings the button with you. */
+function isBingoDay() {
+  if (!BINGO_FRIDAY_ONLY) return true;
+  var d = dateFromKey(state.scopeDate);
+  return !isNaN(d.getTime()) && d.getDay() === 5;
+}
 function bingoOpen() { return !!(bingoWin && !bingoWin.closed); }
 
 function refreshBingoButton() {
@@ -6711,54 +6804,103 @@ function paintBingoWindow(w, url) {
   d.title = "Friday bingo";
   var st = d.createElement("style");
   st.textContent =
-    "html,body{margin:0;height:100%;background:#101010;color:#e9e9e9;" +
-      "font:13px/1.45 'Archivo','Segoe UI',Roboto,Helvetica,Arial,sans-serif}" +
+    "html,body{margin:0;height:100%;overflow:hidden;background:#101010;color:#e9e9e9;" +
+      "font:11px/1.35 'Archivo','Segoe UI',Roboto,Helvetica,Arial,sans-serif}" +
     "#wrap{display:flex;flex-direction:column;height:100%}" +
-    "#frame{flex:1 1 auto;width:100%;border:0;background:#fff}" +
-    "#bar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:7px 10px;" +
-      "background:#191919;border-top:1px solid #2b2b2b}" +
+    "#shell{flex:1 1 auto;position:relative;overflow:hidden;background:#fff}" +
+    /* The frame is laid out at 1/zoom of the shell and then scaled down, so the
+       site believes it has a full-size viewport and we see it at half scale. */
+    "#frame{position:absolute;top:0;left:0;border:0;" +
+      "width:" + Math.round(100 / BINGO_ZOOM) + "%;height:" + Math.round(100 / BINGO_ZOOM) + "%;" +
+      "transform:scale(" + BINGO_ZOOM + ");transform-origin:0 0}" +
+    "#bar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:4px 6px;" +
+      "background:#191919;border-top:1px solid #2b2b2b;font-size:10px}" +
     "#bar button{background:none;border:0;padding:0;font:inherit;color:#9ec5ff;cursor:pointer}" +
     "#bar button:hover{text-decoration:underline}" +
-    "#bar .note{margin-left:auto;opacity:.55;font-size:11px}";
+    "#bar .note{margin-left:auto;opacity:.55}";
   d.head.appendChild(st);
 
   var wrap = d.createElement("div"); wrap.id = "wrap";
+  var shell = d.createElement("div"); shell.id = "shell";
   var fr = d.createElement("iframe");
   fr.id = "frame";
   fr.src = url;
   fr.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
   fr.setAttribute("allow", "clipboard-write; autoplay");
+  shell.appendChild(fr);
 
   var bar = d.createElement("div"); bar.id = "bar";
   var tab = d.createElement("button"); tab.type = "button"; tab.textContent = "Open in a tab";
   tab.addEventListener("click", function () { window.open(url, "_blank", "noopener"); });
-  var edit = d.createElement("button"); edit.type = "button"; edit.textContent = "Change link";
+  var edit = d.createElement("button"); edit.type = "button"; edit.textContent = "Link";
+  edit.title = "Change the bingo link";
   edit.addEventListener("click", function () { try { w.close(); } catch (e) {} askBingoUrl(); });
-  var note = d.createElement("span"); note.className = "note"; note.textContent = "stays on top";
+  var note = d.createElement("span"); note.className = "note"; note.textContent = "50%";
   bar.appendChild(tab); bar.appendChild(edit); bar.appendChild(note);
 
-  wrap.appendChild(fr); wrap.appendChild(bar);
+  wrap.appendChild(shell); wrap.appendChild(bar);
   d.body.appendChild(wrap);
 
   /* Some hosts refuse to be framed (X-Frame-Options / frame-ancestors). We
      cannot read a cross-origin frame to find out, so offer the way out. */
   setTimeout(function () {
     if (!bingoOpen()) return;
-    note.textContent = "blank? use Open in a tab";
+    note.textContent = "blank? ↖";
   }, 5000);
+  followOpener(w);
+}
+
+/* If the browser lets us move the child window, keep it pinned to the same spot
+   relative to the main window so the two travel together. Document PiP windows
+   ignore moveTo in current Chrome, so the first failed nudge turns this off and
+   the window is simply left where the user put it. */
+function followOpener(w) {
+  if (bingoTrack) { clearInterval(bingoTrack); bingoTrack = null; }
+  if (typeof w.moveTo !== "function") return;
+  var ox = window.screenX, oy = window.screenY, armed = false;
+  bingoTrack = setInterval(function () {
+    if (!bingoOpen()) { clearInterval(bingoTrack); bingoTrack = null; return; }
+    var dx = window.screenX - ox, dy = window.screenY - oy;
+    if (!dx && !dy) return;
+    var was = { x: w.screenX, y: w.screenY };
+    try { w.moveTo(was.x + dx, was.y + dy); } catch (e) {
+      clearInterval(bingoTrack); bingoTrack = null; return;
+    }
+    ox = window.screenX; oy = window.screenY;
+    if (!armed) {
+      armed = true;
+      /* Confirm the move actually took. If the position did not budge the
+         browser is refusing, so stop polling rather than spin forever. */
+      setTimeout(function () {
+        if (w.screenX === was.x && w.screenY === was.y && bingoTrack) {
+          clearInterval(bingoTrack); bingoTrack = null;
+        }
+      }, 120);
+    }
+  }, 250);
 }
 
 /* Everywhere else: a plain small window. Not pinned, but it loads the site
    directly, so nothing can refuse to be framed. */
 function openBingoPopup(url) {
   var feat = "popup=yes,width=" + BINGO_SIZE.width + ",height=" + BINGO_SIZE.height +
-             ",menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes";
-  var w = window.open(url, "caot_bingo", feat);
+             ",menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no";
+  var w = window.open("", "caot_bingo", feat);
   if (!w) {
     toast("The bingo window was blocked. Allow pop-ups for this site, then try again.", null, 7000);
     return;
   }
   bingoWin = w;
+  /* Same wrapper as the floating version, so the 50% zoom and the escape hatch
+     are there too — a 250px window is unusable at full scale. */
+  try {
+    w.document.open();
+    w.document.write("<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>");
+    w.document.close();
+    paintBingoWindow(w, url);
+  } catch (e) {
+    w.location.href = url;              /* last resort: just navigate to it */
+  }
   try { w.focus(); } catch (e) {}
   watchBingoWindow();
   refreshBingoButton();
@@ -6855,12 +6997,6 @@ function wire() {
   $("weekNext").addEventListener("click", function () { shiftWeek(1); });
   $("btnThisWeek").addEventListener("click", function () { selectDay(todayKey()); render(); });
   $("btnBingo").addEventListener("click", openBingo);
-  /* A tab left open overnight should notice when it becomes Friday, and stop
-     offering the button when it stops being Friday. */
-  setInterval(refreshBingoButton, 60000);
-  document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) refreshBingoButton();
-  });
   $("scopeSel").addEventListener("change", function () {
     state.scope = this.value;
     state.inlineId = null;
