@@ -352,7 +352,7 @@ html[data-tone="dark"] .quad button[aria-pressed="true"]{background:var(--code);
   /* page-scroll used to grow the whole document and kill sticky headers.
      The shell stays one screen; the table is the thing that scrolls. */
   html.page-scroll .tablewrap{overflow-y:auto;min-height:200px}
-  html.page-scroll thead,html.page-scroll thead th{top:0}
+  html.page-scroll thead,html.page-scroll thead th{top:calc(var(--kpi-ribbon-height, 0px) + var(--ledger-bar-height, 0px))}
   /* Counts, totals and the save indicator stay in view at the bottom. */
   html.page-scroll .appfoot{position:sticky;bottom:0;z-index:20;box-shadow:0 -1px 0 var(--line)}
 }
@@ -363,8 +363,7 @@ html[data-tone="dark"] .quad button[aria-pressed="true"]{background:var(--code);
    scroll area moves. Keep the ribbon in normal flow so it cannot cover the
    column header; the table header is sticky inside #tablewrap. */
 @media (min-width:761px){
-  .ribbon{position:relative;z-index:20;box-shadow:0 2px 8px -7px rgba(18,22,28,.45)}
-  #tablewrap thead, #tablewrap thead th{top:0;z-index:30}
+  .ribbon{z-index:41;box-shadow:0 2px 8px -7px rgba(18,22,28,.45)}
 }
 .stat{padding:12px 20px;border-right:1px solid var(--line);flex:1;min-width:0}
 .stat b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.25}
@@ -436,8 +435,8 @@ html[data-tone="dark"] .chip[aria-pressed="true"]{background:var(--code);color:v
 @keyframes slideFromRight{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
 @keyframes slideFromLeft{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;font-size:13px}
-thead{position:sticky;top:0;z-index:12}
-thead th{position:sticky;top:0;z-index:12;background:var(--surface-2);text-align:left;padding:8px 8px;
+thead{position:sticky;top:calc(var(--kpi-ribbon-height, 0px) + var(--ledger-bar-height, 0px));z-index:12}
+thead th{position:sticky;top:calc(var(--kpi-ribbon-height, 0px) + var(--ledger-bar-height, 0px));z-index:12;background:var(--surface-2);text-align:left;padding:8px 8px;
   font-size:11px;font-weight:700;color:var(--text);border-bottom:1px solid var(--line);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   box-shadow:0 6px 10px -8px rgba(18,22,28,.45)}
@@ -492,8 +491,21 @@ td.amt-edit-input{width:100%;text-align:right;font-family:var(--mono);font-size:
 .otype.t-int{background:var(--brass-soft);color:var(--brass)}
 html[data-tone="dark"] .otype.t-int{color:var(--brass-lit)}
 .otype.t-sam{background:var(--go-bg);color:var(--go)}
+.otype.t-qte{background:var(--hold-bg);color:var(--hold)}
 .otype.t-cor{background:var(--go-bg);color:var(--go)}
+.otype.t-n4h{background:var(--stop-bg);color:var(--stop)}
 .otype.t-hold{background:var(--stop-bg);color:var(--stop)}
+.pgrp{display:inline-block;padding:2px 7px;border-radius:5px;font:700 11px var(--mono);letter-spacing:.03em;
+  background:var(--idle-bg);color:var(--idle)}
+.pgrp.g-pay{background:var(--code-bg);color:var(--code)}
+.pgrp.g-npay{background:var(--hold-bg);color:var(--hold)}
+.pgrp.g-other{background:var(--idle-bg);color:var(--idle)}
+.pgrp-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.pgrp-grid button{min-height:36px;border:1px solid var(--line);border-radius:7px;background:var(--surface);
+  color:var(--text-2);font:700 12px var(--sans);cursor:pointer;padding:0 6px}
+.pgrp-grid button[aria-pressed="true"]{background:var(--crown);color:#fff;border-color:var(--crown)}
+html[data-tone="dark"] .pgrp-grid button[aria-pressed="true"]{background:var(--code);color:var(--code-ink);border-color:var(--code)}
+.pgrp-other{margin-top:6px}
 .splitter{
   flex:0 0 10px;cursor:row-resize;background:var(--line);position:relative;z-index:6;
   touch-action:none;
@@ -831,6 +843,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{display:none}
   tbody td.oid,
   tbody td.cust,
   tbody td[data-label="Type"],
+  tbody td[data-label="PGrp"],
   tbody td[data-label="Qty"],
   tbody td[data-label="Amount"],
   tbody td[data-label="Status"],
@@ -859,6 +872,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{display:none}
   tbody td.oid,
   tbody td.cust,
   tbody td[data-label="Type"],
+  tbody td[data-label="PGrp"],
   tbody td[data-label="Qty"],
   tbody td[data-label="Amount"],
   tbody td[data-label="Status"],
@@ -955,7 +969,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{display:none}
     .shell{height:auto;min-height:100vh;overflow:visible}
     .tablewrap{flex:none;min-height:0;overflow:visible;max-width:100%}
     .tablewrap table{width:100%;max-width:100%;table-layout:fixed}
-    thead,thead th{position:sticky;top:0;z-index:12}
+    thead,thead th{position:sticky;z-index:12}
     thead th{box-shadow:inset 0 -1px 0 var(--line)}
     tbody td{overflow-wrap:break-word;word-break:normal}
     /* Header labels wrap to two lines instead of turning into "Amou…". */
@@ -1150,7 +1164,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{display:none}
   tbody td[data-label="Amount"]::before{content:none}
   tbody td.cust{order:4;grid-column:1/-1;font-size:15.5px;font-weight:600;color:var(--text);overflow-wrap:anywhere;margin-top:-2px}
   tbody td[data-label="Placed"]{order:5} tbody td[data-label="Req. Ship"]{order:6} tbody td[data-label="Event"]{order:7}
-  tbody td[data-label="Type"]{order:8} tbody td[data-label="Qty"]{order:9} tbody td[data-label="Mark"]{order:10}
+  tbody td[data-label="Type"]{order:8} tbody td[data-label="PGrp"]{order:8} tbody td[data-label="Qty"]{order:9} tbody td[data-label="Mark"]{order:10}
   tbody td[data-label="Proof"]{order:11} tbody td[data-label="Fin"]{order:12}
   tbody td[data-label="Status"]{order:13} tbody td[data-label="Note"]{order:14} tbody td.rowacts{order:15}
   tbody td[data-label="Status"],tbody td[data-label="Note"],tbody td.rowacts{grid-column:1/-1}
@@ -1594,14 +1608,16 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
 .theme-panel .fxrow{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;font-size:12.5px;color:var(--text-2);cursor:pointer}
 .theme-panel .fxrow input{width:auto;margin:0}
 
-/* Desktop sticky log chrome: the KPI stats and column titles form one
-   continuous pinned unit while the expanded order log scrolls. */
+/* Desktop sticky log chrome: filter chips + column titles pin as one
+   continuous block while the order log scrolls underneath. */
 @media (min-width:761px){
-  html{--kpi-ribbon-height:0px}
-  html.page-flow .ribbon{position:sticky;top:0;z-index:40;box-shadow:none}
-  html.page-flow #tablewrap thead,
-  html.page-flow #tablewrap thead th{top:var(--kpi-ribbon-height);z-index:39}
-  html.page-flow #tablewrap thead th{box-shadow:0 3px 8px -7px rgba(18,22,28,.5)}
+  html{--kpi-ribbon-height:0px;--ledger-bar-height:0px}
+  .ribbon{position:sticky;top:0;z-index:41;background:var(--surface)}
+  .ledger-bar{position:sticky;top:var(--kpi-ribbon-height);z-index:40;
+    background:var(--surface);box-shadow:0 1px 0 var(--line)}
+  #tablewrap thead,
+  #tablewrap thead th{top:calc(var(--kpi-ribbon-height) + var(--ledger-bar-height));z-index:39}
+  #tablewrap thead th{box-shadow:0 3px 8px -7px rgba(18,22,28,.5)}
 }
 </style>
 </head>
@@ -1814,7 +1830,7 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
 
   <div class="ribbon" id="ribbon"></div>
 
-  <div class="ledger-bar">
+  <div class="ledger-bar" id="ledgerBar">
     <div class="list-title" id="listTitle">Orders</div>
     <div class="chips" id="chips"></div>
     <div class="spacer"></div>
@@ -2685,11 +2701,19 @@ var ACT_ICONS = (function () {
 })();
 /* Display only (the saved text is untouched): names read "Firstname Lastname",
    email addresses read in all caps. */
+function isAllCapsAbbrev(w) {
+  /* Short ALL-CAPS tokens (NYPD, PTA, IBM, A&M) stay as entered. */
+  var core = String(w || "").replace(/[^A-Za-z0-9&./]/g, "");
+  if (core.length < 2 || core.length > 8) return false;
+  if (!/[A-Z]/.test(core)) return false;
+  return core === core.toUpperCase();
+}
 function displayCustomer(v) {
   return String(v || "").split("\n").map(function (line) {
     return line.split(/(\s+)/).map(function (w) {
       if (!w.trim()) return w;
       if (w.indexOf("@") !== -1) return w.toUpperCase();
+      if (isAllCapsAbbrev(w)) return w;
       if (/\d/.test(w)) return w;
       return w.toLowerCase().replace(/(^|[-'’.(])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); })
               .replace(/^Mc([a-z])/, function (m, c) { return "Mc" + c.toUpperCase(); });
@@ -2926,10 +2950,40 @@ function saveFailedModal(what) {
     "Back up now", backupJson, "Ignore", function () {});
 }
 /* ------------------------------------------------- order type / qty / money */
-var ORDER_TYPES = ["RTR", "INT", "SAM", "COR"];
+var ORDER_TYPES = ["RTR", "INT", "SAM", "QTE", "COR", "N4H"];
 function normType(v) {
   var t = String(v == null ? "" : v).trim().toUpperCase().replace(/\s+/g, " ");
+  if (t === "N4H" || t === "N-4-H" || t === "NEED 4 HRS" || t === "NEED4H") return "N4H";
   return t.slice(0, 14);
+}
+var PGROUP_PRESETS = ["1", "2", "3", "4", "5", "6", "7", "PGRPNPAY", "OTHER"];
+function normPGroup(v, status) {
+  var raw = String(v == null ? "" : v).trim();
+  var s = raw.toUpperCase().replace(/\s+/g, "");
+  if (/^[1-7]$/.test(s)) return s;
+  var num = s.match(/^PGROUP([1-7])$/) || s.match(/^PGRP([1-7])$/);
+  if (num) return num[1];
+  if (s === "PGRPNPAY" || s === "NOPAY" || s === "PGRP-NPAY") return "PGRPNPAY";
+  if (s === "OTHER") return "OTHER";
+  if (raw && s !== "X" && s !== "NONE" && s !== "FALSE") return raw;
+  var blob = String(status || "");
+  var m = blob.match(/\bPGROUP\s*([1-7])\b/i) || blob.match(/\bPGRP\s*([1-7])\b/i);
+  if (m) return m[1];
+  if (/\bPGRPNPAY\b/i.test(blob)) return "PGRPNPAY";
+  return "";
+}
+function pgroupLabel(v) {
+  var s = String(v || "").trim();
+  if (!s) return "";
+  if (/^[1-7]$/.test(s)) return "P" + s;
+  if (s.toUpperCase() === "PGRPNPAY") return "PGRPNPAY";
+  return s;
+}
+function pgroupClass(v) {
+  var s = String(v || "").trim().toUpperCase();
+  if (/^[1-7]$/.test(s)) return "g-pay";
+  if (s === "PGRPNPAY") return "g-npay";
+  return s ? "g-other" : "";
 }
 function typeClass(t) {
   return ORDER_TYPES.indexOf(normType(t)) !== -1 ? "t-" + normType(t).toLowerCase() : "";
@@ -2981,6 +3035,7 @@ function normalizeOrder(o) {
     eventDate: parseDay(o.eventDate),
     placedDate: parseDay(o.placedDate),
     otype: normType(o.otype),
+    pgroup: normPGroup(o.pgroup, o.status || (o.statusLog && statusTextFromLog(o.statusLog))),
     qty: parseQty(o.qty),
     amount: parseMoney(o.amount),
     proof: tri(o.proof),
@@ -3053,7 +3108,7 @@ function matchesFilter(o) {
 }
 function searchText(o) {
   if (o.__hay === undefined || o.__hayStamp !== o.updatedAt) {
-    o.__hay = [o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+    o.__hay = [o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.pgroup, o.qty,
                o.amount === "" ? "" : money(o.amount), o.status, o.marking, o.notes,
                o.startTime, o.completionTime, o.proofRcvdTime].join(" ").toLowerCase();
     o.__hayStamp = o.updatedAt;
@@ -3139,7 +3194,8 @@ var COLUMNS = [
   { key: "customer",label:"Customer", entryLabel: "Customer", hint: "Name or email", w: 14.5,  wd: 13.2, sort: "customer", entry: "area", field: "fCustomer", ph: "Jane Doe or name@email.com" },
   { key: "reqShipDate", label: "Req. Ship", entryLabel: "Req. ship date", hint: "When it must leave", w: 5.2, wd: 4.8, sort: "reqShipDate", entry: "dayfield", field: "fShipDate" },
   { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 5.2, wd: 4.8, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
-  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, COR, or type your own", w: 4.2,  wd: 3.8,  sort: "otype", entry: "type", field: "fType", ph: "RTR / INT / SAM / COR" },
+  { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, QTE, COR, N4H", w: 4.2,  wd: 3.8,  sort: "otype", entry: "type", field: "fType" },
+  { key: "pgroup", label: "PGrp",     entryLabel: "PGroup", hint: "1–7, PGRPNPAY, or Other", w: 4.4, wd: 4, sort: "pgroup", entry: "pgroup", field: "segPGroup" },
   { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 3.4,  wd: 3.2,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
   { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 5.4,  wd: 5,    sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
   { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 5.4,  wd: 5,    entry: "tri", field: "segProof" },
@@ -3168,7 +3224,7 @@ var COL_WEIGHT = {
   /* Rebalanced to match the entry form: # is readable, Placed / Req. Ship /
      Event are tighter, and Type through Turn get enough room for their values. */
   seq: 40, date: 68, placedDate: 66, orderId: 78, customer: 175, reqShipDate: 68, eventDate: 68,
-  otype: 62, qty: 48, amount: 70, proof: 58, marking: 72, status: 145,
+  otype: 62, pgroup: 58, qty: 48, amount: 70, proof: 58, marking: 72, status: 145,
   startTime: 64, completionTime: 64, taken: 68, proofRcvdTime: 64, turn: 52,
   fin: 52, notes: 68, acts: 80
 };
@@ -3219,7 +3275,8 @@ function buildChrome() {
    Spans: [desktop of 24, mid of 12, small of 6]. */
 var ENTRY_GROUPS = [
   { title: "Order",         keys: ["seq", "date", "orderId", "customer"] },
-  { title: "Dates & price", keys: ["placedDate", "reqShipDate", "eventDate", "otype", "qty", "amount"] },
+  { title: "Type & dates",  keys: ["otype", "qty", "amount", "placedDate", "reqShipDate", "eventDate"] },
+  { title: "PGroup",        keys: ["pgroup"] },
   { title: "Timing",        keys: ["startTime", "completionTime", "taken", "proofRcvdTime", "turn"] },
   { title: "Checks",        keys: ["proof", "marking", "fin"] },
   { title: "Status & notes", keys: ["status", "notes", "acts"] }
@@ -3228,11 +3285,9 @@ var ENTRY_SPAN = {
   seq: [3, 2, 3, 2],  date: [4, 3, 3, 4],  orderId: [7, 3, 6, 6],  customer: [10, 4, 6, 6],
   /* Keep the first row balanced: # gets enough room to stay visible, while
      Placed / Req. Ship / Event no longer consume oversized chunks. */
-  placedDate: [3, 2, 2, 4], reqShipDate: [3, 2, 2, 3], eventDate: [3, 2, 2, 3],
-  /* Each group now fills the complete 24-column desktop grid. This prevents
-     the Dates & price and Checks groups from bunching against the left edge
-     while leaving an unexplained block of empty space on the right. */
-  otype: [5, 2, 2, 3], qty: [3, 2, 2, 3], amount: [7, 2, 2, 3],
+  otype: [8, 4, 6, 6], qty: [8, 4, 3, 3], amount: [8, 4, 3, 3],
+  placedDate: [8, 4, 2, 3], reqShipDate: [8, 4, 2, 3], eventDate: [8, 4, 2, 3],
+  pgroup: [24, 12, 6, 6],
   startTime: [5, 3, 3, 3], completionTime: [5, 3, 3, 3], taken: [3, 2, 2, 3], proofRcvdTime: [5, 2, 2, 3], turn: [6, 2, 2, 3],
   proof: [7, 4, 3, 6], marking: [10, 5, 3, 6], fin: [7, 3, 6, 6],
   status: [11, 6, 6, 6], notes: [8, 4, 6, 6], acts: [5, 2, 6, 6]
@@ -3243,8 +3298,8 @@ var ENTRY_SPAN_NODATE = { seq: [3, 2, 2, 2], orderId: [9, 4, 4, 4], customer: [1
 /* Every text-ish field in the entry row, in one place, so caching, clearing
    and draft-saving can never drift out of sync with the fields on screen. */
 var ENTRY_TEXT_IDS = ["fOrderId", "fCustomer", "fPlacedDate", "fShipDate", "fEventDate", "fType", "fQty", "fAmount",
-                      "fStatus", "fStart", "fDone", "fBack", "fNotes"];
-var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive", "segMark"];
+                      "fStatus", "fStart", "fDone", "fBack", "fNotes", "fPGroupOther"];
+var ENTRY_SEG_IDS = ["segProof", "segFin", "segDrive", "segMark", "segPGroup"];
 function buildEntryRow(cols) {
   var grid = $("entrygrid");
   grid.textContent = "";
@@ -3293,29 +3348,39 @@ function buildEntryRow(cols) {
       dv.id = "calcDate";
       cell.appendChild(dv);
     } else if (c.entry === "type") {
-      /* A datalist, not a select: RTR / INT / SAM are one keystroke away and
-         anything else can still just be typed in. */
-      var ti = document.createElement("input");
-      ti.type = "text"; ti.id = c.field; ti.placeholder = c.ph || "";
-      ti.spellcheck = false; ti.autocomplete = "off";
-      ti.className = "mono";
-      ti.setAttribute("list", "orderTypeList");
-      ti.addEventListener("input", function () {
-        var at = this.selectionStart;
-        this.value = this.value.toUpperCase();
-        try { this.setSelectionRange(at, at); } catch (e) {}
+      var sel = document.createElement("select");
+      sel.id = c.field;
+      sel.className = "mono";
+      var blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = "Choose type…";
+      sel.appendChild(blank);
+      ORDER_TYPES.forEach(function (t) {
+        var op = document.createElement("option");
+        op.value = t;
+        op.textContent = t;
+        sel.appendChild(op);
       });
-      cell.appendChild(ti);
-      if (!document.getElementById("orderTypeList")) {
-        var dl = document.createElement("datalist");
-        dl.id = "orderTypeList";
-        ORDER_TYPES.concat(["OTHER"]).forEach(function (t) {
-          var op = document.createElement("option");
-          op.value = t;
-          dl.appendChild(op);
-        });
-        cell.appendChild(dl);
-      }
+      cell.appendChild(sel);
+    } else if (c.entry === "pgroup") {
+      var wrap = el("div");
+      var gridP = el("div", "pgrp-grid");
+      gridP.id = c.field;
+      PGROUP_PRESETS.forEach(function (opt) {
+        var b = el("button", null, opt === "PGRPNPAY" ? "PGRPNPAY" : (opt === "OTHER" ? "Other" : opt));
+        b.type = "button";
+        b.setAttribute("data-v", opt);
+        gridP.appendChild(b);
+      });
+      wrap.appendChild(gridP);
+      var other = document.createElement("input");
+      other.type = "text";
+      other.id = "fPGroupOther";
+      other.className = "pgrp-other";
+      other.placeholder = "Other PGroup…";
+      other.hidden = true;
+      wrap.appendChild(other);
+      cell.appendChild(wrap);
     } else if (c.entry === "dayfield") {
       var wrap = el("div", "datefield");
       var di = document.createElement("input");
@@ -3420,7 +3485,7 @@ function buildEntryRow(cols) {
   wireEntryRow();
 }
 function wireEntryRow() {
-  ["segProof", "segFin", "segDrive", "segMark"].forEach(function (id) {
+  ["segProof", "segFin", "segDrive", "segMark", "segPGroup"].forEach(function (id) {
     var seg = $(id);
     if (!seg) return;
     seg.addEventListener("click", function (e) {
@@ -3428,9 +3493,14 @@ function wireEntryRow() {
       if (b) {
         setSeg(id, b.getAttribute("data-v"));
         if (id === "segProof") { syncProofDependentFields(); updateCalcs(); queueDraft(); }
+        if (id === "segPGroup") syncPGroupOther();
       }
     });
   });
+  if ($("fOrderId")) {
+    $("fOrderId").addEventListener("change", function () { checkPriorOrderId($("fOrderId").value, false); });
+    $("fOrderId").addEventListener("blur", function () { checkPriorOrderId($("fOrderId").value, false); });
+  }
   $("fStart").addEventListener("input", updateCalcs);
   $("fDone").addEventListener("input", updateCalcs);
   $("fBack").addEventListener("input", updateCalcs);
@@ -3444,6 +3514,7 @@ function wireEntryRow() {
     b.addEventListener("click", function () {
       var input = $(b.getAttribute("data-now"));
       input.value = prettyTime(nowClock());
+      if (b.getAttribute("data-now") === "fDone") setSeg("segFin", "TRUE");
       updateCalcs();
       input.focus();
     });
@@ -3523,6 +3594,7 @@ function restoreFormValues() {
   if (!$("fOrderId")) return;
   if (!formCache) {
     setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); setSeg("segMark", "NONE");
+    setSeg("segPGroup", "");
     writeSlog([]);
   }
   else {
@@ -3531,6 +3603,8 @@ function restoreFormValues() {
     setSeg("segFin", formCache.segFin || "FALSE");
     setSeg("segDrive", formCache.segDrive || "FALSE");
     setSeg("segMark", formCache.segMark || "NONE");
+    setSeg("segPGroup", formCache.segPGroup || "");
+    if (formCache.fPGroupOther && $("fPGroupOther")) $("fPGroupOther").value = formCache.fPGroupOther;
     writeSlog(parseStatusLog(null, formCache.fStatus || ""));
   }
   refreshEntryMeta();
@@ -3607,13 +3681,18 @@ function renderWeek() {
 function syncKpiRibbonHeight() {
   var root = document.documentElement;
   var ribbon = $("ribbon");
-  if (!ribbon) return;
+  var bar = $("ledgerBar");
   if (window.matchMedia && !window.matchMedia("(min-width:761px)").matches) {
     root.style.removeProperty("--kpi-ribbon-height");
+    root.style.removeProperty("--ledger-bar-height");
     return;
   }
-  var h = Math.ceil(ribbon.getBoundingClientRect().height);
-  root.style.setProperty("--kpi-ribbon-height", h + "px");
+  if (ribbon) {
+    root.style.setProperty("--kpi-ribbon-height", Math.ceil(ribbon.getBoundingClientRect().height) + "px");
+  }
+  if (bar) {
+    root.style.setProperty("--ledger-bar-height", Math.ceil(bar.getBoundingClientRect().height) + "px");
+  }
 }
 
 function renderRibbon() {
@@ -3671,6 +3750,7 @@ function renderChips() {
   var host = $("chips");
   host.textContent = "";
   host.appendChild(frag);
+  syncKpiRibbonHeight();
 }
 function triPill(value, field, id) {
   var noLabel = field === "fin" ? "Not Yet" : "No";
@@ -3769,6 +3849,10 @@ function readRow(o, cols) {
       case "otype":
         td = el("td");
         if (o.otype) td.appendChild(el("span", "otype " + typeClass(o.otype), o.otype));
+        break;
+      case "pgroup":
+        td = el("td");
+        if (o.pgroup) td.appendChild(el("span", "pgrp " + pgroupClass(o.pgroup), pgroupLabel(o.pgroup)));
         break;
       case "qty":
         td = el("td", "num" + (o.qty === "" ? " zero" : ""), o.qty === "" ? "—" : o.qty);
@@ -3900,10 +3984,42 @@ function inlineRow(o, cols, focusKey) {
         break;
       case "orderId": fields.orderId = mk("input", "mono", o.orderId, "Order #"); td.appendChild(fields.orderId); break;
       case "otype":
-        fields.otype = mk("input", "mono", o.otype, "RTR");
-        fields.otype.setAttribute("list", "orderTypeList");
-        fields.otype.addEventListener("input", function () { this.value = this.value.toUpperCase(); });
+        fields.otype = document.createElement("select");
+        fields.otype.className = "cellinput mono";
+        var blankT = document.createElement("option");
+        blankT.value = ""; blankT.textContent = "Type";
+        fields.otype.appendChild(blankT);
+        ORDER_TYPES.forEach(function (t) {
+          var op = document.createElement("option");
+          op.value = t; op.textContent = t;
+          if (normType(o.otype) === t) op.selected = true;
+          fields.otype.appendChild(op);
+        });
+        if (o.otype && ORDER_TYPES.indexOf(normType(o.otype)) === -1) {
+          var custom = document.createElement("option");
+          custom.value = o.otype; custom.textContent = o.otype; custom.selected = true;
+          fields.otype.appendChild(custom);
+        }
         td.appendChild(fields.otype);
+        break;
+      case "pgroup":
+        fields.pgroup = document.createElement("select");
+        fields.pgroup.className = "cellinput mono";
+        var blankP = document.createElement("option");
+        blankP.value = ""; blankP.textContent = "PGroup";
+        fields.pgroup.appendChild(blankP);
+        PGROUP_PRESETS.forEach(function (t) {
+          var op = document.createElement("option");
+          op.value = t; op.textContent = t;
+          if (String(o.pgroup || "").toUpperCase() === t) op.selected = true;
+          fields.pgroup.appendChild(op);
+        });
+        if (o.pgroup && PGROUP_PRESETS.indexOf(String(o.pgroup).toUpperCase()) === -1) {
+          var customP = document.createElement("option");
+          customP.value = o.pgroup; customP.textContent = o.pgroup; customP.selected = true;
+          fields.pgroup.appendChild(customP);
+        }
+        td.appendChild(fields.pgroup);
         break;
       case "qty":
         fields.qty = mk("input", "mono", o.qty, "Qty");
@@ -4074,12 +4190,11 @@ function saveInline(id) {
   if (f.reqShipDate) o.reqShipDate = parseDay(f.reqShipDate.value);
   if (f.eventDate) o.eventDate = parseDay(f.eventDate.value);
   if (f.otype) o.otype = normType(f.otype.value);
+  if (f.pgroup) o.pgroup = normPGroup(f.pgroup.value, "");
   if (f.qty) o.qty = parseQty(f.qty.value);
   if (f.amount) o.amount = parseMoney(f.amount.value);
   o.status = f.status.value.trim();
   o.statusLog = parseStatusLog(null, o.status);
-  if (isCode(o, "CLC")) completeFromCode(o, "CLC");
-  else if (isCode(o, "LEC")) completeFromCode(o, "LEC");
   if (f.marking) o.marking = normMarking(f.marking.value);
   o.notes = f.notes.value.trim();
   o.startTime = start.value;
@@ -4087,6 +4202,7 @@ function saveInline(id) {
   o.proof = f.proof.value;
   o.proofRcvdTime = o.proof === "FALSE" ? "" : back.value;
   o.fin = f.fin.value;
+  applyCompletionFlags(o);
   if (f.savedToDrive) o.savedToDrive = f.savedToDrive.value;
   o.updatedAt = nowIso();
   if (!persistOrders()) {
@@ -4126,24 +4242,53 @@ function stampNow(id, field) {
   }
   var prev = o[field];
   o[field] = nowClock();
+  var prevFin = o.fin;
+  if (field === "completionTime") markOrderFinished(o, false);
   o.updatedAt = nowIso();
-  if (!persistOrders()) { o[field] = prev; scheduleRender(); saveFailedModal("time stamp"); return; }
+  if (!persistOrders()) {
+    o[field] = prev;
+    o.fin = prevFin;
+    scheduleRender();
+    saveFailedModal("time stamp");
+    return;
+  }
   scheduleRender();
   var names = { startTime: "Started", completionTime: "Ended", proofRcvdTime: "Proof back" };
   toast(names[field] + " on #" + o.seq + " set to " + prettyTime(o[field]) + ".", {
     label: "Undo",
-    run: function () { o[field] = prev; o.updatedAt = nowIso(); persistOrders(); scheduleRender(); }
+    run: function () {
+      o[field] = prev;
+      if (field === "completionTime") o.fin = prevFin;
+      o.updatedAt = nowIso();
+      persistOrders();
+      scheduleRender();
+    }
   }, 5000);
 }
-function completeFromCode(o, code) {
-  if (!o || !/^(CLC|LEC)$/i.test(String(code || '').trim())) return false;
+function isCompleteCode(code) {
+  return /^(CLC|LEC|COMPLETE[D]?|DONE|FINISHED|CLOSED)$/i.test(String(code || "").trim());
+}
+function markOrderFinished(o, stampEnd) {
+  if (!o) return false;
   var changed = false;
   if (o.fin !== "TRUE") { o.fin = "TRUE"; changed = true; }
-  if (!isClock(o.completionTime)) {
+  if (stampEnd && !isClock(o.completionTime)) {
     o.completionTime = nowClock();
     changed = true;
   }
   return changed;
+}
+function completeFromCode(o, code) {
+  if (!o || !isCompleteCode(code)) return false;
+  /* CLC / LEC / Complete stamp Fin to Yes. Routing codes also stamp End if blank. */
+  return markOrderFinished(o, /^(CLC|LEC)$/i.test(String(code || "").trim()));
+}
+function applyCompletionFlags(o) {
+  if (!o) return;
+  if (isClock(o.completionTime)) markOrderFinished(o, false);
+  parseStatusLog(o.statusLog, o.status).forEach(function (e) {
+    if (isCompleteCode(e.code)) completeFromCode(o, e.code);
+  });
 }
 function addLogStamp(id, code) {
   var o = byId(id);
@@ -4159,6 +4304,8 @@ function addLogStamp(id, code) {
     o.proofRcvdTime = o.proofRcvdTime && o.proofRcvdTime !== "N/A" ? o.proofRcvdTime : "";
   }
   completeFromCode(o, code);
+  var pg = normPGroup(code, "");
+  if (pg) o.pgroup = pg;
   if (!persistOrders()) { saveFailedModal("status log"); return; }
   scheduleRender();
 }
@@ -4439,14 +4586,43 @@ function addStatusStamp() {
   var log = readSlog();
   log.push({ t: prettyTime(nowClock()), code: code });
   writeSlog(log);
+  if (isCompleteCode(code)) setSeg("segFin", "TRUE");
+  var pg = normPGroup(code, "");
+  if (pg) setSeg("segPGroup", pg);
   input.value = "";
   input.focus();
 }
 function setSeg(id, value) {
   if (!$(id)) return;
+  var v = String(value == null ? "" : value);
+  var known = false;
   Array.prototype.forEach.call($(id).querySelectorAll("button"), function (b) {
-    b.setAttribute("aria-pressed", b.getAttribute("data-v") === value ? "true" : "false");
+    var match = b.getAttribute("data-v") === v;
+    if (match) known = true;
+    b.setAttribute("aria-pressed", match ? "true" : "false");
   });
+  if (id === "segPGroup") {
+    if (!known && v) {
+      var otherBtn = $(id).querySelector('button[data-v="OTHER"]');
+      if (otherBtn) otherBtn.setAttribute("aria-pressed", "true");
+      if ($("fPGroupOther")) { $("fPGroupOther").value = v === "OTHER" ? "" : value; $("fPGroupOther").hidden = false; }
+      return;
+    }
+    syncPGroupOther();
+  }
+}
+function syncPGroupOther() {
+  var other = $("fPGroupOther");
+  if (!other || !$("segPGroup")) return;
+  var v = segValue("segPGroup");
+  other.hidden = v !== "OTHER";
+  if (v !== "OTHER") other.value = "";
+}
+function formPGroup() {
+  var v = $("segPGroup") ? segValue("segPGroup") : "";
+  if (v === "OTHER") return ($("fPGroupOther") && $("fPGroupOther").value.trim()) || "OTHER";
+  if (v === "X") return "";
+  return v || "";
 }
 function syncProofDependentFields() {
   var noProof = segValue("segProof") === "FALSE";
@@ -4461,6 +4637,7 @@ function syncProofDependentFields() {
   if (noProof) updateCalcs();
 }
 function updateCalcs() {
+  if (!$("fStart") || !$("fDone") || !$("fBack")) return;
   var a = parseTime($("fStart").value), b = parseTime($("fDone").value), c = parseTime($("fBack").value);
   var taken = $("calcTaken"), turn = $("calcTurn");
   if (!taken || !turn) return;
@@ -4471,6 +4648,7 @@ function updateCalcs() {
     box.textContent = mins < 0 ? "backwards" : durationText(mins);
     box.className = "calcbox" + (mins < 0 ? " warn" : "");
   };
+  if (b.ok && isClock(b.value) && $("segFin")) setSeg("segFin", "TRUE");
   show(taken, a, b);
   if (segValue("segProof") === "FALSE") {
     turn.textContent = "";
@@ -4482,6 +4660,7 @@ function updateCalcs() {
 function clearForm() {
   ENTRY_TEXT_IDS.forEach(function (id) { if ($(id)) $(id).value = ""; });
   setSeg("segProof", "TRUE"); setSeg("segFin", "FALSE"); setSeg("segDrive", "FALSE"); setSeg("segMark", "NONE");
+  setSeg("segPGroup", "");
   writeSlog([]);
   formCache = null;
   clearDraft();
@@ -4490,6 +4669,116 @@ function clearForm() {
   refreshEntryMeta();
   updateCalcs();
   scheduleTable();
+}
+function digitsOrderId(v) { return String(v || "").replace(/\D/g, ""); }
+function findPriorOrders(orderId) {
+  var raw = String(orderId || "").trim();
+  var q = digitsOrderId(raw);
+  if (raw.length < 3 && q.length < 4) return [];
+  var hits = state.orders.filter(function (o) {
+    if (!o.orderId) return false;
+    if (String(o.orderId).trim().toLowerCase() === raw.toLowerCase()) return true;
+    var d = digitsOrderId(o.orderId);
+    return q.length >= 6 && d === q;
+  });
+  hits.sort(function (a, b) {
+    var af = a.fin === "TRUE" ? 1 : 0, bf = b.fin === "TRUE" ? 1 : 0;
+    if (af !== bf) return af - bf;
+    return String(b.date).localeCompare(String(a.date)) || (b.seq - a.seq);
+  });
+  return hits;
+}
+function ensureSelectValue(sel, value) {
+  if (!sel) return;
+  var v = value || "";
+  if (!v) { sel.value = ""; return; }
+  var found = false;
+  Array.prototype.forEach.call(sel.options, function (op) { if (op.value === v) found = true; });
+  if (!found) {
+    var op = document.createElement("option");
+    op.value = v; op.textContent = v;
+    sel.appendChild(op);
+  }
+  sel.value = v;
+}
+function fillFormFromOrder(o) {
+  if (!o || !$("fOrderId")) return;
+  $("fOrderId").value = o.orderId || "";
+  $("fCustomer").value = o.customer || "";
+  if ($("fPlacedDate")) $("fPlacedDate").value = o.placedDate || "";
+  if ($("fShipDate")) $("fShipDate").value = o.reqShipDate || "";
+  if ($("fEventDate")) $("fEventDate").value = o.eventDate || "";
+  ensureSelectValue($("fType"), o.otype || "");
+  if ($("fQty")) $("fQty").value = o.qty === "" || o.qty == null ? "" : o.qty;
+  if ($("fAmount")) $("fAmount").value = o.amount === "" || o.amount == null ? "" : o.amount;
+  if ($("fStart")) $("fStart").value = o.startTime ? prettyTime(o.startTime) : "";
+  if ($("fDone")) $("fDone").value = o.completionTime ? prettyTime(o.completionTime) : "";
+  if ($("fBack")) $("fBack").value = o.proofRcvdTime ? prettyTime(o.proofRcvdTime) : "";
+  if ($("fNotes")) $("fNotes").value = o.notes || "";
+  setSeg("segProof", o.proof || "TRUE");
+  setSeg("segFin", o.fin || "FALSE");
+  setSeg("segDrive", o.savedToDrive || "FALSE");
+  setSeg("segMark", normMarking(o.marking));
+  setSeg("segPGroup", o.pgroup || "");
+  writeSlog(parseStatusLog(o.statusLog, o.status));
+  syncProofDependentFields();
+  updateCalcs();
+  queueDraft();
+}
+function openExistingOrder(o) {
+  if (!o) return;
+  state.filter = "all";
+  state.query = "";
+  if ($("search")) $("search").value = "";
+  selectDay(o.date);
+  startInline(o.id, "orderId");
+  toast("Opened #" + o.seq + (o.orderId ? " · " + o.orderId : "") + " from " + prettyDate(o.date) + ".");
+}
+function priorOrderBlurb(hits) {
+  var first = hits[0];
+  var extra = hits.length > 1 ? " (" + hits.length + " matches)" : "";
+  var open = first.fin !== "TRUE";
+  return "Logged as #" + first.seq + " on " + prettyDate(first.date) + extra +
+    (open ? ". That copy is still unfinished." : ". That copy is marked finished.") +
+    (first.customer ? " Customer: " + displayCustomer(String(first.customer).split("\n")[0]) + "." : "");
+}
+var priorPromptAt = "";
+function checkPriorOrderId(orderId, force) {
+  var hits = findPriorOrders(orderId);
+  if (!hits.length) return false;
+  var key = digitsOrderId(orderId) || String(orderId || "").toLowerCase();
+  if (!force && priorPromptAt === key) return true;
+  priorPromptAt = key;
+  offerPriorOrder(hits, null);
+  return true;
+}
+function offerPriorOrder(hits, onAddNew) {
+  var first = hits[0];
+  if (!first) { if (onAddNew) onAddNew(); return; }
+  confirmModal("Order " + (first.orderId || "") + " already exists",
+    priorOrderBlurb(hits) + " Open the old row, copy its details into this form, or add a new copy.",
+    "Open previous", function () { openExistingOrder(first); },
+    "Copy details", function () {
+      fillFormFromOrder(first);
+      if ($("fDone")) $("fDone").value = "";
+      if ($("fStart")) $("fStart").value = "";
+      if ($("fBack")) $("fBack").value = "";
+      setSeg("segFin", "FALSE");
+      writeSlog([]);
+      toast("Copied details from #" + first.seq + ". Times and finish were left blank for the new row.");
+      if ($("fCustomer")) $("fCustomer").focus();
+    });
+  /* Add-anyway is the remaining Cancel-adjacent action when submitting. */
+  if (onAddNew) {
+    var host = $("modalHost");
+    var acts = host.querySelector(".modal-actions");
+    if (acts) {
+      var extra = el("button", "btn ghost", "Add new anyway");
+      extra.type = "button";
+      extra.addEventListener("click", function () { closeModal(); onAddNew(); });
+      acts.insertBefore(extra, acts.firstChild);
+    }
+  }
 }
 function submitOrder(e) {
   e.preventDefault();
@@ -4520,6 +4809,7 @@ function submitOrder(e) {
     reqShipDate: parseDay($("fShipDate") ? $("fShipDate").value : ""),
     eventDate: parseDay($("fEventDate") ? $("fEventDate").value : ""),
     otype: normType($("fType") ? $("fType").value : ""),
+    pgroup: formPGroup(),
     qty: parseQty(rawQty),
     amount: parseMoney(rawAmount),
     proof: segValue("segProof"),
@@ -4536,17 +4826,14 @@ function submitOrder(e) {
     updatedAt: nowIso()
   };
 
-  var dupe = null;
-  if (orderId) {
-    dupe = state.orders.filter(function (o) {
-      return o.orderId && o.orderId.toLowerCase() === orderId.toLowerCase() && o.date === state.scopeDate;
-    })[0] || null;
-  }
+  var priorHits = orderId ? findPriorOrders(orderId) : [];
+  var sameDay = priorHits.filter(function (o) { return o.date === state.scopeDate; })[0] || null;
   var write = function () {
     var rec = normalizeOrder(fields);
     rec.date = state.scopeDate;
     rec.seq = nextSeq(state.scopeDate);
     rec.createdAt = nowIso();
+    applyCompletionFlags(rec);
     state.orders.push(rec);
     if (!persistOrders()) {
       /* Leave the typed values in the form so nothing has to be re-keyed. */
@@ -4585,9 +4872,17 @@ function submitOrder(e) {
       }, 9000);
     }
   };
-  if (dupe) {
+  if (sameDay) {
     confirmModal("Order " + orderId + " is already on this date",
-      "It is logged as #" + dupe.seq + ". Add it again anyway?", "Add anyway", write);
+      "It is logged as #" + sameDay.seq +
+      (sameDay.fin === "TRUE" ? " and marked finished." : " and is still open.") +
+      " Open the existing row, or add another copy?",
+      "Open existing", function () { openExistingOrder(sameDay); },
+      "Add anyway", write);
+    return;
+  }
+  if (priorHits.length) {
+    offerPriorOrder(priorHits, write);
     return;
   }
   write();
@@ -4928,14 +5223,14 @@ function csvCell(v) {
 function exportCsv() {
   var rows = visibleOrders();
   if (!rows.length) { toast("There is nothing in view to export."); return; }
-  var head = ["#", "Date", "Date Placed", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "Qty", "Amount",
+  var head = ["#", "Date", "Date Placed", "8 Digit Order#", "Customer ( Email / Name )", "Req. Ship Date", "Event Date", "Type", "PGroup", "Qty", "Amount",
               "PROOF?", "Marking", "Status",
               "Time Started", "Time of Completion", "Time Taken (min)",
               "Proof RCVD Time", "Proof Turnaround (min)", "FIN?", "Saved to Drive?", "NOTES"];
   var lines = [head.map(csvCell).join(",")];
   rows.forEach(function (o) {
     var taken = timeTaken(o), turn = turnaround(o);
-    lines.push([o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.qty,
+    lines.push([o.seq, o.date, o.placedDate, o.orderId, o.customer, o.reqShipDate, o.eventDate, o.otype, o.pgroup, o.qty,
                 o.amount === "" ? "" : Number(o.amount).toFixed(2), o.proof, o.marking, o.status,
                 o.startTime, o.completionTime, taken === null ? "" : taken,
                 o.proofRcvdTime, turn === null ? "" : turn, o.fin, o.savedToDrive, o.notes]
@@ -6532,11 +6827,12 @@ function wire() {
 /* ---------------------------------------------------------------- start */
 function wireKpiRibbonResize() {
   var ribbon = $("ribbon");
-  if (!ribbon) return;
+  var bar = $("ledgerBar");
   syncKpiRibbonHeight();
   if (window.ResizeObserver) {
     var ro = new ResizeObserver(function () { syncKpiRibbonHeight(); });
-    ro.observe(ribbon);
+    if (ribbon) ro.observe(ribbon);
+    if (bar) ro.observe(bar);
   } else {
     var lastW = window.innerWidth;
     window.addEventListener("resize", function () {
