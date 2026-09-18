@@ -205,6 +205,9 @@ html[data-tone="dark"] .panel-toggle[aria-expanded="false"]{color:var(--brass-li
   display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 22px;height:62px}
 .weekbar .left{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
 .weekbar .right{display:flex;align-items:center;gap:9px;justify-content:flex-end}
+.bingo-btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.bingo-btn[hidden]{display:none}
+.bingo-btn.live{box-shadow:0 0 0 2px var(--go-bg,rgba(0,0,0,.06)) inset}
 .weeknav{display:flex;align-items:center;gap:6px;justify-self:center}
 .wk{background:var(--surface);border:1px solid var(--line);border-radius:7px;width:34px;height:34px;cursor:pointer;
   color:var(--text-2);font-size:16px;line-height:1;transition:background .15s var(--ease),color .15s}
@@ -475,6 +478,9 @@ td.seq.k-warn{border-left-color:var(--hold)}
 td.seq.k-hot{border-left-color:var(--stop)}
 td.oid{font-family:var(--mono);font-weight:500}
 td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
+.nextday{display:inline-block;margin-left:4px;padding:0 3px;border-radius:3px;font-size:9px;
+  line-height:13px;vertical-align:top;background:var(--hold-bg);color:var(--hold);
+  border:1px solid var(--hold);font-family:var(--sans)}
 td.dur{font-family:var(--mono);font-size:12px}
 td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
 td.num.zero{color:var(--muted)}
@@ -1804,6 +1810,16 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
       <button class="wk" id="weekNext" title="Next week" aria-label="Next week">›</button>
     </div>
     <div class="right">
+      <button class="btn sm bingo-btn" id="btnBingo" type="button" hidden
+              title="Friday bingo — opens a small window that floats on top of everything">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/>
+          <circle cx="15.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+          <circle cx="8.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/>
+        </svg>
+        <span>Bingo</span>
+      </button>
       <select id="scopeSel" aria-label="Date scope" style="width:auto">
         <option value="day">One day</option>
         <option value="week">Whole week</option>
@@ -2579,10 +2595,48 @@ function prettyTime(v) {
   var hh = h % 12; if (hh === 0) hh = 12;
   return hh + ":" + p[1] + " " + ap;
 }
-function spanMinutes(a, b) {
+/* Times are stored as bare clocks, so a job picked up at 23:50 and finished at
+   00:10 used to read as -1420 minutes and render as an em dash. If the end is
+   earlier than the start we roll it into the next calendar day, but only when
+   the rolled span is short enough to be a real midnight crossing — a reversed
+   pair like 14:00 -> 09:00 is a typo, not a 19-hour job, and still reads "—". */
+var ROLL_WORK  = 480;                   /* a job itself: at most 8h overnight  */
+var ROLL_PROOF = 1440;                  /* a proof coming back: any next day   */
+function crossesMidnight(a, b, limit) {
+  var x = minutesOf(a), y = minutesOf(b);
+  if (x === null || y === null) return false;
+  return y < x && (y + 1440 - x) <= (limit || ROLL_WORK);
+}
+function spanMinutes(a, b, limit) {
   var x = minutesOf(a), y = minutesOf(b);
   if (x === null || y === null) return null;
+  if (crossesMidnight(a, b, limit)) y += 1440;
   return Math.round(y - x);
+}
+/* Which calendar day a given stamp belongs to. Start is always the order's own
+   day; a finish or proof return that crossed midnight belongs to the next one. */
+function stampDayKey(o, field) {
+  if (!o || !o.date) return "";
+  var day = o.date;
+  if (field === "startTime") return day;
+  if (crossesMidnight(o.startTime, o.completionTime)) day = nextDayKey(day);
+  if (field === "completionTime") return day;
+  var base = isClock(o.completionTime) ? o.completionTime : o.startTime;
+  if (crossesMidnight(base, o.proofRcvdTime, ROLL_PROOF)) day = nextDayKey(day);
+  return day;
+}
+function nextDayKey(key) {
+  var d = dateFromKey(key);
+  if (isNaN(d.getTime())) return key || "";
+  d.setDate(d.getDate() + 1);
+  return todayKey(d);
+}
+/* "Friday, September 18, 2026 · 9:20 AM" — the full stamp, date included. */
+function stampLabel(o, field) {
+  var v = o ? o[field] : "";
+  if (!isClock(v)) return v || "";
+  var day = stampDayKey(o, field);
+  return day ? (prettyDate(day) + " · " + prettyTime(v)) : prettyTime(v);
 }
 function holdMinutes(o) {
   if (!o) return 0;
@@ -2600,7 +2654,7 @@ function timeTaken(o) {
   if (span === null) return null;
   return Math.max(0, Math.round(span - holdMinutes(o)));
 }
-function turnaround(o) { return spanMinutes(o.completionTime, o.proofRcvdTime); }
+function turnaround(o) { return spanMinutes(o.completionTime, o.proofRcvdTime, ROLL_PROOF); }
 function durationText(min) {
   if (min === null || min === undefined) return "";
   if (min < 0) return "—";
@@ -3582,6 +3636,7 @@ function render() {
   renderFooter();
   $("scopeSel").value = state.scope;
   $("entryEyebrow").textContent = prettyDate(state.scopeDate);
+  refreshBingoButton();
   updateCalcs();
 }
 /* buildChrome() rebuilds the inputs, so anything half-typed is carried over. */
@@ -3815,6 +3870,15 @@ function timeCell(o, field) {
   }
   if (isClock(o[field]) || o[field]) {
     td.textContent = prettyTime(o[field]);
+    if (isClock(o[field])) {
+      td.title = stampLabel(o, field);
+      /* A stamp that landed on a later calendar day gets a marker, so a 12:05 AM
+         finish is not mistaken for one that happened before the 11:50 PM start. */
+      if (stampDayKey(o, field) !== o.date) {
+        td.appendChild(el("span", "nextday", "+1"));
+        td.title += " (next day)";
+      }
+    }
     if (field === "startTime" && isLive(o)) td.className = "tm running";
   } else {
     var b = el("button", "nowbtn", "now");
@@ -4254,7 +4318,7 @@ function stampNow(id, field) {
   }
   scheduleRender();
   var names = { startTime: "Started", completionTime: "Ended", proofRcvdTime: "Proof back" };
-  toast(names[field] + " on #" + o.seq + " set to " + prettyTime(o[field]) + ".", {
+  toast(names[field] + " on #" + o.seq + " set to " + stampLabel(o, field) + ".", {
     label: "Undo",
     run: function () {
       o[field] = prev;
@@ -6560,6 +6624,177 @@ function shiftWeek(delta) {
 }
 
 /* ------------------------------------------------------------ listeners */
+/* ------------------------------------------------- Friday bingo side window */
+/* A small floating window for the Friday game. Where the browser supports the
+   Document Picture-in-Picture API (Chrome/Edge 116+) this is a real always-on-
+   top OS window; everywhere else it falls back to an ordinary small pop-up,
+   which is the closest a web page is allowed to get.
+
+   Put the live URL in BINGO_URL_DEFAULT to hard-wire it for everyone. Left
+   empty, the button asks for it once and remembers it in this browser. */
+var BINGO_URL_DEFAULT = "https://conorcrownawardproofs-star.github.io/bingo/";
+var BINGO_FRIDAY_ONLY = true;          /* set false to try it on any weekday */
+var BINGO_SIZE = { width: 420, height: 560 };
+var bingoWin = null, bingoWatch = null;
+
+function bingoUrl() {
+  var p = readJson(KEY_PREFS, {});
+  return String(p.bingoUrl || BINGO_URL_DEFAULT || "").trim();
+}
+function setBingoUrl(u) {
+  var p = readJson(KEY_PREFS, {});
+  p.bingoUrl = String(u || "").trim();
+  writeJson(KEY_PREFS, p);
+}
+/* Only ever hand back an absolute http(s) address, so a stray "javascript:"
+   in prefs cannot be talked into running. */
+function safeBingoUrl() {
+  var raw = bingoUrl();
+  if (!raw) return "";
+  try {
+    var u = new URL(/^https?:\/\//i.test(raw) ? raw : "https://" + raw);
+    return (u.protocol === "http:" || u.protocol === "https:") ? u.href : "";
+  } catch (e) { return ""; }
+}
+function isBingoDay() { return !BINGO_FRIDAY_ONLY || new Date().getDay() === 5; }
+function bingoOpen() { return !!(bingoWin && !bingoWin.closed); }
+
+function refreshBingoButton() {
+  var b = $("btnBingo");
+  if (!b) return;
+  b.hidden = !isBingoDay();
+  b.classList.toggle("live", bingoOpen());
+}
+function watchBingoWindow() {
+  if (bingoWatch) clearInterval(bingoWatch);
+  bingoWatch = setInterval(function () {
+    if (bingoOpen()) return;
+    clearInterval(bingoWatch); bingoWatch = null;
+    bingoWin = null;
+    refreshBingoButton();
+  }, 1000);
+}
+
+function openBingo() {
+  var url = safeBingoUrl();
+  if (!url) { askBingoUrl(); return; }
+  if (bingoOpen()) { try { bingoWin.focus(); } catch (e) {} return; }
+
+  if (window.documentPictureInPicture && documentPictureInPicture.requestWindow) {
+    documentPictureInPicture.requestWindow(BINGO_SIZE).then(function (w) {
+      bingoWin = w;
+      paintBingoWindow(w, url);
+      w.addEventListener("pagehide", function () { bingoWin = null; refreshBingoButton(); });
+      refreshBingoButton();
+    }).catch(function () { openBingoPopup(url); });
+    return;
+  }
+  openBingoPopup(url);
+}
+
+/* The always-on-top version: our own document, with the live site framed. */
+function paintBingoWindow(w, url) {
+  var d = w.document;
+  d.title = "Friday bingo";
+  var st = d.createElement("style");
+  st.textContent =
+    "html,body{margin:0;height:100%;background:#101010;color:#e9e9e9;" +
+      "font:13px/1.45 'Archivo','Segoe UI',Roboto,Helvetica,Arial,sans-serif}" +
+    "#wrap{display:flex;flex-direction:column;height:100%}" +
+    "#frame{flex:1 1 auto;width:100%;border:0;background:#fff}" +
+    "#bar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:7px 10px;" +
+      "background:#191919;border-top:1px solid #2b2b2b}" +
+    "#bar button{background:none;border:0;padding:0;font:inherit;color:#9ec5ff;cursor:pointer}" +
+    "#bar button:hover{text-decoration:underline}" +
+    "#bar .note{margin-left:auto;opacity:.55;font-size:11px}";
+  d.head.appendChild(st);
+
+  var wrap = d.createElement("div"); wrap.id = "wrap";
+  var fr = d.createElement("iframe");
+  fr.id = "frame";
+  fr.src = url;
+  fr.setAttribute("referrerpolicy", "no-referrer-when-downgrade");
+  fr.setAttribute("allow", "clipboard-write; autoplay");
+
+  var bar = d.createElement("div"); bar.id = "bar";
+  var tab = d.createElement("button"); tab.type = "button"; tab.textContent = "Open in a tab";
+  tab.addEventListener("click", function () { window.open(url, "_blank", "noopener"); });
+  var edit = d.createElement("button"); edit.type = "button"; edit.textContent = "Change link";
+  edit.addEventListener("click", function () { try { w.close(); } catch (e) {} askBingoUrl(); });
+  var note = d.createElement("span"); note.className = "note"; note.textContent = "stays on top";
+  bar.appendChild(tab); bar.appendChild(edit); bar.appendChild(note);
+
+  wrap.appendChild(fr); wrap.appendChild(bar);
+  d.body.appendChild(wrap);
+
+  /* Some hosts refuse to be framed (X-Frame-Options / frame-ancestors). We
+     cannot read a cross-origin frame to find out, so offer the way out. */
+  setTimeout(function () {
+    if (!bingoOpen()) return;
+    note.textContent = "blank? use Open in a tab";
+  }, 5000);
+}
+
+/* Everywhere else: a plain small window. Not pinned, but it loads the site
+   directly, so nothing can refuse to be framed. */
+function openBingoPopup(url) {
+  var feat = "popup=yes,width=" + BINGO_SIZE.width + ",height=" + BINGO_SIZE.height +
+             ",menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes";
+  var w = window.open(url, "caot_bingo", feat);
+  if (!w) {
+    toast("The bingo window was blocked. Allow pop-ups for this site, then try again.", null, 7000);
+    return;
+  }
+  bingoWin = w;
+  try { w.focus(); } catch (e) {}
+  watchBingoWindow();
+  refreshBingoButton();
+  toast("This browser cannot pin a window on top — Chrome or Edge gives you the floating one.", null, 6500);
+}
+
+function askBingoUrl() {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal");
+  box.appendChild(el("h3", null, "Friday bingo"));
+  box.appendChild(el("p", "sub", "Paste the address of the live bingo page. It is kept in this browser, so you only do this once."));
+  var inp = document.createElement("input");
+  inp.type = "url";
+  inp.placeholder = "https://your-name.github.io/bingo/";
+  inp.value = bingoUrl();
+  inp.style.width = "100%";
+  box.appendChild(inp);
+  var err = el("p", "sub", "");
+  err.style.color = "var(--stop)"; err.hidden = true;
+  box.appendChild(err);
+
+  var acts = el("div", "modal-actions");
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", closeModal);
+  var ok = el("button", "btn", "Save and open");
+  ok.type = "button";
+  function save() {
+    setBingoUrl(inp.value);
+    if (!safeBingoUrl()) {
+      err.textContent = "That does not look like a web address. It should start with https://";
+      err.hidden = false;
+      return;
+    }
+    closeModal();
+    openBingo();
+  }
+  ok.addEventListener("click", save);
+  inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } });
+  acts.appendChild(cancel); acts.appendChild(ok);
+  box.appendChild(acts);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  inp.focus();
+}
+
 function wire() {
   /* Two tabs open on the same ledger used to overwrite each other silently.
      This one notices the other's write and folds it in. */
@@ -6606,6 +6841,13 @@ function wire() {
   $("weekPrev").addEventListener("click", function () { shiftWeek(-1); });
   $("weekNext").addEventListener("click", function () { shiftWeek(1); });
   $("btnThisWeek").addEventListener("click", function () { selectDay(todayKey()); render(); });
+  $("btnBingo").addEventListener("click", openBingo);
+  /* A tab left open overnight should notice when it becomes Friday, and stop
+     offering the button when it stops being Friday. */
+  setInterval(refreshBingoButton, 60000);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) refreshBingoButton();
+  });
   $("scopeSel").addEventListener("change", function () {
     state.scope = this.value;
     state.inlineId = null;
