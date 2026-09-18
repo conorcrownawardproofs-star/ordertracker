@@ -6734,7 +6734,6 @@ function shiftWeek(delta) {
 var BINGO_URL_DEFAULT = "";
 var BINGO_FRIDAY_ONLY = true;          /* set false to try it on any weekday */
 var BINGO_SIZE = { width: 250, height: 250 };
-var BINGO_ZOOM = 0.5;                  /* the framed page is drawn at half size */
 var bingoWin = null, bingoWatch = null, bingoTrack = null;
 
 function bingoUrl() {
@@ -6808,11 +6807,9 @@ function paintBingoWindow(w, url) {
       "font:11px/1.35 'Archivo','Segoe UI',Roboto,Helvetica,Arial,sans-serif}" +
     "#wrap{display:flex;flex-direction:column;height:100%}" +
     "#shell{flex:1 1 auto;position:relative;overflow:hidden;background:#fff}" +
-    /* The frame is laid out at 1/zoom of the shell and then scaled down, so the
-       site believes it has a full-size viewport and we see it at half scale. */
-    "#frame{position:absolute;top:0;left:0;border:0;" +
-      "width:" + Math.round(100 / BINGO_ZOOM) + "%;height:" + Math.round(100 / BINGO_ZOOM) + "%;" +
-      "transform:scale(" + BINGO_ZOOM + ");transform-origin:0 0}" +
+    /* The bingo player scales itself to whatever viewport it is given, so the
+       frame is simply handed the full shell and left alone. */
+    "#frame{position:absolute;inset:0;width:100%;height:100%;border:0}" +
     "#bar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:4px 6px;" +
       "background:#191919;border-top:1px solid #2b2b2b;font-size:10px}" +
     "#bar button{background:none;border:0;padding:0;font:inherit;color:#9ec5ff;cursor:pointer}" +
@@ -6835,7 +6832,7 @@ function paintBingoWindow(w, url) {
   var edit = d.createElement("button"); edit.type = "button"; edit.textContent = "Link";
   edit.title = "Change the bingo link";
   edit.addEventListener("click", function () { try { w.close(); } catch (e) {} askBingoUrl(); });
-  var note = d.createElement("span"); note.className = "note"; note.textContent = "50%";
+  var note = d.createElement("span"); note.className = "note"; note.textContent = "bingo";
   bar.appendChild(tab); bar.appendChild(edit); bar.appendChild(note);
 
   wrap.appendChild(shell); wrap.appendChild(bar);
@@ -6891,8 +6888,7 @@ function openBingoPopup(url) {
     return;
   }
   bingoWin = w;
-  /* Same wrapper as the floating version, so the 50% zoom and the escape hatch
-     are there too — a 250px window is unusable at full scale. */
+  /* Same wrapper as the floating version, so the escape hatch is there too. */
   try {
     w.document.open();
     w.document.write("<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>");
