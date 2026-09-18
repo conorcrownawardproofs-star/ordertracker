@@ -478,6 +478,10 @@ td.seq.k-warn{border-left-color:var(--hold)}
 td.seq.k-hot{border-left-color:var(--stop)}
 td.oid{font-family:var(--mono);font-weight:500}
 td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
+.tm-clock{display:block;white-space:nowrap}
+.tm-date{display:block;font-family:var(--sans);font-size:9.5px;line-height:12px;
+  letter-spacing:.2px;color:var(--text-2);opacity:.62;white-space:nowrap}
+.tm-date.rolled{opacity:1;color:var(--hold)}
 .nextday{display:inline-block;margin-left:4px;padding:0 3px;border-radius:3px;font-size:9px;
   line-height:13px;vertical-align:top;background:var(--hold-bg);color:var(--hold);
   border:1px solid var(--hold);font-family:var(--sans)}
@@ -3860,6 +3864,14 @@ function renderTable() {
   body.appendChild(frag);
   state.flashId = null;
 }
+/* The date is shown on the face of the cell whenever it tells you something the
+   column header does not: in week/everything views rows come from several days,
+   and a stamp that rolled past midnight belongs to a different day than its row. */
+function stampDateNeeded(o, field) {
+  if (!isClock(o[field]) || !o.date) return false;
+  if (stampDayKey(o, field) !== o.date) return true;
+  return state.scope !== "day";
+}
 function timeCell(o, field) {
   var td = el("td", "tm");
   if ((field === "proofRcvdTime") && noProofNeeded(o)) {
@@ -3869,14 +3881,15 @@ function timeCell(o, field) {
     return td;
   }
   if (isClock(o[field]) || o[field]) {
-    td.textContent = prettyTime(o[field]);
+    var rolled = isClock(o[field]) && o.date && stampDayKey(o, field) !== o.date;
+    var line = el("span", "tm-clock", prettyTime(o[field]));
+    td.appendChild(line);
     if (isClock(o[field])) {
-      td.title = stampLabel(o, field);
-      /* A stamp that landed on a later calendar day gets a marker, so a 12:05 AM
-         finish is not mistaken for one that happened before the 11:50 PM start. */
-      if (stampDayKey(o, field) !== o.date) {
-        td.appendChild(el("span", "nextday", "+1"));
-        td.title += " (next day)";
+      td.title = stampLabel(o, field) + (rolled ? " (next day)" : "");
+      if (rolled) line.appendChild(el("span", "nextday", "+1"));
+      if (stampDateNeeded(o, field)) {
+        td.appendChild(el("span", "tm-date" + (rolled ? " rolled" : ""),
+                          shortDate(stampDayKey(o, field))));
       }
     }
     if (field === "startTime" && isLive(o)) td.className = "tm running";
@@ -6632,7 +6645,7 @@ function shiftWeek(delta) {
 
    Put the live URL in BINGO_URL_DEFAULT to hard-wire it for everyone. Left
    empty, the button asks for it once and remembers it in this browser. */
-var BINGO_URL_DEFAULT = "https://conorcrownawardproofs-star.github.io/bingo/";
+var BINGO_URL_DEFAULT = "";
 var BINGO_FRIDAY_ONLY = true;          /* set false to try it on any weekday */
 var BINGO_SIZE = { width: 420, height: 560 };
 var bingoWin = null, bingoWatch = null;
@@ -7120,6 +7133,8 @@ window.__CAOT__ = {
   normalizeOrder: normalizeOrder, visibleOrders: visibleOrders, getUsers: getUsers,
   toB64: toB64, fromB64: fromB64, maskEmail: maskEmail, csvCell: csvCell,
   nextSeq: nextSeq, prettyTime: prettyTime, classifyStatus: classifyStatus,
+  stampLabel: stampLabel, stampDayKey: stampDayKey, timeCell: timeCell,
+  crossesMidnight: crossesMidnight, stampDateNeeded: stampDateNeeded,
   statusParts: statusParts, rowAccent: rowAccent, mondayOf: mondayOf,
   weekdayKeys: weekdayKeys, snapToWeekday: snapToWeekday, durationText: durationText,
   summarize: summarize, summaryText: summaryText, installBootstrap: installBootstrap,
