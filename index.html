@@ -489,22 +489,39 @@ td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 .adv-ok{border-color:var(--go);background:var(--go-bg);color:var(--go)}
 .adv-suggest{border-color:var(--hold);background:var(--hold-bg);color:var(--hold)}
 .adv-warn{border-color:var(--stop);background:var(--stop-bg);color:var(--stop)}
-.pgroup-modal{max-width:min(860px,94vw)}
-table.pgroup-chart{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:12px}
+/* Two classes, so this beats the 440px cap on .modal regardless of which
+   rule comes first in the sheet — the single-class version was losing and
+   the chart was being squeezed into the default narrow dialog. */
+.modal.pgroup-modal{max-width:min(1180px,96vw);padding:22px 26px}
+table.pgroup-chart{width:100%;border-collapse:collapse;margin:12px 0 4px;font-size:13px;
+  table-layout:auto}
 table.pgroup-chart th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--text-2);padding:5px 8px;border-bottom:1px solid var(--line)}
 table.pgroup-chart td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-table.pgroup-chart .pg-g{font-family:var(--mono);font-weight:700;white-space:nowrap}
-table.pgroup-chart .pg-amt{font-family:var(--mono);white-space:nowrap}
-table.pgroup-chart .pg-what{color:var(--text-2)}
-.pgroup-notes-h{margin-top:14px;font-weight:700;font-size:12px}
-ul.pgroup-notes{margin:6px 0 0;padding-left:18px;font-size:11.5px;color:var(--text-2);line-height:1.5}
-ul.pgroup-notes li{margin-bottom:4px}
+table.pgroup-chart .pg-g{font-family:var(--mono);font-weight:700;white-space:nowrap;width:1%}
+table.pgroup-chart .pg-amt{font-family:var(--mono);white-space:nowrap;width:1%}
+table.pgroup-chart td:nth-child(2){white-space:nowrap;width:1%}
+/* The explanation takes whatever is left, which on a wide screen is most of
+   the dialog, so it reads as a sentence instead of wrapping every word. */
+table.pgroup-chart .pg-what{color:var(--text-2);width:auto;line-height:1.45}
+table.pgroup-chart tbody tr:hover{background:var(--surface-2)}
+.pgroup-notes-h{margin-top:16px;font-weight:700;font-size:13px}
+ul.pgroup-notes{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-2);
+  line-height:1.55;columns:2;column-gap:28px}
+ul.pgroup-notes li{margin-bottom:6px;break-inside:avoid}
+@media (max-width:860px){ ul.pgroup-notes{columns:1} }
+.pgrp.g-stl{background:var(--code-bg,var(--surface-2));color:var(--code,var(--text-2));
+  border-color:var(--code,var(--line))}
 .pgrp.conflict{outline:2px solid var(--stop);outline-offset:1px}
-@media (max-width:700px){ table.pgroup-chart .pg-what{display:none} }
+@media (max-width:700px){
+  table.pgroup-chart{font-size:12px}
+  table.pgroup-chart td:nth-child(2){white-space:normal}
+}
 .stampdate{font-size:10.5px;padding:2px 4px;width:100%;box-sizing:border-box;margin-top:3px;
   color:var(--text-2);background:transparent;border:1px solid var(--line);border-radius:4px}
 .stampdate:focus{color:var(--text);border-color:var(--crown-dim);outline:none}
+.holdinput{font-size:10.5px;width:100%;box-sizing:border-box;margin-top:3px;padding:2px 4px}
+.hold-gated .stampdate{opacity:.45;cursor:not-allowed}
 .timefield .stampdate{flex:0 0 100%;order:3;margin-top:4px}
 .nextday{display:inline-block;margin-left:4px;padding:0 3px;border-radius:3px;font-size:9px;
   line-height:13px;vertical-align:top;background:var(--hold-bg);color:var(--hold);
@@ -651,7 +668,19 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 
 /* ---------------- summary / modal / toast ---------------- */
 .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.modal.sum-modal{max-width:920px;max-height:calc(100vh - 32px);overflow-y:auto;padding:20px 22px}
+.modal.sum-modal{max-width:min(1560px,96vw);max-height:calc(100vh - 32px);overflow-y:auto;padding:20px 24px}
+/* The 920px cap left a wide monitor mostly empty while the panels stayed
+   cramped. Columns are added as the screen allows instead. */
+/* Two classes again: the plain .sum-panels rule further down the sheet would
+   otherwise win on equal specificity and pin the grid at two columns. */
+@media (min-width:1200px){ .sum-modal .sum-panels{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (min-width:1700px){
+  .sum-modal .sum-panels{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .sum-modal .sum-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+}
+.sum-scope-h{margin:16px 2px 6px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text-2);font-weight:700}
+.sum-cell.wk{border-style:dashed}
 .sum-modal .sub{margin-bottom:10px}
 .sum-modal .sum-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .sum-modal .sum-cell{padding:9px 11px}
@@ -2693,6 +2722,32 @@ function stampLabel(o, field) {
   var day = stampDayKey(o, field);
   return day ? (prettyDate(day) + " · " + prettyTime(v)) : prettyTime(v);
 }
+/* ---- Hold time, typed by hand -----------------------------------------
+   An order that gets stuck for days would otherwise report a "time taken" of
+   the whole wall-clock gap. Entering how long it sat on hold subtracts that
+   dead time, so the figure still means the work. Accepts "3d 4h 30m", "2h",
+   "90m" or a bare number of minutes. */
+function parseDuration(v) {
+  var t = String(v == null ? "" : v).trim().toLowerCase();
+  if (!t) return 0;
+  if (/^\d+(\.\d+)?$/.test(t)) return Math.round(Number(t));   /* bare minutes */
+  var total = 0, found = false;
+  t.replace(/(\d+(?:\.\d+)?)\s*([dhm])/g, function (_, n, unit) {
+    found = true;
+    total += Number(n) * (unit === "d" ? 1440 : unit === "h" ? 60 : 1);
+    return "";
+  });
+  return found ? Math.round(total) : 0;
+}
+function durationInput(min) {
+  var m = Math.max(0, Math.round(Number(min) || 0));
+  if (!m) return "";
+  var d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), r = m % 60, out = [];
+  if (d) out.push(d + "d");
+  if (h) out.push(h + "h");
+  if (r || !out.length) out.push(r + "m");
+  return out.join(" ");
+}
 function holdMinutes(o) {
   if (!o) return 0;
   var total = Number(o.heldMinutes) || 0;
@@ -3065,7 +3120,7 @@ function normType(v) {
   if (t === "N4H" || t === "N-4-H" || t === "NEED 4 HRS" || t === "NEED4H") return "N4H";
   return t.slice(0, 14);
 }
-var PGROUP_PRESETS = ["1", "2", "3", "4", "5", "6", "7", "PGRPNPAY", "OTHER"];
+var PGROUP_PRESETS = ["1", "2", "3", "4", "5", "6", "7", "PGRPNPAY", "STL", "OTHER"];
 function normPGroup(v, status) {
   var raw = String(v == null ? "" : v).trim();
   var s = raw.toUpperCase().replace(/\s+/g, "");
@@ -3073,12 +3128,17 @@ function normPGroup(v, status) {
   var num = s.match(/^PGROUP([1-7])$/) || s.match(/^PGRP([1-7])$/);
   if (num) return num[1];
   if (s === "PGRPNPAY" || s === "NOPAY" || s === "PGRP-NPAY") return "PGRPNPAY";
+  if (s === "STL" || s === "STRAIGHTTOLASER") return "STL";
   if (s === "OTHER") return "OTHER";
   if (raw && s !== "X" && s !== "NONE" && s !== "FALSE") return raw;
   var blob = String(status || "");
   var m = blob.match(/\bPGROUP\s*([1-7])\b/i) || blob.match(/\bPGRP\s*([1-7])\b/i);
   if (m) return m[1];
   if (/\bPGRPNPAY\b/i.test(blob)) return "PGRPNPAY";
+  /* "STL" is deliberately NOT read out of the status text. PGROUP3 and
+     PGRPNPAY are unambiguous group names, but a bare STL is usually a routing
+     remark in a note, and scanning for it put status text in the PGroup
+     column. It stays a preset somebody picks on purpose. */
   return "";
 }
 function pgroupLabel(v) {
@@ -3086,12 +3146,20 @@ function pgroupLabel(v) {
   if (!s) return "";
   if (/^[1-7]$/.test(s)) return "P" + s;
   if (s.toUpperCase() === "PGRPNPAY") return "PGRPNPAY";
+  if (s.toUpperCase() === "STL") return "STL";
   return s;
+}
+/* The full name, for buttons and prose: "PGROUP3", but STL and PGRPNPAY are
+   not numbered groups and reading "PGROUPSTL" is nonsense. */
+function pgroupFullName(v) {
+  var s = String(v || "").trim().toUpperCase();
+  return /^[1-7]$/.test(s) ? "PGROUP" + s : s;
 }
 function pgroupClass(v) {
   var s = String(v || "").trim().toUpperCase();
   if (/^[1-7]$/.test(s)) return "g-pay";
   if (s === "PGRPNPAY") return "g-npay";
+  if (s === "STL") return "g-stl";
   return s ? "g-other" : "";
 }
 function typeClass(t) {
@@ -3308,8 +3376,8 @@ var COLUMNS = [
   { key: "eventDate", label: "Event", entryLabel: "Event date", hint: "Day of the event", w: 5.2, wd: 4.8, sort: "eventDate", entry: "dayfield", field: "fEventDate" },
   { key: "otype",  label: "Type",     entryLabel: "Order type", hint: "RTR, INT, SAM, QTE, COR, N4H", w: 4.2,  wd: 3.8,  sort: "otype", entry: "type", field: "fType" },
   { key: "pgroup", label: "PGrp",     entryLabel: "PGroup", hint: "1–7, PGRPNPAY, or Other", w: 4.4, wd: 4, sort: "pgroup", entry: "pgroup", field: "segPGroup" },
-  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 3.4,  wd: 3.2,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
   { key: "amount", label: "Amount",   entryLabel: "Amount", hint: "Dollars, no $ needed", w: 5.4,  wd: 5,    sort: "amount", entry: "money", field: "fAmount", ph: "0.00" },
+  { key: "qty",    label: "Qty",      entryLabel: "Quantity", hint: "How many pieces", w: 3.4,  wd: 3.2,  sort: "qty", entry: "num", field: "fQty", ph: "1" },
   { key: "proof",  label: "Proof",    entryLabel: "Send proof?", hint: "Yes / No / N/A", w: 5.4,  wd: 5,    entry: "tri", field: "segProof" },
   { key: "marking",label: "Mark",     entryLabel: "Etch / logo", hint: "Nothing, etch, logo, or both", w: 6.4, wd: 6, entry: "mark", field: "segMark" },
   { key: "status", label: "Status",   entryLabel: "Status log", hint: "Stamp a code when the job moves", w: 9.2,  wd: 8.4,  entry: "slog", field: "fStatus", ph: "CLC, LEC, Proof sent" },
@@ -3825,14 +3893,24 @@ function syncKpiRibbonHeight() {
   }
 }
 
+/* A real median: with an even number of samples the two middle values are
+   averaged. The old copy took the upper middle, which read a whole bucket
+   high on even-sized days, and it existed twice — the ribbon and the summary
+   could disagree. One implementation now serves both.
+   Note the numeric sort: the default sort is lexicographic, so [9, 10, 100]
+   would otherwise order as 10, 100, 9. */
+function medianOf(list) {
+  var v = list.filter(function (n) {
+    return typeof n === "number" && isFinite(n) && n >= 0;
+  }).sort(function (a, b) { return a - b; });
+  if (!v.length) return null;
+  var mid = Math.floor(v.length / 2);
+  return v.length % 2 ? v[mid] : Math.round((v[mid - 1] + v[mid]) / 2);
+}
 function renderRibbon() {
   var scoped = state.orders.filter(inScope);
-  var med = function (list) {
-    var v = list.filter(function (n) { return n !== null && n >= 0; }).sort(function (a, b) { return a - b; });
-    return v.length ? v[Math.floor(v.length / 2)] : null;
-  };
-  var medTaken = med(scoped.map(timeTaken));
-  var medTurn = med(scoped.map(turnaround));
+  var medTaken = medianOf(scoped.map(timeTaken));
+  var medTurn = medianOf(scoped.map(turnaround));
   var codes = scoped.filter(function (o) { return isCode(o, "CLC") || isCode(o, "LEC"); }).length;
   var stats = [
     { n: scoped.length, l: scoped.length === 1 ? "order logged" : "orders logged", cls: "" },
@@ -4246,6 +4324,31 @@ function inlineRow(o, cols, focusKey) {
           fields[dkey] = dIn;
           td.appendChild(dIn);
         }
+        /* Moving the finish onto a later day is only allowed alongside a hold
+           time. An order stuck for three days is not three days of work, and
+           without the hold the "taken" figure would be nonsense, so the two
+           are entered together. */
+        if (c.key === "completionTime") {
+          var hIn = document.createElement("input");
+          hIn.className = "cellinput holdinput";
+          hIn.value = durationInput(o.heldMinutes);
+          hIn.placeholder = "hold";
+          hIn.title = "Time this order sat on hold — 3d 4h 30m, 2h, 90m, or plain minutes.\n" +
+                      "Needed before the finish can be moved to another day.";
+          fields.heldMinutes = hIn;
+          td.appendChild(hIn);
+
+          var gate = function () {
+            var ok = parseDuration(hIn.value) > 0;
+            dIn.disabled = !ok;
+            dIn.title = ok
+              ? "Date the order was finished"
+              : "Enter a hold time first, then this can move to another day";
+            td.classList.toggle("hold-gated", !ok);
+          };
+          hIn.addEventListener("input", gate);
+          gate();
+        }
         break;
       case "proof": case "fin": case "savedToDrive":
         var sel = document.createElement("select");
@@ -4375,7 +4478,11 @@ function saveInline(id) {
   o.startTime = start.value;
   o.completionTime = done.value;
   if (f.startDate) o.startDate = parseDay(f.startDate.value);
-  if (f.completionDate) o.completionDate = parseDay(f.completionDate.value);
+  if (f.heldMinutes) o.heldMinutes = parseDuration(f.heldMinutes.value);
+  /* A finish date only sticks while there is a hold to justify it. */
+  if (f.completionDate) {
+    o.completionDate = (Number(o.heldMinutes) > 0) ? parseDay(f.completionDate.value) : "";
+  }
   o.proof = f.proof.value;
   o.proofRcvdTime = o.proof === "FALSE" ? "" : back.value;
   o.proofRcvdDate = o.proof === "FALSE" ? "" :
@@ -5195,10 +5302,6 @@ function deleteOrder(id) {
 
 /* --------------------------------------------------------------- summary */
 function summarize(orders) {
-  var med = function (list) {
-    var v = list.filter(function (n) { return n !== null && n >= 0; }).sort(function (a, b) { return a - b; });
-    return v.length ? v[Math.floor(v.length / 2)] : null;
-  };
   var takens = orders.map(timeTaken), turns = orders.map(turnaround);
   var totalTaken = takens.reduce(function (s, n) { return s + (n !== null && n > 0 ? n : 0); }, 0);
   var ends = orders.map(function (o) { return minutesOf(o.completionTime); })
@@ -5236,7 +5339,7 @@ function summarize(orders) {
       orders.forEach(function (o) { if (o.otype) t[o.otype] = (t[o.otype] || 0) + 1; });
       return t;
     })(),
-    medTaken: med(takens), medTurn: med(turns), totalTaken: totalTaken,
+    medTaken: medianOf(takens), medTurn: medianOf(turns), totalTaken: totalTaken,
     timed: takens.filter(function (n) { return n !== null && n >= 0; }).length,
     first: firstMark, last: ends.length ? Math.max.apply(null, ends) : null,
     buckets: buckets, tally: tally
@@ -5344,7 +5447,7 @@ function openSummary() {
   });
 
   pWeek.classList.add("sum-financial");
-  pWeek.appendChild(el("div", "sum-h", "Week financial summary"));
+  pWeek.appendChild(el("div", "sum-h", "Week totals"));
   var weekRows = weekdayKeys(state.weekStart).map(function (key) {
     var ordersForDay = state.orders.filter(function (o) { return o.date === key; });
     var ds = summarize(ordersForDay);
@@ -5355,12 +5458,47 @@ function openSummary() {
   var activeDays = weekRows.filter(function (d) { return d.summary.count > 0; }).length;
   var avgDay = activeDays ? weekAmount / activeDays : 0;
 
+  /* Counts for the whole week, not just money. summarize() has already run
+     for each day, so these are folded up rather than recomputed. */
+  var wk = weekRows.reduce(function (a, d) {
+    var t = d.summary;
+    a.count += t.count; a.finished += t.finished; a.open += t.open;
+    a.proofs += t.proofs; a.awaiting += t.awaiting;
+    a.held += t.held; a.clc += t.clc; a.lec += t.lec;
+    a.totalTaken += t.totalTaken;
+    return a;
+  }, { count: 0, finished: 0, open: 0, proofs: 0, awaiting: 0,
+       held: 0, clc: 0, lec: 0, totalTaken: 0 });
+  /* Medians are not additive, so this one is taken over every order in the
+     week rather than averaged out of the per-day figures. */
+  var weekOrders = weekdayKeys(state.weekStart).reduce(function (list, key) {
+    return list.concat(state.orders.filter(function (o) { return o.date === key; }));
+  }, []);
+  var wkMedTaken = medianOf(weekOrders.map(timeTaken));
+
+  pWeek.appendChild(el("div", "sum-scope-h", "Whole week"));
+  var weekGrid = el("div", "sum-grid financial-grid");
+  [
+    [wk.count, "orders"], [wk.finished, "finished"], [wk.open, "still open"],
+    [wk.proofs, "proofs sent"], [wk.awaiting, "proofs outstanding"],
+    [wk.held, "held"], [activeDays, activeDays === 1 ? "active day" : "active days"],
+    [wkMedTaken === null ? "—" : durationText(wkMedTaken), "median time taken"],
+    [durationText(wk.totalTaken), "tracked working time"],
+    [weekQty || "—", "pieces"], [money(weekAmount), "order value"],
+    [activeDays ? money(avgDay) : "—", "avg value / active day"]
+  ].forEach(function (pair) {
+    var c = el("div", "sum-cell wk");
+    c.appendChild(el("b", null, pair[0]));
+    c.appendChild(el("span", null, pair[1]));
+    weekGrid.appendChild(c);
+  });
+  pWeek.appendChild(weekGrid);
+
+  pWeek.appendChild(el("div", "sum-scope-h", "Selected day"));
   var financialGrid = el("div", "sum-grid financial-grid");
   [
-    [money(weekAmount), "week order value"],
-    [activeDays ? money(avgDay) : "—", "avg value / active day"],
-    [money(s.amount || 0), "selected day"],
-    [weekQty || "—", "week pieces"]
+    [money(s.amount || 0), "order value"],
+    [s.qty || "—", "pieces"]
   ].forEach(function (pair) {
     var c = el("div", "sum-cell");
     c.appendChild(el("b", null, pair[0]));
@@ -7030,10 +7168,12 @@ var PGROUP_NOTES = [
   "STL is straight to laser."
 ];
 
-/* Product families that route to groups 2 and 4. These are not order types in
-   this app, so they are read out of the type field, the notes and the status
-   log, wherever somebody wrote them. */
-var TRP_FAMILY = /\b(TRP|MDL|PLQ|TROPHY|MEDAL|PLAQUE)\b/i;
+/* Groups 2 and 4 key off TRP / MDL / PLQ, which are item codes on the line
+   items rather than anything this app records, so they cannot be detected
+   here and are never suggested. They stay in the reference chart. A corporate
+   suggestion therefore requires a positive corporate signal — the COR type or
+   the word written out — rather than being inferred from the amount alone,
+   so a trophy order is left unsuggested instead of being called corporate. */
 var CORP_HINT = /\b(COR|CORP|CORPORATE)\b/i;
 
 function orderBlob(o) {
@@ -7072,13 +7212,10 @@ function suggestPGroup(o) {
   if (stlFlag(o) && (amt === null || amt < 900)) {
     return { g: "STL", why: "Marked STL and under $900 — straight to laser." };
   }
-  /* Groups 6 and 7 are corporate logo work specifically, so a trophy, medal
-     or plaque belongs in the 2/4 band even when it is an RTR or INT job. */
-  var isTrp = TRP_FAMILY.test(blob);
-  if (!isTrp && type === "INT" && hasLogo(o) && amt !== null && amt <= 899) {
+  if (type === "INT" && hasLogo(o) && amt !== null && amt <= 899) {
     return { g: "6", why: "INT corporate logo order at $899 or less." };
   }
-  if (!isTrp && type === "RTR" && hasLogo(o) && amt !== null && amt <= 249) {
+  if (type === "RTR" && hasLogo(o) && amt !== null && amt <= 249) {
     return { g: "7", why: "RTR corporate logo order at $249 or less." };
   }
   if (amt === 0 || (type === "COR" && amt === null)) {
@@ -7086,11 +7223,6 @@ function suggestPGroup(o) {
   }
   if (amt === null) return null;              /* everything below needs a price */
 
-  if (isTrp) {
-    return amt >= 500
-      ? { g: "2", why: "Trophy / medal / plaque order at $500 or more." }
-      : { g: "4", why: "Trophy / medal / plaque order under $500." };
-  }
   if (type === "COR" || CORP_HINT.test(blob)) {
     return amt >= 900
       ? { g: "1", why: "Corporate order at $900 or more." }
@@ -7113,7 +7245,7 @@ function proofExpectation(o) {
   if (g === "STL") return { verdict: "NO", why: "Straight to laser — it never stops in processing." };
   if (hasLogo(o)) {
     return { verdict: "YES", why: g
-      ? "Logo order in group " + pgroupLabel(g) + " — proofs go out on logo orders."
+      ? "Logo order in " + pgroupFullName(g) + " — proofs go out on logo orders."
       : "Logo order with no no-proof banner — assume a proof goes out." };
   }
   if (hasEtch(o)) return { verdict: "ASK", why: "Etch only, no logo — no proof unless the customer asks." };
@@ -7137,7 +7269,7 @@ function pgroupTooltip(v) {
   var g = normPGroup(v, "");
   var row = PGROUP_TABLE.filter(function (r) { return r.g === g; })[0];
   if (!row) return g ? "Group " + g : "";
-  return "PGROUP" + row.g + " · " + row.order + " · " + row.amount + "\n" + row.happens;
+  return pgroupFullName(row.g) + " · " + row.order + " · " + row.amount + "\n" + row.happens;
 }
 
 /* ---- The reference chart ------------------------------------------------ */
@@ -7158,7 +7290,7 @@ function openPGroupChart() {
   var tb = el("tbody");
   PGROUP_TABLE.forEach(function (r) {
     var tr = el("tr");
-    tr.appendChild(el("td", "pg-g", r.g === "STL" ? "STL" : (r.g === "PGRPNPAY" ? "PGRPNPAY" : "PGROUP" + r.g)));
+    tr.appendChild(el("td", "pg-g", pgroupFullName(r.g)));
     tr.appendChild(el("td", null, r.order));
     tr.appendChild(el("td", "pg-amt", r.amount));
     tr.appendChild(el("td", "pg-what", r.happens));
@@ -7211,9 +7343,10 @@ function renderPGroupAdvice() {
 
   var bits = [];
   if (sug && !current) {
-    bits.push({ cls: "adv-suggest", text: "Looks like PGROUP" + sug.g + " — " + sug.why, act: sug.g });
+    bits.push({ cls: "adv-suggest", text: "Looks like " + pgroupFullName(sug.g) + " — " + sug.why, act: sug.g });
   } else if (sug && normPGroup(current, "") !== sug.g) {
-    bits.push({ cls: "adv-warn", text: "Set to " + pgroupLabel(current) + ", but this looks like PGROUP" + sug.g + " — " + sug.why, act: sug.g });
+    bits.push({ cls: "adv-warn", text: "Set to " + pgroupLabel(current) + ", but this looks like " +
+                pgroupFullName(sug.g) + " — " + sug.why, act: sug.g });
   }
   if (exp) {
     var label = exp.verdict === "YES" ? "Proof expected" :
@@ -7227,10 +7360,11 @@ function renderPGroupAdvice() {
     var row = el("div", "adv-row " + b.cls);
     row.appendChild(el("span", null, b.text));
     if (b.act) {
-      var use = el("button", "link", "Use PGROUP" + b.act);
+      var use = el("button", "link", "Use " + pgroupFullName(b.act));
       use.type = "button";
       use.addEventListener("click", function () {
         setSeg("segPGroup", b.act);
+        syncPGroupOther();          /* hide the free-text box for a real preset */
         renderPGroupAdvice();
       });
       row.appendChild(use);
@@ -7570,6 +7704,8 @@ window.__CAOT__ = {
   normalizeOrder: normalizeOrder, visibleOrders: visibleOrders, getUsers: getUsers,
   toB64: toB64, fromB64: fromB64, maskEmail: maskEmail, csvCell: csvCell,
   nextSeq: nextSeq, prettyTime: prettyTime, classifyStatus: classifyStatus,
+  medianOf: medianOf, parseDuration: parseDuration, durationInput: durationInput,
+  openSummary: openSummary,
   suggestPGroup: suggestPGroup, proofExpectation: proofExpectation,
   proofConflict: proofConflict, openPGroupChart: openPGroupChart, PGROUP_TABLE: PGROUP_TABLE,
   stampLabel: stampLabel, stampDayKey: stampDayKey, timeCell: timeCell,
