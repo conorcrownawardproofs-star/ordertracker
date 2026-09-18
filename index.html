@@ -482,6 +482,26 @@ td.tm{font-family:var(--mono);font-size:12px;color:var(--text-2)}
 .tm-date{display:block;font-family:var(--sans);font-size:9.5px;line-height:12px;
   letter-spacing:.2px;color:var(--text-2);opacity:.62;white-space:nowrap}
 .tm-date.rolled{opacity:1;color:var(--hold)}
+.pgroup-advice{display:flex;flex-direction:column;gap:5px;margin:8px 2px 2px}
+.adv-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;
+  padding:5px 9px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2)}
+.adv-row .link{font-size:11.5px}
+.adv-ok{border-color:var(--go);background:var(--go-bg);color:var(--go)}
+.adv-suggest{border-color:var(--hold);background:var(--hold-bg);color:var(--hold)}
+.adv-warn{border-color:var(--stop);background:var(--stop-bg);color:var(--stop)}
+.pgroup-modal{max-width:min(860px,94vw)}
+table.pgroup-chart{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:12px}
+table.pgroup-chart th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-2);padding:5px 8px;border-bottom:1px solid var(--line)}
+table.pgroup-chart td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.pgroup-chart .pg-g{font-family:var(--mono);font-weight:700;white-space:nowrap}
+table.pgroup-chart .pg-amt{font-family:var(--mono);white-space:nowrap}
+table.pgroup-chart .pg-what{color:var(--text-2)}
+.pgroup-notes-h{margin-top:14px;font-weight:700;font-size:12px}
+ul.pgroup-notes{margin:6px 0 0;padding-left:18px;font-size:11.5px;color:var(--text-2);line-height:1.5}
+ul.pgroup-notes li{margin-bottom:4px}
+.pgrp.conflict{outline:2px solid var(--stop);outline-offset:1px}
+@media (max-width:700px){ table.pgroup-chart .pg-what{display:none} }
 .stampdate{font-size:10.5px;padding:2px 4px;width:100%;box-sizing:border-box;margin-top:3px;
   color:var(--text-2);background:transparent;border:1px solid var(--line);border-radius:4px}
 .stampdate:focus{color:var(--text);border-color:var(--crown-dim);outline:none}
@@ -1843,10 +1863,12 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
       <span class="edit-banner" id="editBanner" hidden></span>
       <div class="spacer"></div>
       <button type="button" class="btn ghost sm" id="btnEntryPdf" title="Attach a proof PDF after the order is saved">Proof PDF</button>
+      <button type="button" class="btn ghost sm" id="btnPgroupChart" title="PGroup routing and proof rules">PGroup chart</button>
       <span class="eyebrow">Leave anything blank and fill it in later.</span>
     </div>
     <form id="formOrder" novalidate>
       <div class="entrygrid" id="entrygrid"></div>
+      <div class="pgroup-advice" id="pgroupAdvice" hidden></div>
     </form>
   </div>
 
@@ -3593,6 +3615,7 @@ function wireEntryRow() {
         setSeg(id, b.getAttribute("data-v"));
         if (id === "segProof") { syncProofDependentFields(); updateCalcs(); queueDraft(); }
         if (id === "segPGroup") syncPGroupOther();
+        renderPGroupAdvice();
       }
     });
   });
@@ -3600,6 +3623,9 @@ function wireEntryRow() {
     $("fOrderId").addEventListener("change", function () { checkPriorOrderId($("fOrderId").value, false); });
     $("fOrderId").addEventListener("blur", function () { checkPriorOrderId($("fOrderId").value, false); });
   }
+  ["fAmount", "fType", "fNotes", "fStatus"].forEach(function (id) {
+    if ($(id)) $(id).addEventListener("input", renderPGroupAdvice);
+  });
   $("fStart").addEventListener("input", updateCalcs);
   ["fStartDate", "fDoneDate", "fBackDate"].forEach(function (id) {
     if ($(id)) $(id).addEventListener("change", updateCalcs);
@@ -3686,6 +3712,7 @@ function render() {
   $("entryEyebrow").textContent = prettyDate(state.scopeDate);
   refreshBingoButton();
   updateCalcs();
+  renderPGroupAdvice();
 }
 /* buildChrome() rebuilds the inputs, so anything half-typed is carried over. */
 var formCache = null;
@@ -3982,7 +4009,15 @@ function readRow(o, cols) {
         break;
       case "pgroup":
         td = el("td");
-        if (o.pgroup) td.appendChild(el("span", "pgrp " + pgroupClass(o.pgroup), pgroupLabel(o.pgroup)));
+        if (o.pgroup) {
+          var clash = proofConflict(o);
+          var chip = el("span", "pgrp " + pgroupClass(o.pgroup) + (clash ? " conflict" : ""),
+                        pgroupLabel(o.pgroup));
+          chip.title = pgroupTooltip(o.pgroup) +
+            (clash ? "\n\nPROOF is set to " + (o.proof === "TRUE" ? "yes" : "no") +
+                     ", but: " + clash.why : "");
+          td.appendChild(chip);
+        }
         break;
       case "qty":
         td = el("td", "num" + (o.qty === "" ? " zero" : ""), o.qty === "" ? "—" : o.qty);
@@ -6733,7 +6768,7 @@ function shiftWeek(delta) {
    empty, the button asks for it once and remembers it in this browser. */
 var BINGO_URL_DEFAULT = "";
 var BINGO_FRIDAY_ONLY = true;          /* set false to try it on any weekday */
-var BINGO_SIZE = { width: 250, height: 250 };
+var BINGO_SIZE = { width: 425, height: 425 };  /* edit these two numbers to resize */
 var bingoWin = null, bingoWatch = null, bingoTrack = null;
 
 function bingoUrl() {
@@ -6946,6 +6981,275 @@ function askBingoUrl() {
   inp.focus();
 }
 
+/* ==========================================================================
+   PGroup routing + proof expectation
+
+   An order's amount and type route it to a processing group, and that group
+   (together with whether there is a logo on the job) is what decides if the
+   customer gets a proof. The two used to be unrelated free-text fields here;
+   this ties them together so the entry row can say what it expects and flag a
+   contradiction before the order is filed.
+
+   Nothing below ever overwrites what a person typed. The group and the PROOF
+   switch stay manual; this only offers a suggestion and, when the saved value
+   disagrees with the table, says so.
+   ========================================================================== */
+
+/* The reference table, reproduced as data so the chart and the logic can
+   never drift apart. `test` decides whether an order looks like this group. */
+var PGROUP_TABLE = [
+  { g: "1", order: "Corporate", amount: "$900+",
+    happens: "Normal Engraving; Proofs sent on logo orders" },
+  { g: "2", order: "TRP / MDL / PLQ", amount: "$500+",
+    happens: "Normal Engraving; Proofs sent on logo orders" },
+  { g: "3", order: "Corporate", amount: "$899 or less",
+    happens: "Normal Engraving; Proofs sent on logo orders" },
+  { g: "4", order: "TRP / MDL / PLQ", amount: "$499 or less",
+    happens: "Normal Engraving; Proofs sent on logo orders" },
+  { g: "5", order: "Zero BAL / COR", amount: "—",
+    happens: "Process normally; No Proofs unless requested" },
+  { g: "6", order: "INT Corporate Logo", amount: "$899 or less",
+    happens: "ATP / STL; Engraving usually does not see it" },
+  { g: "7", order: "RTR Corporate Logo", amount: "$249 or less",
+    happens: "Normal Engraving; No Proofs" },
+  { g: "PGRPNPAY", order: "Process order prior to payment", amount: "Any",
+    happens: "Normal Engraving; Proofs sent, or EEC calculated and sent with CWP code after completion" },
+  { g: "STL", order: "Qualifying C/P below $900", amount: "—",
+    happens: "Straight to Laser — never stops in processing; goes from the rep/customer straight into production" }
+];
+
+var PGROUP_NOTES = [
+  "Order amount and order type decide the routing. The assigned group is visible in the order history: the AEP code follows the AQC code and names the group.",
+  "A \u201cNO ENG\u201d banner on the order means no proof is sent, whatever the amount says.",
+  "With no banner saying otherwise, assume a proof IS sent, even when the order meets a dollar rule. An INT order in group 3 for $95.00 with no logo uploaded at placement still gets a proof.",
+  "No logo and no etch: no proof unless the customer specifically asks.",
+  "Logo: follow the logo rules, and check for a no-proof banner, note or code.",
+  "CNP: proof required.",
+  "PGROUP6 routes INT \u2192 ATP \u2192 Laser.",
+  "PGROUP7 routes RTR \u2192 Processor (no proof) \u2192 Production.",
+  "STL is straight to laser."
+];
+
+/* Product families that route to groups 2 and 4. These are not order types in
+   this app, so they are read out of the type field, the notes and the status
+   log, wherever somebody wrote them. */
+var TRP_FAMILY = /\b(TRP|MDL|PLQ|TROPHY|MEDAL|PLAQUE)\b/i;
+var CORP_HINT = /\b(COR|CORP|CORPORATE)\b/i;
+
+function orderBlob(o) {
+  return [o && o.otype, o && o.status, o && o.notes,
+          o && statusTextFromLog(o.statusLog)].join(" ");
+}
+function hasLogo(o) {
+  var m = normMarking(o && o.marking);
+  return m === "LOGO" || m === "BOTH";
+}
+function hasEtch(o) {
+  var m = normMarking(o && o.marking);
+  return m === "ETCH" || m === "BOTH";
+}
+function amountOf(o) {
+  var a = o && o.amount;
+  return (a === "" || a === null || a === undefined) ? null : Number(a);
+}
+/* A banner or note that explicitly stops the proof. */
+function noEngBanner(o) {
+  return /\bNO\s*ENG(RAVING)?\b/i.test(orderBlob(o)) ||
+         /\bNO\s*PROOF\b/i.test(orderBlob(o));
+}
+function cnpFlag(o) { return /\bCNP\b/i.test(orderBlob(o)); }
+function stlFlag(o) { return /\bSTL\b/i.test(orderBlob(o)); }
+
+/* ---- Which group does this order look like? ---------------------------- */
+/* Returns { g, why } or null when there is not enough to go on. The order of
+   the checks is the order of the table: the narrow type+logo groups (6, 7)
+   are tested before the broad corporate bands, because an INT logo job under
+   $899 belongs in 6 even though it also satisfies group 3. */
+function suggestPGroup(o) {
+  if (!o) return null;
+  var amt = amountOf(o), type = normType(o.otype), blob = orderBlob(o);
+
+  if (stlFlag(o) && (amt === null || amt < 900)) {
+    return { g: "STL", why: "Marked STL and under $900 — straight to laser." };
+  }
+  /* Groups 6 and 7 are corporate logo work specifically, so a trophy, medal
+     or plaque belongs in the 2/4 band even when it is an RTR or INT job. */
+  var isTrp = TRP_FAMILY.test(blob);
+  if (!isTrp && type === "INT" && hasLogo(o) && amt !== null && amt <= 899) {
+    return { g: "6", why: "INT corporate logo order at $899 or less." };
+  }
+  if (!isTrp && type === "RTR" && hasLogo(o) && amt !== null && amt <= 249) {
+    return { g: "7", why: "RTR corporate logo order at $249 or less." };
+  }
+  if (amt === 0 || (type === "COR" && amt === null)) {
+    return { g: "5", why: amt === 0 ? "Zero balance order." : "COR order with no amount." };
+  }
+  if (amt === null) return null;              /* everything below needs a price */
+
+  if (isTrp) {
+    return amt >= 500
+      ? { g: "2", why: "Trophy / medal / plaque order at $500 or more." }
+      : { g: "4", why: "Trophy / medal / plaque order under $500." };
+  }
+  if (type === "COR" || CORP_HINT.test(blob)) {
+    return amt >= 900
+      ? { g: "1", why: "Corporate order at $900 or more." }
+      : { g: "3", why: "Corporate order at $899 or less." };
+  }
+  return null;
+}
+
+/* ---- Does this order get a proof? -------------------------------------- */
+/* verdict is "YES", "NO" or "ASK"; why explains which rule decided it. */
+function proofExpectation(o) {
+  if (!o) return null;
+  var g = normPGroup(o.pgroup, o.status) || (suggestPGroup(o) || {}).g || "";
+
+  if (cnpFlag(o)) return { verdict: "YES", why: "CNP on the order — a proof is required." };
+  if (noEngBanner(o)) return { verdict: "NO", why: "A no-engraving / no-proof banner is on the order." };
+  if (g === "7") return { verdict: "NO", why: "Group 7 routes RTR straight to the processor with no proof." };
+  if (g === "5") return { verdict: "ASK", why: "Group 5 processes normally — no proof unless the customer asks." };
+  if (g === "6") return { verdict: "ASK", why: "Group 6 goes INT \u2192 ATP \u2192 laser; engraving usually never sees it." };
+  if (g === "STL") return { verdict: "NO", why: "Straight to laser — it never stops in processing." };
+  if (hasLogo(o)) {
+    return { verdict: "YES", why: g
+      ? "Logo order in group " + pgroupLabel(g) + " — proofs go out on logo orders."
+      : "Logo order with no no-proof banner — assume a proof goes out." };
+  }
+  if (hasEtch(o)) return { verdict: "ASK", why: "Etch only, no logo — no proof unless the customer asks." };
+  return { verdict: "ASK", why: "No logo and no etch — no proof unless the customer asks." };
+}
+
+/* What the PROOF switch would be if the expectation were followed. "ASK"
+   maps to no tri-state at all, since either answer can be right. */
+function proofExpectationTri(v) {
+  return v === "YES" ? "TRUE" : v === "NO" ? "FALSE" : "";
+}
+/* True when the saved PROOF switch contradicts a confident expectation. */
+function proofConflict(o) {
+  var exp = proofExpectation(o);
+  if (!exp) return null;
+  var want = proofExpectationTri(exp.verdict);
+  if (!want || !o.proof || o.proof === "X") return null;
+  return o.proof === want ? null : exp;
+}
+function pgroupTooltip(v) {
+  var g = normPGroup(v, "");
+  var row = PGROUP_TABLE.filter(function (r) { return r.g === g; })[0];
+  if (!row) return g ? "Group " + g : "";
+  return "PGROUP" + row.g + " · " + row.order + " · " + row.amount + "\n" + row.happens;
+}
+
+/* ---- The reference chart ------------------------------------------------ */
+function openPGroupChart() {
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal pgroup-modal");
+  box.appendChild(el("h3", null, "PGroup routing & proofs"));
+  box.appendChild(el("p", "sub", "Amount and order type route the job to a group; the group and the logo decide the proof."));
+
+  var tbl = el("table", "pgroup-chart");
+  var thead = el("thead"), hr = el("tr");
+  ["Group", "Order", "Amount", "What happens"].forEach(function (h) {
+    hr.appendChild(el("th", null, h));
+  });
+  thead.appendChild(hr); tbl.appendChild(thead);
+  var tb = el("tbody");
+  PGROUP_TABLE.forEach(function (r) {
+    var tr = el("tr");
+    tr.appendChild(el("td", "pg-g", r.g === "STL" ? "STL" : (r.g === "PGRPNPAY" ? "PGRPNPAY" : "PGROUP" + r.g)));
+    tr.appendChild(el("td", null, r.order));
+    tr.appendChild(el("td", "pg-amt", r.amount));
+    tr.appendChild(el("td", "pg-what", r.happens));
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);
+  box.appendChild(tbl);
+
+  box.appendChild(el("div", "pgroup-notes-h", "Notes"));
+  var ul = el("ul", "pgroup-notes");
+  PGROUP_NOTES.forEach(function (n) { ul.appendChild(el("li", null, n)); });
+  box.appendChild(ul);
+
+  var acts = el("div", "modal-actions");
+  var close = el("button", "btn", "Close");
+  close.type = "button";
+  close.addEventListener("click", closeModal);
+  acts.appendChild(close);
+  box.appendChild(acts);
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  close.focus();
+}
+
+/* ---- Live advice under the entry row ----------------------------------- */
+/* Built from whatever is typed so far, so it updates as the amount, type,
+   marking and codes change. */
+function entryDraftOrder() {
+  return {
+    otype: $("fType") ? normType($("fType").value) : "",
+    amount: $("fAmount") ? parseMoney($("fAmount").value) : "",
+    marking: $("segMark") ? segValue("segMark") : "NONE",
+    pgroup: formPGroup(),
+    proof: segValue("segProof"),
+    status: ($("fStatus") ? $("fStatus").value : "") + "\n" + statusTextFromLog(readSlog()),
+    notes: $("fNotes") ? $("fNotes").value : "",
+    statusLog: readSlog()
+  };
+}
+function renderPGroupAdvice() {
+  var box = $("pgroupAdvice");
+  if (!box) return;
+  var draft = entryDraftOrder();
+  box.textContent = "";
+
+  var exp = proofExpectation(draft);
+  var sug = suggestPGroup(draft);
+  var current = formPGroup();
+
+  var bits = [];
+  if (sug && !current) {
+    bits.push({ cls: "adv-suggest", text: "Looks like PGROUP" + sug.g + " — " + sug.why, act: sug.g });
+  } else if (sug && normPGroup(current, "") !== sug.g) {
+    bits.push({ cls: "adv-warn", text: "Set to " + pgroupLabel(current) + ", but this looks like PGROUP" + sug.g + " — " + sug.why, act: sug.g });
+  }
+  if (exp) {
+    var label = exp.verdict === "YES" ? "Proof expected" :
+                exp.verdict === "NO" ? "No proof" : "Proof only if requested";
+    var want = proofExpectationTri(exp.verdict);
+    var clash = want && segValue("segProof") !== want && segValue("segProof") !== "X";
+    bits.push({ cls: clash ? "adv-warn" : "adv-ok", text: label + " — " + exp.why,
+                proof: clash ? want : null });
+  }
+  bits.forEach(function (b) {
+    var row = el("div", "adv-row " + b.cls);
+    row.appendChild(el("span", null, b.text));
+    if (b.act) {
+      var use = el("button", "link", "Use PGROUP" + b.act);
+      use.type = "button";
+      use.addEventListener("click", function () {
+        setSeg("segPGroup", b.act);
+        renderPGroupAdvice();
+      });
+      row.appendChild(use);
+    }
+    if (b.proof) {
+      var fix = el("button", "link", b.proof === "TRUE" ? "Set PROOF yes" : "Set PROOF no");
+      fix.type = "button";
+      fix.addEventListener("click", function () {
+        setSeg("segProof", b.proof);
+        syncProofDependentFields();
+        renderPGroupAdvice();
+      });
+      row.appendChild(fix);
+    }
+    box.appendChild(row);
+  });
+  box.hidden = !bits.length;
+}
+
 function wire() {
   /* Two tabs open on the same ledger used to overwrite each other silently.
      This one notices the other's write and folds it in. */
@@ -6993,6 +7297,7 @@ function wire() {
   $("weekNext").addEventListener("click", function () { shiftWeek(1); });
   $("btnThisWeek").addEventListener("click", function () { selectDay(todayKey()); render(); });
   $("btnBingo").addEventListener("click", openBingo);
+  $("btnPgroupChart").addEventListener("click", openPGroupChart);
   $("scopeSel").addEventListener("change", function () {
     state.scope = this.value;
     state.inlineId = null;
@@ -7265,6 +7570,8 @@ window.__CAOT__ = {
   normalizeOrder: normalizeOrder, visibleOrders: visibleOrders, getUsers: getUsers,
   toB64: toB64, fromB64: fromB64, maskEmail: maskEmail, csvCell: csvCell,
   nextSeq: nextSeq, prettyTime: prettyTime, classifyStatus: classifyStatus,
+  suggestPGroup: suggestPGroup, proofExpectation: proofExpectation,
+  proofConflict: proofConflict, openPGroupChart: openPGroupChart, PGROUP_TABLE: PGROUP_TABLE,
   stampLabel: stampLabel, stampDayKey: stampDayKey, timeCell: timeCell,
   crossesMidnight: crossesMidnight, stampDateNeeded: stampDateNeeded,
   statusParts: statusParts, rowAccent: rowAccent, mondayOf: mondayOf,
