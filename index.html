@@ -672,15 +672,22 @@ textarea.cellinput{min-height:30px;line-height:1.35;resize:vertical}
 /* The 920px cap left a wide monitor mostly empty while the panels stayed
    cramped. Columns are added as the screen allows instead. */
 /* Two classes again: the plain .sum-panels rule further down the sheet would
-   otherwise win on equal specificity and pin the grid at two columns. */
-@media (min-width:1200px){ .sum-modal .sum-panels{grid-template-columns:repeat(3,minmax(0,1fr))} }
-@media (min-width:1700px){
-  .sum-modal .sum-panels{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .sum-modal .sum-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+   otherwise win on equal specificity and pin the grid at two columns.
+   Three small panels (hours, types, status) sit side by side across the top
+   and the full-width week panel goes beneath them. "dense" is what lets the
+   two panels written after the week one backfill the row beside the hours
+   chart, instead of leaving three empty slots next to it. */
+.sum-modal .sum-panels{grid-auto-flow:row dense}
+@media (min-width:1200px){
+  .sum-modal .sum-panels{grid-template-columns:repeat(3,minmax(0,1fr))}
+  /* 12 week figures: two even rows of six rather than three of four. */
+  .sum-modal .sum-financial .financial-grid.week-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
 .sum-scope-h{margin:16px 2px 6px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
   color:var(--text-2);font-weight:700}
-.sum-cell.wk{border-style:dashed}
+/* Named sum-weekcell, not "wk": .wk is already the week-arrow button class
+   (34px square), and reusing it shrank every week figure to a 36px box. */
+.sum-cell.sum-weekcell{border-style:dashed}
 .sum-modal .sub{margin-bottom:10px}
 .sum-modal .sum-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .sum-modal .sum-cell{padding:9px 11px}
@@ -3455,7 +3462,7 @@ function buildChrome() {
    Spans: [desktop of 24, mid of 12, small of 6]. */
 var ENTRY_GROUPS = [
   { title: "Order",         keys: ["seq", "date", "orderId", "customer"] },
-  { title: "Type & dates",  keys: ["otype", "qty", "amount", "placedDate", "reqShipDate", "eventDate"] },
+  { title: "Type & dates",  keys: ["otype", "amount", "qty", "placedDate", "reqShipDate", "eventDate"] },
   { title: "PGroup",        keys: ["pgroup"] },
   { title: "Timing",        keys: ["startTime", "completionTime", "taken", "proofRcvdTime", "turn"] },
   { title: "Checks",        keys: ["proof", "marking", "fin"] },
@@ -5477,7 +5484,7 @@ function openSummary() {
   var wkMedTaken = medianOf(weekOrders.map(timeTaken));
 
   pWeek.appendChild(el("div", "sum-scope-h", "Whole week"));
-  var weekGrid = el("div", "sum-grid financial-grid");
+  var weekGrid = el("div", "sum-grid financial-grid week-grid");
   [
     [wk.count, "orders"], [wk.finished, "finished"], [wk.open, "still open"],
     [wk.proofs, "proofs sent"], [wk.awaiting, "proofs outstanding"],
@@ -5487,7 +5494,7 @@ function openSummary() {
     [weekQty || "—", "pieces"], [money(weekAmount), "order value"],
     [activeDays ? money(avgDay) : "—", "avg value / active day"]
   ].forEach(function (pair) {
-    var c = el("div", "sum-cell wk");
+    var c = el("div", "sum-cell sum-weekcell");
     c.appendChild(el("b", null, pair[0]));
     c.appendChild(el("span", null, pair[1]));
     weekGrid.appendChild(c);
