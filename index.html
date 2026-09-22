@@ -446,8 +446,15 @@ thead th{position:sticky;top:calc(var(--kpi-ribbon-height, 0px) + var(--ledger-b
 thead th.note-hd{min-width:56px}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--text)}
-thead th .arrow{opacity:.3;margin-left:3px}
-thead th[aria-sort] .arrow{opacity:1;color:var(--crown)}
+/* The active sort used to be a thin pale arrow that looked almost the same as
+   the faint double-arrow on every other column. Now only the sorted column
+   shows an arrow — a solid triangle, with the heading underlined — and the
+   others reveal a faint hint only on hover. */
+thead th .arrow{opacity:0;margin-left:4px;font-size:9px;vertical-align:1px;transition:opacity .15s}
+thead th[data-sort]{cursor:pointer}
+thead th[data-sort]:hover .arrow{opacity:.4}
+thead th[aria-sort]{color:var(--crown);box-shadow:inset 0 -2px 0 var(--crown)}
+thead th[aria-sort] .arrow{opacity:1;color:var(--crown);font-size:10px}
 tbody td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 tbody tr{transition:background .12s var(--ease)}
 /* Banding: plain rows alternate light/dark grey; a row carrying a status
@@ -520,7 +527,20 @@ ul.pgroup-notes li{margin-bottom:6px;break-inside:avoid}
 .stampdate{font-size:10.5px;padding:2px 4px;width:100%;box-sizing:border-box;margin-top:3px;
   color:var(--text-2);background:transparent;border:1px solid var(--line);border-radius:4px}
 .stampdate:focus{color:var(--text);border-color:var(--crown-dim);outline:none}
-.holdinput{font-size:10.5px;width:100%;box-sizing:border-box;margin-top:3px;padding:2px 4px}
+.hold-inline{display:block;width:100%;margin-top:3px;padding:2px 4px;font-size:10.5px;min-height:0}
+.modal.hold-modal{max-width:min(560px,94vw)}
+.hold-row{display:grid;grid-template-columns:110px 1fr 1.25fr auto;gap:8px;align-items:center;margin:10px 0}
+.hold-row label{font-size:12.5px;font-weight:600}
+.hold-row input{width:100%;min-width:0}
+.hold-row input.hold-time{padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--text);font-size:13.5px}
+.hold-note{font-size:12px;color:var(--text-2);margin:6px 0;padding:7px 10px;border-radius:7px;
+  background:var(--surface-2);border:1px solid var(--line)}
+.hold-preview{margin:12px 0 4px;font-size:13px;min-height:18px}
+.hold-err{color:var(--stop);font-size:12.5px;margin:4px 0}
+.modal .btn.danger{background:transparent!important;color:var(--stop)!important;border:1px solid var(--stop)!important;box-shadow:none}
+.modal .btn.danger:hover{background:var(--stop-bg)!important}
+@media (max-width:520px){ .hold-row{grid-template-columns:1fr 1fr auto} .hold-row label{grid-column:1/-1} }
 .hold-gated .stampdate{opacity:.45;cursor:not-allowed}
 .timefield .stampdate{flex:0 0 100%;order:3;margin-top:4px}
 .nextday{display:inline-block;margin-left:4px;padding:0 3px;border-radius:3px;font-size:9px;
@@ -740,7 +760,21 @@ input[type="date"]{width:100%;padding:9px 28px 9px 11px;border:1px solid var(--l
 /* Date inputs keep one tab stop. The visible picker button is deliberately
    mouse/touch-only, so keyboard users tab straight from date to the next field. */
 input[type="date"]::-webkit-calendar-picker-indicator{display:none}
-.datefield{display:flex;align-items:stretch;gap:6px}
+.datefield{display:flex;align-items:stretch;gap:6px;position:relative}
+/* Typed-date fields carry the same look the native date inputs had. */
+input.datetext{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;
+  background:var(--surface);color:var(--text);font-family:var(--mono);font-size:13.5px}
+.ecell .datefield input.datetext{min-height:40px;height:40px;border:1.5px solid var(--line);
+  border-radius:8px;background:var(--surface-2);font-size:14px}
+.cellinput.datetext{padding:5px 6px;font-size:12px;border-radius:5px}
+input.datetext.bad-date{border-color:var(--stop)!important;background:var(--stop-bg)!important;color:var(--stop)}
+/* The native picker lives in a 1px proxy: visible enough for showPicker(),
+   invisible and unclickable otherwise. */
+/* !important because the older input[type="date"] rules (width:100%,
+   height:40px) outrank a single class and stretched this over the field. */
+input.date-proxy{position:absolute!important;width:1px!important;height:1px!important;
+  min-height:0!important;max-width:1px!important;opacity:0!important;pointer-events:none!important;
+  border:0!important;padding:0!important;margin:0!important;overflow:hidden}
 .datefield input{flex:1;min-width:0}
 .datefield .calendar-btn{
   flex:0 0 40px;width:40px;min-height:40px;border:1px solid var(--line);
@@ -998,7 +1032,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{display:none}
   .ecell input,.ecell textarea,.ecell select,.ecell .calcbox,.ecell .tri,.ecell .timefield{
     width:100%!important;max-width:100%!important;
   }
-  .ecell input[type="date"]{min-height:48px}
+  .ecell input[type="date"],.ecell input.datetext{min-height:48px}
   .timefield{flex-wrap:wrap}
   .entry-actions{width:100%}
   .entry-actions .btn{flex:1}
@@ -1178,7 +1212,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{display:none}
   .ecell .timefield .stamp{padding:0 8px;min-height:44px}
   .ecell .calcbox{min-height:44px!important;display:flex!important}
   .ecell:has(.calcbox){display:flex!important}
-  .ecell input[type="date"]{min-height:44px;padding-right:6px}
+  .ecell input[type="date"],.ecell input.datetext{min-height:44px;padding-right:6px}
   .entryhead{gap:8px}
   .entry-actions{flex-direction:row!important}
 
@@ -1503,6 +1537,7 @@ html[data-theme="castles"] .chip[aria-pressed="true"]{background:var(--cc-acid);
 html[data-theme="castles"] .tri button[aria-pressed="true"],
 html[data-theme="castles"] .quad button[aria-pressed="true"]{background:var(--cc-lilac);color:#0B0714}
 html[data-theme="castles"] thead th[aria-sort] .arrow{color:var(--cc-acid)}
+html[data-theme="castles"] thead th[aria-sort]{color:var(--cc-acid);box-shadow:inset 0 -2px 0 var(--cc-acid)}
 html[data-theme="castles"] .steps span.on{background:var(--cc-acid)}
 html[data-theme="castles"] .live-dot.live{background:var(--cc-acid);box-shadow:0 0 0 0 rgba(200,255,46,.55)}
 
@@ -2729,43 +2764,83 @@ function stampLabel(o, field) {
   var day = stampDayKey(o, field);
   return day ? (prettyDate(day) + " · " + prettyTime(v)) : prettyTime(v);
 }
-/* ---- Hold time, typed by hand -----------------------------------------
-   An order that gets stuck for days would otherwise report a "time taken" of
-   the whole wall-clock gap. Entering how long it sat on hold subtracts that
-   dead time, so the figure still means the work. Accepts "3d 4h 30m", "2h",
-   "90m" or a bare number of minutes. */
-function parseDuration(v) {
-  var t = String(v == null ? "" : v).trim().toLowerCase();
-  if (!t) return 0;
-  if (/^\d+(\.\d+)?$/.test(t)) return Math.round(Number(t));   /* bare minutes */
-  var total = 0, found = false;
-  t.replace(/(\d+(?:\.\d+)?)\s*([dhm])/g, function (_, n, unit) {
-    found = true;
-    total += Number(n) * (unit === "d" ? 1440 : unit === "h" ? 60 : 1);
-    return "";
-  });
-  return found ? Math.round(total) : 0;
+/* ---- Hold time -----------------------------------------------------------
+   Time an order spends on hold is taken out of its "time taken". Built only
+   on fields your original already synced — held, heldStartedAt, heldMinutes
+   and the status log — so holds reach every device without a database change.
+
+     heldMinutes    minutes from holds that have ended (banked)
+     heldStartedAt  full timestamp a still-open hold began
+     status log     "ILS" (logo sent out, waiting) starts a hold, and "ILC"
+                    (confirmed back, ready) ends it — used automatically
+                    until a hold is entered by hand
+
+   Only the part of a hold that overlaps the working window (start → finish)
+   is subtracted, so a hold before the order starts changes nothing. The old
+   timer had two bugs this replaces: it ignored a hold set before the order
+   started, and if an order was finished while on hold it dropped the whole
+   hold, adding it back onto the completion time. */
+function nowAbs() { return Math.round(Date.now() / 60000); }
+function absAt(dayKey, clock) {
+  if (!isClock(clock)) return null;
+  var d = dateFromKey(dayKey);
+  if (isNaN(d.getTime())) return null;
+  return Math.round(d.getTime() / 60000) + minutesOf(clock);
 }
-function durationInput(min) {
-  var m = Math.max(0, Math.round(Number(min) || 0));
-  if (!m) return "";
-  var d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), r = m % 60, out = [];
-  if (d) out.push(d + "d");
-  if (h) out.push(h + "h");
-  if (r || !out.length) out.push(r + "m");
-  return out.join(" ");
+function workWindow(o) {
+  var ws = absMinutes(o, "startTime");
+  if (ws === null) return null;
+  var we = absMinutes(o, "completionTime");
+  return { start: ws, end: we === null ? nowAbs() : we };
+}
+function overlapMinutes(a, b, w) {
+  if (a === null || b === null || !w) return 0;
+  return Math.max(0, Math.min(b, w.end) - Math.max(a, w.start));
+}
+/* The first ILS in the status log and the first ILC after it. Log entries carry
+   times but not dates, so both sit on the row's day, and an ILC earlier on the
+   clock than its ILS is taken to be the next day. */
+function holdLogWindow(o) {
+  var log = parseStatusLog(o.statusLog, o.status), s = null, e = null;
+  for (var i = 0; i < log.length; i++) {
+    var code = String(log[i].code || "").trim().toUpperCase();
+    var t = parseTime(log[i].t);
+    if (!t.ok || !isClock(t.value)) continue;
+    if (!s && /^ILS\b/.test(code)) s = t.value;
+    else if (s && !e && /^ILC\b/.test(code)) e = t.value;
+  }
+  if (!s) return null;
+  var sAbs = absAt(o.date, s), eAbs = null;
+  if (e) eAbs = absAt(minutesOf(e) < minutesOf(s) ? nextDayKey(o.date) : o.date, e);
+  return { start: s, end: e, startAbs: sAbs, endAbs: eAbs };
+}
+function openHoldAbs(o) {
+  if (!(o.held === "TRUE" || o.held === true) || !o.heldStartedAt) return null;
+  var t = Date.parse(o.heldStartedAt);
+  return isNaN(t) ? null : Math.round(t / 60000);
+}
+/* A hold entered by hand (banked or open) replaces the status log entirely. */
+function hasManualHold(o) {
+  return (Number(o.heldMinutes) || 0) > 0 || o.held === "TRUE" || o.held === true;
+}
+function holdSource(o) {
+  if (hasManualHold(o)) return "manual";
+  return holdLogWindow(o) ? "log" : "";
 }
 function holdMinutes(o) {
   if (!o) return 0;
-  var total = Number(o.heldMinutes) || 0;
-  /* A live hold is accumulated only until the moment the summary/table asks
-     for it, so the timer stays frozen while an order waits for clarification. */
-  if (isHoldFlag(o) && o.heldStartedAt && isClock(o.startTime) && !isClock(o.completionTime)) {
-    var started = Date.parse(o.heldStartedAt);
-    if (!isNaN(started)) total += Math.max(0, (Date.now() - started) / 60000);
+  var w = workWindow(o);
+  if (hasManualHold(o)) {
+    var total = Number(o.heldMinutes) || 0;
+    var open = openHoldAbs(o);
+    if (open !== null && w) total += overlapMinutes(open, nowAbs(), w);
+    return Math.max(0, Math.round(total));
   }
-  return Math.max(0, total);
+  var lw = holdLogWindow(o);
+  if (lw && w) return overlapMinutes(lw.startAbs, lw.endAbs === null ? nowAbs() : lw.endAbs, w);
+  return 0;
 }
+function hasHold(o) { return holdMinutes(o) > 0 || isHoldFlag(o); }
 function timeTaken(o) {
   var span = stampSpan(o, "startTime", "completionTime");
   if (span === null) return null;
@@ -2793,10 +2868,142 @@ function shortDate(key) {
   var d = dateFromKey(key);
   return isNaN(d.getTime()) ? key : (MONTHS[d.getMonth()].slice(0, 3) + " " + d.getDate());
 }
+/* The first typed-date field whose text is not a readable date, or null.
+   Blank is fine — only unreadable text blocks a save. */
+function firstBadDate(inputs) {
+  for (var i = 0; i < inputs.length; i++) {
+    var el = inputs[i];
+    if (!el || !el._dateText || el.disabled) continue;
+    var t = NATIVE_INPUT_VALUE.get.call(el).trim();
+    if (t && parseDayStrict(t) === null) return el;
+  }
+  return null;
+}
+/* A stamp date equal to the row's own day is implied, so it is stored blank.
+   That keeps the table from printing the same date under every time. */
+function stampDateToStore(v, rowDay) {
+  var d = parseDay(v);
+  return d && d === rowDay ? "" : d;
+}
+/* Turn a date input into a typed-date text field. Its .value still reads back
+   as an ISO day and still accepts one, so none of the code that loads, saves,
+   drafts or validates these fields had to change. What the person sees is
+   mm/dd/yyyy, with the year filled in once they leave the field. */
+var NATIVE_INPUT_VALUE = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+function upgradeDateInput(input, opts) {
+  if (!input || input._dateText) return input;
+  opts = opts || {};
+  var initial = NATIVE_INPUT_VALUE.get.call(input);
+  input.type = "text";
+  input.classList.add("datetext");
+  input.setAttribute("inputmode", "numeric");
+  input.setAttribute("autocomplete", "off");
+  input.setAttribute("spellcheck", "false");
+  if (!input.placeholder || /YYYY|mm\/dd/i.test(input.placeholder)) input.placeholder = "mm/dd";
+  input._dateText = true;
+  var raw = function () { return NATIVE_INPUT_VALUE.get.call(input); };
+  var show = function (t) { NATIVE_INPUT_VALUE.set.call(input, t); };
+  Object.defineProperty(input, "value", {
+    configurable: true,
+    get: function () {
+      var iso = parseDayStrict(raw());
+      return iso === null ? raw().trim() : iso;      /* unreadable text passes through for validation */
+    },
+    set: function (v) {
+      var iso = parseDayStrict(v);
+      show(iso ? displayDay(iso) : (v == null ? "" : String(v)));
+      input.classList.remove("bad-date");
+    }
+  });
+  input.value = initial;
+  var tidy = function () {
+    var t = raw().trim();
+    if (!t) { input.classList.remove("bad-date"); input.removeAttribute("aria-invalid"); return; }
+    var iso = parseDayStrict(t);
+    if (iso) {
+      show(displayDay(iso));                          /* the filled-in year becomes visible */
+      input.classList.remove("bad-date");
+      input.removeAttribute("aria-invalid");
+      input.title = prettyDate(iso);
+    } else {
+      input.classList.add("bad-date");
+      input.setAttribute("aria-invalid", "true");
+      input.title = "Not a date I can read. Try 9/15, 9/15/2026 or Sep 15.";
+    }
+  };
+  input.addEventListener("blur", tidy);
+  input.addEventListener("change", tidy);
+
+  /* A real calendar is still one click away. The native picker lives in a
+     1px proxy next to the field; choosing a day writes it back here. */
+  var proxy = document.createElement("input");
+  proxy.type = "date";
+  proxy.tabIndex = -1;
+  proxy.className = "date-proxy";
+  proxy.setAttribute("aria-hidden", "true");
+  input.insertAdjacentElement("afterend", proxy);
+  proxy.addEventListener("change", function () {
+    if (!proxy.value) return;
+    input.value = proxy.value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    input.focus({ preventScroll: true });
+  });
+  input.openPicker = function () {
+    var cur = parseDayStrict(raw());
+    proxy.value = cur || todayKey();
+    try { proxy.showPicker(); } catch (e) { proxy.focus(); proxy.click(); }
+  };
+  input.addEventListener("keydown", function (e) {
+    if (e.altKey && e.key === "ArrowDown") { e.preventDefault(); input.openPicker(); }
+  });
+  if (opts.onChange) input.addEventListener("change", opts.onChange);
+  return input;
+}
+/* ---- Typed dates ---------------------------------------------------------
+   The date fields used to be native <input type="date">. In Chrome, typing a
+   month and day but no year leaves that control's value EMPTY, and there is no
+   way for script to read the half-typed parts back out — so "9/15" was silently
+   dropped on save. They are now text fields that understand what people type
+   and fill in the current year when it is left off:
+     9/15   09/15   9-15   9.15   0915   → this year
+     9/15/26   9/15/2026   091526   2026-09-15   Sep 15   September 15, 2026
+   Returns an ISO day, "" for blank, or null when the text is not a real date
+   (so a typo can be flagged instead of being stored or thrown away). */
+var MONTHS_SHORT = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+function parseDayStrict(v) {
+  var s = String(v == null ? "" : v).trim().toLowerCase().replace(/\s+/g, " ");
+  if (!s) return "";
+  var cy = new Date().getFullYear(), y, m, d, mm;
+  var yr = function (t) { return !t ? cy : (t.length === 2 ? 2000 + Number(t) : Number(t)); };
+  if ((mm = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) {
+    y = +mm[1]; m = +mm[2]; d = +mm[3];
+  } else if ((mm = s.match(/^(\d{1,2})[\/\-. ](\d{1,2})(?:[\/\-. ](\d{2}|\d{4}))?$/))) {
+    m = +mm[1]; d = +mm[2]; y = yr(mm[3]);
+  } else if ((mm = s.match(/^(\d{2})(\d{2})(\d{2}|\d{4})?$/))) {
+    m = +mm[1]; d = +mm[2]; y = yr(mm[3]);
+  } else if ((mm = s.match(/^([a-z]{3,9})\.? (\d{1,2})(?:st|nd|rd|th)?,? ?(\d{2}|\d{4})?$/))) {
+    m = MONTHS_SHORT.indexOf(mm[1].slice(0, 3)) + 1;
+    if (!m) return null;
+    d = +mm[2]; y = yr(mm[3]);
+  } else {
+    return null;
+  }
+  if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1900 || y > 2200) return null;
+  var probe = new Date(y, m - 1, d);                 /* rejects 2/30, 4/31 … */
+  if (probe.getFullYear() !== y || probe.getMonth() !== m - 1 || probe.getDate() !== d) return null;
+  return y + "-" + pad2(m) + "-" + pad2(d);
+}
+function displayDay(iso) {
+  var p = String(iso || "").split("-");
+  return p.length === 3 ? p[1] + "/" + p[2] + "/" + p[0] : String(iso || "");
+}
 function parseDay(v) {
   var s = String(v == null ? "" : v).trim();
   if (!s) return "";
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var strict = parseDayStrict(s);
+  if (strict) return strict;
   var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
   if (m) {
     var year = m[3].length === 2 ? ("20" + m[3]) : m[3];
@@ -2927,8 +3134,17 @@ function isCorOrder(o) {
   if (normType(o.otype) === "COR") return true;
   return /^\s*COR\b/i.test(o.orderId || "");
 }
+/* On hold right now: a hand-entered hold still open, or an ILS in the status
+   log with no ILC after it on an order that is not finished. */
 function isHoldFlag(o) {
-  return !!(o && (o.held === "TRUE" || o.held === true));
+  if (!o) return false;
+  /* A finished order is not waiting on anything. Its hold still counts up to
+     the finish time, but it no longer shows as held. */
+  if (isClock(o.completionTime)) return false;
+  if (o.held === "TRUE" || o.held === true) return true;
+  if (hasManualHold(o)) return false;
+  var lw = holdLogWindow(o);
+  return !!(lw && !lw.end && !isClock(o.completionTime));
 }
 function rowAccent(order) {
   /* Priority: HOLD (red) > COR type (green) > completed CLC/LEC (blue)
@@ -3584,13 +3800,8 @@ function buildEntryRow(cols) {
       cal.setAttribute("aria-label", "Open calendar");
       cal.title = "Open calendar";
       cal.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
-      cal.addEventListener("click", function () {
-        di.focus({ preventScroll: true });
-        if (typeof di.showPicker === "function") {
-          try { di.showPicker(); return; } catch (e) {}
-        }
-        di.click();
-      });
+      upgradeDateInput(di);
+      cal.addEventListener("click", function () { di.openPicker(); });
       wrap.appendChild(cal);
       cell.appendChild(wrap);
     } else if (c.entry === "text" || c.entry === "time" || c.entry === "num" || c.entry === "money") {
@@ -3615,6 +3826,7 @@ function buildEntryRow(cols) {
         sd.className = "mono stampdate";
         sd.title = (c.entryLabel || c.label) + " date — leave blank for " + prettyDate(state.scopeDate);
         wrap.appendChild(sd);
+        upgradeDateInput(sd);
         cell.appendChild(wrap);
       } else {
         cell.appendChild(input);
@@ -3717,8 +3929,15 @@ function wireEntryRow() {
     b.addEventListener("click", function () {
       var input = $(b.getAttribute("data-now"));
       input.value = prettyTime(nowClock());
+      /* The stamp happened today, so its date is today too — even when the
+         order is being back-filled onto an earlier day. */
+      var dateBox = $(b.getAttribute("data-now") + "Date");
+      if (dateBox && !dateBox.disabled) dateBox.value = todayKey();
       if (b.getAttribute("data-now") === "fDone") setSeg("segFin", "TRUE");
       updateCalcs();
+      /* Setting .value from script fires no input event, so the draft was
+         never told about a stamped time and a refresh lost it. */
+      queueDraft();
       input.focus();
     });
   });
@@ -3764,13 +3983,20 @@ function clearDraft() {
   if (!k) return;
   try { localStorage.removeItem(k); } catch (e) {}
 }
-function restoreDraft() {
+function readDraft() {
+  var k = draftKey();
+  return k ? readJson(k, null) : null;
+}
+function restoreDraft(pre) {
   var k = draftKey();
   if (!k) return;
-  var d = readJson(k, null);
+  var d = pre || readJson(k, null);
   if (!d || !d.form || draftIsEmpty(d.form)) return;
   formCache = d.form;
   restoreFormValues();
+  /* Put it back in storage too: the clearForm() before this removed it, and a
+     second refresh before anything is typed should still recover it. */
+  writeJson(k, d);
   toast("Restored the order you were part-way through typing.", {
     label: "Discard", run: function () { clearForm(); }
   }, 9000);
@@ -3986,7 +4212,7 @@ function renderTable() {
     if (!arrow) return;
     if (th.getAttribute("data-sort") === state.sortKey) {
       th.setAttribute("aria-sort", state.sortDir === 1 ? "ascending" : "descending");
-      arrow.textContent = state.sortDir === 1 ? "↑" : "↓";
+      arrow.textContent = state.sortDir === 1 ? "▲" : "▼";
     } else {
       th.removeAttribute("aria-sort");
       arrow.textContent = "↕";
@@ -4231,6 +4457,7 @@ function inlineRow(o, cols, focusKey) {
         fields.date.className = "cellinput mono";
         fields.date.value = o.date;
         td.appendChild(fields.date);
+        upgradeDateInput(fields.date);
         break;
       case "orderId": fields.orderId = mk("input", "mono", o.orderId, "Order #"); td.appendChild(fields.orderId); break;
       case "otype":
@@ -4286,18 +4513,18 @@ function inlineRow(o, cols, focusKey) {
       case "customer": fields.customer = mk("textarea", "", o.customer, "Customer"); td.appendChild(fields.customer); break;
       case "placedDate":
         fields.placedDate = mk("input", "mono", o.placedDate || "", "YYYY-MM-DD");
-        fields.placedDate.type = "date";
         td.appendChild(fields.placedDate);
+        upgradeDateInput(fields.placedDate);
         break;
       case "reqShipDate":
         fields.reqShipDate = mk("input", "mono", o.reqShipDate || "", "YYYY-MM-DD");
-        fields.reqShipDate.type = "date";
         td.appendChild(fields.reqShipDate);
+        upgradeDateInput(fields.reqShipDate);
         break;
       case "eventDate":
         fields.eventDate = mk("input", "mono", o.eventDate || "", "YYYY-MM-DD");
-        fields.eventDate.type = "date";
         td.appendChild(fields.eventDate);
+        upgradeDateInput(fields.eventDate);
         break;
       case "status": fields.status = mk("textarea", "", statusTextFromLog(parseStatusLog(o.statusLog, o.status)), "9:20 — CLC"); td.appendChild(fields.status); break;
       case "marking":
@@ -4330,30 +4557,29 @@ function inlineRow(o, cols, focusKey) {
           dIn.title = "Date for this stamp — blank follows the row date (" + shortDate(o.date) + ")";
           fields[dkey] = dIn;
           td.appendChild(dIn);
+          upgradeDateInput(dIn);
         }
         /* Moving the finish onto a later day is only allowed alongside a hold
            time. An order stuck for three days is not three days of work, and
            without the hold the "taken" figure would be nonsense, so the two
            are entered together. */
+        /* Moving the finish onto another day is only allowed when the order
+           has a hold. An order stuck for three days is not three days of work,
+           and without the hold the "taken" figure would be nonsense. */
         if (c.key === "completionTime") {
-          var hIn = document.createElement("input");
-          hIn.className = "cellinput holdinput";
-          hIn.value = durationInput(o.heldMinutes);
-          hIn.placeholder = "hold";
-          hIn.title = "Time this order sat on hold — 3d 4h 30m, 2h, 90m, or plain minutes.\n" +
-                      "Needed before the finish can be moved to another day.";
-          fields.heldMinutes = hIn;
-          td.appendChild(hIn);
-
+          var hBtn = el("button", "btn ghost sm hold-inline", "");
+          hBtn.type = "button";
           var gate = function () {
-            var ok = parseDuration(hIn.value) > 0;
+            var ok = hasHold(o);
+            hBtn.textContent = ok ? "Hold " + durationText(holdMinutes(o)) : "Add hold\u2026";
+            hBtn.title = ok ? "Edit this order's hold" : "Enter when a hold started and ended";
             dIn.disabled = !ok;
-            dIn.title = ok
-              ? "Date the order was finished"
-              : "Enter a hold time first, then this can move to another day";
+            dIn.title = ok ? "Date the order was finished"
+                           : "Add a hold first, then the finish can move to another day";
             td.classList.toggle("hold-gated", !ok);
           };
-          hIn.addEventListener("input", gate);
+          hBtn.addEventListener("click", function () { openHoldDialog(o.id, gate); });
+          td.appendChild(hBtn);
           gate();
         }
         break;
@@ -4387,6 +4613,20 @@ function inlineRow(o, cols, focusKey) {
     td.setAttribute("data-label", c.label || "");
     tr.appendChild(td);
   });
+  /* The table can be redrawn while this row is open — saving a hold from the
+     row's own Hold button, or stamping a different order. The editor used to
+     be rebuilt from the saved order, throwing away anything typed here but not
+     yet saved. Carry the typed values across when it is the same order. */
+  var prevFields = state.inlineFields;
+  if (prevFields && prevFields.__orderId === o.id) {
+    Object.keys(fields).forEach(function (k) {
+      var was = prevFields[k], now = fields[k];
+      if (!was || !now || was === now || !("value" in was)) return;
+      if (was._dateText) now.value = NATIVE_INPUT_VALUE.get.call(was);     /* keep exactly what was typed */
+      else now.value = was.value;
+    });
+  }
+  Object.defineProperty(fields, "__orderId", { value: o.id, enumerable: false });
   state.inlineFields = fields;
   state.inlineFocusKey = focusKey || null;
   if (fields.proof) {
@@ -4465,6 +4705,12 @@ function saveInline(id) {
   if (!start.ok) { toast("Start time should look like 9:20, 1:14 PM, or N/A."); f.startTime.focus(); return; }
   if (!done.ok) { toast("End time should look like 9:35, 1:14 PM, or N/A."); f.completionTime.focus(); return; }
   if (f.proofRcvdTime && !back.ok) { toast("Proof return time should look like 9:39, 1:14 PM, or N/A."); f.proofRcvdTime.focus(); return; }
+  var badDate = firstBadDate([f.date, f.placedDate, f.reqShipDate, f.eventDate,
+                              f.startDate, f.completionDate, f.proofRcvdDate]);
+  if (badDate) {
+    toast("That date is not one I can read. Try 9/15, 9/15/2026 or Sep 15.");
+    badDate.focus(); return;
+  }
   var seq = parseInt(f.seq.value, 10);
   var before = JSON.parse(JSON.stringify(o));
   o.seq = seq > 0 ? seq : o.seq;
@@ -4484,16 +4730,15 @@ function saveInline(id) {
   o.notes = f.notes.value.trim();
   o.startTime = start.value;
   o.completionTime = done.value;
-  if (f.startDate) o.startDate = parseDay(f.startDate.value);
-  if (f.heldMinutes) o.heldMinutes = parseDuration(f.heldMinutes.value);
+  if (f.startDate) o.startDate = stampDateToStore(f.startDate.value, o.date);
   /* A finish date only sticks while there is a hold to justify it. */
   if (f.completionDate) {
-    o.completionDate = (Number(o.heldMinutes) > 0) ? parseDay(f.completionDate.value) : "";
+    o.completionDate = hasHold(o) ? stampDateToStore(f.completionDate.value, o.date) : "";
   }
   o.proof = f.proof.value;
   o.proofRcvdTime = o.proof === "FALSE" ? "" : back.value;
   o.proofRcvdDate = o.proof === "FALSE" ? "" :
-    (f.proofRcvdDate ? parseDay(f.proofRcvdDate.value) : (o.proofRcvdDate || ""));
+    (f.proofRcvdDate ? stampDateToStore(f.proofRcvdDate.value, o.date) : (o.proofRcvdDate || ""));
   o.fin = f.fin.value;
   applyCompletionFlags(o);
   if (f.savedToDrive) o.savedToDrive = f.savedToDrive.value;
@@ -4530,16 +4775,24 @@ function stampNow(id, field) {
     return;
   }
   if (field === "completionTime" && isHoldFlag(o)) {
-    toast("Release the hold before completing this order.");
+    toast("#" + o.seq + " is on hold. End the hold first.", {
+      label: "End hold\u2026",
+      run: function () { openHoldDialog(o.id); }
+    }, 7000);
     return;
   }
   var prev = o[field];
+  var dkey = STAMP_DATE_KEY[field], prevDate = dkey ? o[dkey] : "";
   o[field] = nowClock();
+  var stamped = o[field];
+  /* Date the stamp with today. Stored blank when today is the row's own day. */
+  if (dkey) o[dkey] = stampDateToStore(todayKey(), o.date);
   var prevFin = o.fin;
   if (field === "completionTime") markOrderFinished(o, false);
   o.updatedAt = nowIso();
   if (!persistOrders()) {
     o[field] = prev;
+    if (dkey) o[dkey] = prevDate;
     o.fin = prevFin;
     scheduleRender();
     saveFailedModal("time stamp");
@@ -4550,7 +4803,13 @@ function stampNow(id, field) {
   toast(names[field] + " on #" + o.seq + " set to " + stampLabel(o, field) + ".", {
     label: "Undo",
     run: function () {
+      /* Same guard as holds: a stale Undo must not overwrite a newer edit. */
+      if (o[field] !== stamped) {
+        toast("That time has been changed again since, so this undo no longer applies.");
+        return;
+      }
       o[field] = prev;
+      if (dkey) o[dkey] = prevDate;
       if (field === "completionTime") o.fin = prevFin;
       o.updatedAt = nowIso();
       persistOrders();
@@ -5109,6 +5368,12 @@ function submitOrder(e) {
   if (rawQty && parseQty(rawQty) === "") {
     toast("The quantity should be a whole number."); $("fQty").focus(); return;
   }
+  var badDate = firstBadDate(["fPlacedDate", "fShipDate", "fEventDate", "fStartDate", "fDoneDate",
+                              noProof ? null : "fBackDate"].map(function (id) { return id && $(id); }));
+  if (badDate) {
+    toast("That date is not one I can read. Try 9/15, 9/15/2026 or Sep 15.");
+    badDate.focus(); return;
+  }
 
   var fields = {
     orderId: orderId, customer: customer,
@@ -5126,9 +5391,9 @@ function submitOrder(e) {
     startTime: start.value,
     completionTime: done.value,
     proofRcvdTime: noProof ? "" : back.value,
-    startDate: parseDay($("fStartDate") ? $("fStartDate").value : ""),
-    completionDate: parseDay($("fDoneDate") ? $("fDoneDate").value : ""),
-    proofRcvdDate: noProof ? "" : parseDay($("fBackDate") ? $("fBackDate").value : ""),
+    startDate: stampDateToStore($("fStartDate") ? $("fStartDate").value : "", state.scopeDate),
+    completionDate: stampDateToStore($("fDoneDate") ? $("fDoneDate").value : "", state.scopeDate),
+    proofRcvdDate: noProof ? "" : stampDateToStore($("fBackDate") ? $("fBackDate").value : "", state.scopeDate),
     fin: segValue("segFin"),
     savedToDrive: segValue("segDrive"),
     held: "FALSE",
@@ -6577,10 +6842,15 @@ function enterApp(user) {
   state.saveFailed = false;
   state.lastSaved = null;
   entrySig = "";
+  /* Read the draft BEFORE clearing the form. clearForm() deletes the stored
+     draft, and it used to run one line before restoreDraft(), so the "pick up
+     where you left off" recovery wiped its own data and never restored
+     anything after a refresh or a sign-out. */
+  var pendingDraft = readDraft();
   buildChrome();
   clearForm();
   render();
-  restoreDraft();
+  restoreDraft(pendingDraft);
   if (!state.orders.length) {
     confirmModal("This device has no orders yet",
       "The login is the same, but each phone and computer keeps its own copy. On the device that already has today's log, tap Copy sync (or Back up). Then come back here and tap Paste sync (or Restore).",
@@ -6706,35 +6976,198 @@ function applyTheme(theme) {
   prefs.theme = t.v;
   writeJson(KEY_PREFS, prefs);
 }
-function toggleHold(id) {
+/* ---- Hold dialog ----------------------------------------------------------
+   Replaces the old one-click toggle. Opens pre-filled with the likeliest
+   answer (start now; or end now for an open hold; or the ILS/ILC times from
+   the status log), so the common case is still click Hold, then Enter. */
+function isoFromDayClock(dayKey, clock) {
+  var p = String(dayKey).split("-"), t = String(clock).split(":");
+  var d = new Date(+p[0], +p[1] - 1, +p[2], +t[0] || 0, +t[1] || 0, +t[2] || 0);
+  return isNaN(d.getTime()) ? "" : d.toISOString();
+}
+function dayClockFromIso(iso) {
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return { day: todayKey(d), clock: pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds()) };
+}
+function toggleHold(id) { openHoldDialog(id); }
+function openHoldDialog(id, after) {
   var o = byId(id);
   if (!o) return;
-  var wasHeld = isHoldFlag(o);
-  var prevHeld = o.held, prevStarted = o.heldStartedAt || "", prevMinutes = Number(o.heldMinutes) || 0;
-  if (wasHeld) {
-    /* Close the current pause interval before releasing the hold. */
-    if (o.heldStartedAt && isClock(o.startTime) && !isClock(o.completionTime)) {
-      var started = Date.parse(o.heldStartedAt);
-      if (!isNaN(started)) o.heldMinutes = prevMinutes + Math.max(0, (Date.now() - started) / 60000);
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim");
+  var box = el("div", "modal hold-modal");
+  box.appendChild(el("h3", null, "Hold · #" + o.seq + (o.orderId ? " · " + o.orderId : "")));
+  box.appendChild(el("p", "sub",
+    "Time on hold is taken out of this order's time taken. Most holds are a logo being redrawn " +
+    "(ILS \u2192 ILC) or a question."));
+
+  var source = holdSource(o);
+  var lw = holdLogWindow(o);
+  var open = openHoldAbs(o);
+  var banked = Number(o.heldMinutes) || 0;
+
+  /* Pre-fill */
+  var sDay = todayKey(), sClock = nowClock(), eDay = "", eClock = "", mode = "start";
+  if ((o.held === "TRUE" || o.held === true)) {
+    var st = o.heldStartedAt ? dayClockFromIso(o.heldStartedAt) : null;
+    if (st) { sDay = st.day; sClock = st.clock; }
+    eDay = todayKey(); eClock = nowClock(); mode = "end";
+  } else if (source === "log") {
+    sDay = o.date; sClock = lw.start;
+    if (lw.end) { eClock = lw.end; eDay = minutesOf(lw.end) < minutesOf(lw.start) ? nextDayKey(o.date) : o.date; }
+    else { eDay = todayKey(); eClock = nowClock(); }
+    mode = "end";
+  }
+
+  var row = function (label) {
+    var r = el("div", "hold-row");
+    r.appendChild(el("label", null, label));
+    var t = document.createElement("input");
+    t.type = "text"; t.className = "mono hold-time"; t.placeholder = "h:mm";
+    var d = document.createElement("input");
+    d.type = "date"; d.className = "hold-date";
+    var nowB = el("button", "btn ghost sm", "Now");
+    nowB.type = "button";
+    r.appendChild(t); r.appendChild(d); r.appendChild(nowB);
+    box.appendChild(r);
+    upgradeDateInput(d);
+    nowB.addEventListener("click", function () { t.value = prettyTime(nowClock()); d.value = todayKey(); preview(); });
+    return { time: t, date: d };
+  };
+  var S = row("Hold started");
+  var E = row("Hold ended");
+  S.time.value = prettyTime(sClock); S.date.value = sDay;
+  if (eClock) { E.time.value = prettyTime(eClock); E.date.value = eDay; }
+  E.time.placeholder = "blank = still on hold";
+
+  if (source === "log") {
+    box.appendChild(el("p", "hold-note",
+      "Filled from the status log: ILS " + prettyTime(lw.start) +
+      (lw.end ? " \u2192 ILC " + prettyTime(lw.end) : " (no ILC yet)") +
+      ". Saving here takes over from the log for this order."));
+  }
+  if (banked > 0 && !(o.held === "TRUE" || o.held === true)) {
+    box.appendChild(el("p", "hold-note",
+      "Already held " + durationText(Math.round(banked)) + " earlier. A new hold is added to that."));
+  }
+  var out = el("div", "hold-preview");
+  box.appendChild(out);
+  var err = el("p", "hold-err"); err.hidden = true;
+  box.appendChild(err);
+
+  var read = function () {
+    var st = parseTime(S.time.value), et = parseTime(E.time.value);
+    var sd = parseDay(S.date.value) || o.date, ed = parseDay(E.date.value) || sd;
+    if (!st.ok || !isClock(st.value)) return { error: "Enter when the hold started, like 10:05 or 2:30 PM." };
+    if (!et.ok) return { error: "The end time should look like 10:05 or 2:30 PM, or be left blank." };
+    var sAbs = absAt(sd, st.value);
+    var eAbs = isClock(et.value) ? absAt(ed, et.value) : null;
+    if (sAbs === null) return { error: "That start date is not one I can read." };
+    if (eAbs !== null && eAbs <= sAbs) return { error: "The hold has to end after it starts." };
+    return { sd: sd, st: st.value, sAbs: sAbs, eAbs: eAbs };
+  };
+  var preview = function () {
+    var r = read();
+    out.textContent = "";
+    /* Label first, so it stays right even while the times are mid-edit or wrong. */
+    var hasEnd = String(E.time.value || "").trim() !== "";
+    save.textContent = hasEnd ? "Save hold" : (mode === "end" ? "Keep on hold" : "Start hold");
+    if (r.error) { out.appendChild(el("span", "muted", r.error)); return; }
+    var w = workWindow(o);
+    var mins = overlapMinutes(r.sAbs, r.eAbs === null ? nowAbs() : r.eAbs, w);
+    var total = banked + mins;
+    var span = stampSpan(o, "startTime", "completionTime");
+    if (!w) {
+      out.appendChild(el("span", null, "The order has not been started, so nothing is taken off yet. " +
+        (r.eAbs === null ? "The hold will count once it starts." : "")));
+    } else if (!mins && r.eAbs !== null) {
+      out.appendChild(el("span", null, "This hold falls outside the working time, so it does not change time taken."));
+    } else {
+      out.appendChild(el("b", null, "On hold " + durationText(Math.round(total))));
+      if (span !== null) {
+        out.appendChild(el("span", null, " \u00b7 time taken " +
+          durationText(Math.max(0, Math.round(span - total))) + " (was " + durationText(Math.round(span)) + ")"));
+      } else if (r.eAbs === null) {
+        out.appendChild(el("span", null, " so far \u00b7 still counting"));
+      }
     }
-    o.held = "FALSE";
-    o.heldStartedAt = "";
-  } else {
-    o.held = "TRUE";
-    /* Only a running order has working time to pause. */
-    o.heldStartedAt = isClock(o.startTime) && !isClock(o.completionTime) ? nowIso() : "";
+  };
+
+  var acts = el("div", "modal-actions");
+  if (hasManualHold(o)) {
+    var clear = el("button", "btn ghost danger", "Remove hold");
+    clear.type = "button";
+    clear.addEventListener("click", function () { commit({ held: "FALSE", heldStartedAt: "", heldMinutes: 0 }, "Removed the hold on #" + o.seq + "."); });
+    acts.appendChild(clear);
   }
-  o.updatedAt = nowIso();
-  if (!persistOrders()) {
-    o.held = prevHeld;
-    o.heldStartedAt = prevStarted;
-    o.heldMinutes = prevMinutes;
-    saveFailedModal("hold");
-    return;
+  acts.appendChild(el("div", "spacer"));
+  var cancel = el("button", "btn ghost", "Cancel");
+  cancel.type = "button";
+  cancel.addEventListener("click", closeModal);
+  var save = el("button", "btn", "Save");
+  save.type = "button";
+  acts.appendChild(cancel); acts.appendChild(save);
+  box.appendChild(acts);
+
+  function commit(next, msg) {
+    var prev = { held: o.held, heldStartedAt: o.heldStartedAt || "", heldMinutes: Number(o.heldMinutes) || 0 };
+    o.held = next.held; o.heldStartedAt = next.heldStartedAt; o.heldMinutes = next.heldMinutes;
+    o.updatedAt = nowIso();
+    if (!persistOrders()) {
+      o.held = prev.held; o.heldStartedAt = prev.heldStartedAt; o.heldMinutes = prev.heldMinutes;
+      saveFailedModal("hold");
+      return;
+    }
+    closeModal();
+    scheduleRender();
+    var wrote = { held: o.held, heldStartedAt: o.heldStartedAt || "", heldMinutes: Number(o.heldMinutes) || 0 };
+    toast(msg, {
+      label: "Undo",
+      run: function () {
+        /* Several Undo toasts can be on screen at once. An older one must not
+           roll back a newer change, so only undo if nothing has moved since. */
+        if (o.held !== wrote.held || (o.heldStartedAt || "") !== wrote.heldStartedAt ||
+            (Number(o.heldMinutes) || 0) !== wrote.heldMinutes) {
+          toast("That hold has been changed again since, so this undo no longer applies.");
+          return;
+        }
+        o.held = prev.held; o.heldStartedAt = prev.heldStartedAt; o.heldMinutes = prev.heldMinutes;
+        o.updatedAt = nowIso(); persistOrders(); scheduleRender();
+      }
+    }, 6000);
+    if (after) after();
   }
-  toast(o.held === "TRUE" ? "Held #" + o.seq + " — timer paused." : "Released #" + o.seq + ".");
-  scheduleRender();
+  save.addEventListener("click", function () {
+    var r = read();
+    if (r.error) { err.textContent = r.error; err.hidden = false; return; }
+    err.hidden = true;
+    /* An open hold, or one taken over from the log, is replaced by what is
+       entered here; earlier ended holds stay banked. */
+    var keep = banked;
+    if (r.eAbs === null) {
+      commit({ held: "TRUE", heldStartedAt: isoFromDayClock(r.sd, r.st), heldMinutes: keep },
+             "#" + o.seq + " on hold since " + prettyTime(r.st) + ".");
+    } else {
+      var mins = overlapMinutes(r.sAbs, r.eAbs, workWindow(o));
+      commit({ held: "FALSE", heldStartedAt: "", heldMinutes: keep + mins },
+             "Hold on #" + o.seq + " saved \u2014 " + durationText(Math.round(keep + mins)) + " taken off.");
+    }
+  });
+  [S.time, S.date, E.time, E.date].forEach(function (i) {
+    i.addEventListener("input", preview);
+    i.addEventListener("change", preview);
+    i.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); save.click(); } });
+  });
+  scrim.appendChild(box);
+  scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
+  host.appendChild(scrim);
+  preview();
+  (mode === "end" ? E.time : S.time).focus();
+  (mode === "end" ? E.time : S.time).select();
 }
+
 function applyEntryHeight(px) {
   var bar = $("entrybar");
   if (!bar || bar.classList.contains("collapsed")) return;
@@ -6824,12 +7257,25 @@ function setPanel(collapsed, animate) {
     var capPx = Math.floor(window.innerHeight * (openPrefs.entryHeight ? 0.65 : 0.42));
     var target = openPrefs.entryHeight ? Math.min(openPrefs.entryHeight, capPx) : null;
     bar.classList.remove("collapsed");
+    /* Open at the top, on the Order # field. The row kept its old scroll
+       position, so it used to reopen part-way down with the first field out
+       of sight. */
+    bar.scrollTop = 0;
     bar.style.maxHeight = "0px";
     void bar.offsetHeight;
     bar.style.maxHeight = (target || Math.max(Math.min(bar.scrollHeight, capPx), 120)) + "px";
     var done = function (e) {
       if (e && e.propertyName && e.propertyName !== "max-height") return;
       bar.removeEventListener("transitionend", done);
+      bar.scrollTop = 0;
+      var first = $("fOrderId");
+      if (first) {
+        var r = bar.getBoundingClientRect();
+        if (r.top < 0) window.scrollBy(0, r.top - 8);
+        /* Ready to type with a mouse; on touch screens focusing would throw
+           the keyboard up over the form, so it is left alone. */
+        if (window.matchMedia && window.matchMedia("(pointer:fine)").matches) first.focus({ preventScroll: true });
+      }
       clearTimeout(bar._openFallback);
       if (bar.classList.contains("collapsed")) return;
       if (target) applyEntryHeight(target);
@@ -7343,6 +7789,12 @@ function renderPGroupAdvice() {
   if (!box) return;
   var draft = entryDraftOrder();
   box.textContent = "";
+  /* On a blank form every order reads "no logo, no etch", so the proof line
+     appeared before anything was typed. Wait for something to go on. */
+  var started = draft.amount !== "" || draft.otype || draft.pgroup ||
+                normMarking(draft.marking) !== "NONE" || String(draft.notes || "").trim() ||
+                String(draft.status || "").trim();
+  if (!started) { box.hidden = true; return; }
 
   var exp = proofExpectation(draft);
   var sug = suggestPGroup(draft);
@@ -7711,7 +8163,8 @@ window.__CAOT__ = {
   normalizeOrder: normalizeOrder, visibleOrders: visibleOrders, getUsers: getUsers,
   toB64: toB64, fromB64: fromB64, maskEmail: maskEmail, csvCell: csvCell,
   nextSeq: nextSeq, prettyTime: prettyTime, classifyStatus: classifyStatus,
-  medianOf: medianOf, parseDuration: parseDuration, durationInput: durationInput,
+  medianOf: medianOf, holdMinutes: holdMinutes, isHoldFlag: isHoldFlag, openHoldDialog: openHoldDialog,
+  parseDayStrict: parseDayStrict, stampNow: stampNow,
   openSummary: openSummary,
   suggestPGroup: suggestPGroup, proofExpectation: proofExpectation,
   proofConflict: proofConflict, openPGroupChart: openPGroupChart, PGROUP_TABLE: PGROUP_TABLE,
