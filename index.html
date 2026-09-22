@@ -95,8 +95,8 @@ html[data-tone="dark"] .btn{color:var(--btn-ink)}
 .btn.ghost:hover{background:var(--surface-2);border-color:var(--muted)}
 html[data-tone="dark"] .btn.ghost{border-color:var(--ghost-line);background:var(--ghost-bg)}
 html[data-tone="dark"] .btn.ghost:hover{border-color:var(--ghost-line-h);background:var(--ghost-bg-h)}
-.btn.quiet{background:#FFFFFF;color:var(--text-2);border-color:transparent;padding:5px 7px}
-.btn.quiet:hover{background:#d1cdcd(--surface-2);color:var(--text)}
+.btn.quiet{background:transparent;color:var(--text-2);border-color:transparent;padding:5px 7px}
+.btn.quiet:hover{background:var(--surface-2);color:var(--text)}
 .btn.wide{width:100%}
 .btn.sm{padding:6px 11px;font-size:13px}
 .btn.xs{padding:3px 7px;font-size:11.5px;border-radius:5px;font-weight:600}
@@ -456,14 +456,14 @@ thead th{--sort-ink:var(--crown-2)}
 html[data-tone="dark"] thead th{--sort-ink:var(--code)}
 thead th[data-sort]{cursor:pointer}
 thead th .th-tail{white-space:nowrap}
-thead th .arrow{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;
-  margin-left:4px;border-radius:4px;font-size:10px;line-height:1;vertical-align:-2px;font-weight:700;
+thead th .arrow{display:inline-flex;align-items:center;justify-content:center;width:11px;height:11px;
+  margin-left:3px;border-radius:3px;font-size:8px;line-height:1;vertical-align:0;font-weight:700;
   color:var(--muted);opacity:.6;transition:opacity .15s,background .15s,color .15s}
 thead th[data-sort]:hover .arrow{opacity:1;color:var(--text);background:color-mix(in srgb,var(--text) 10%,transparent)}
 thead th[aria-sort]{color:var(--sort-ink)}
-thead th[aria-sort] .arrow,thead th[aria-sort]:hover .arrow{opacity:1;background:var(--sort-ink);color:var(--surface);font-size:9px}
+thead th[aria-sort] .arrow,thead th[aria-sort]:hover .arrow{opacity:1;background:var(--sort-ink);color:var(--surface);font-size:6.5px}
 html thead th[aria-sort],html #tablewrap thead th[aria-sort]{
-  box-shadow:inset 0 -3px 0 var(--sort-ink),0 3px 8px -7px rgba(18,22,28,.5)}
+  box-shadow:inset 0 -2px 0 var(--sort-ink),0 3px 8px -7px rgba(18,22,28,.5)}
 tbody td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 tbody tr{transition:background .12s var(--ease)}
 /* Banding: plain rows alternate light/dark grey; a row carrying a status
@@ -589,6 +589,8 @@ td.taken-cell .dur-main{display:block;white-space:nowrap}
 .hs-cell.hs-hold .hs-val{color:var(--hold)}
 .hs-cell.hs-net .hs-val{color:var(--sort-ink,var(--text))}
 .hold-msg{margin:8px 0 0;font-size:12.5px;color:var(--text-2)}
+.hold-note.warn{background:var(--hold-bg);color:var(--hold);border-color:color-mix(in srgb,var(--hold) 45%,transparent)}
+.hold-chip.guess{border-style:dashed}
 @media (max-width:520px){ .hold-sum{grid-template-columns:1fr} }
 td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
 td.num.zero{color:var(--muted)}
@@ -2856,10 +2858,56 @@ function holdLogWindow(o) {
   if (e) eAbs = absAt(minutesOf(e) < minutesOf(s) ? nextDayKey(o.date) : o.date, e);
   return { start: s, end: e, startAbs: sAbs, endAbs: eAbs };
 }
+/* When an open hold began, as absolute minutes. heldStartedAt is normally an
+   ISO timestamp, but holds set by older versions (or synced from elsewhere)
+   can carry epoch numbers or a bare clock time, or nothing at all. Those used
+   to parse as "no start", which showed the hold as 0m and made the hold window
+   open with start = now. Now every format is read, and when the start really
+   is missing the best guess is used (the ILS stamp, else when the row was last
+   saved) and flagged so the window can ask for the real time. */
+function holdStartInfo(o) {
+  if (!o || !(o.held === "TRUE" || o.held === true)) return null;
+  var v = o.heldStartedAt, abs = null;
+  if (v !== null && v !== undefined && String(v).trim() !== "") {
+    var raw = String(v).trim();
+    if (/^\d{12,14}$/.test(raw)) abs = Math.round(Number(raw) / 60000);        /* epoch ms */
+    else if (/^\d{9,11}$/.test(raw)) abs = Math.round(Number(raw) / 60);       /* epoch s  */
+    else {
+      var t = Date.parse(raw);
+      if (!isNaN(t)) abs = Math.round(t / 60000);
+      else {
+        var c = parseTime(raw);
+        if (c.ok && isClock(c.value)) abs = absAt(o.date, c.value);
+      }
+    }
+    if (abs !== null && isFinite(abs)) return { abs: abs, known: true };
+  }
+  var lw = holdLogWindow(o);
+  if (lw && lw.startAbs !== null && !lw.end) return { abs: lw.startAbs, known: false, from: "ILS stamp" };
+  var u = Date.parse(o.updatedAt || "");
+  if (!isNaN(u)) return { abs: Math.round(u / 60000), known: false, from: "last change to the row" };
+  return { abs: nowAbs(), known: false, from: "" };
+}
 function openHoldAbs(o) {
-  if (!(o.held === "TRUE" || o.held === true) || !o.heldStartedAt) return null;
-  var t = Date.parse(o.heldStartedAt);
-  return isNaN(t) ? null : Math.round(t / 60000);
+  var h = holdStartInfo(o);
+  return h ? h.abs : null;
+}
+/* Real time on hold, to now: earlier holds plus the open one, whether or not
+   it overlaps the working time. This is what the badge shows; holdMinutes()
+   is the part that actually comes off "time taken". */
+function holdElapsed(o) {
+  if (!o) return 0;
+  if (hasManualHold(o)) {
+    var total = Number(o.heldMinutes) || 0;
+    var open = openHoldAbs(o);
+    if (open !== null) total += Math.max(0, nowAbs() - open);
+    return Math.max(0, Math.round(total));
+  }
+  var lw = holdLogWindow(o);
+  if (lw && lw.startAbs !== null) {
+    return Math.max(0, Math.round((lw.endAbs === null ? nowAbs() : lw.endAbs) - lw.startAbs));
+  }
+  return 0;
 }
 /* A hold entered by hand (banked or open) replaces the status log entirely. */
 function hasManualHold(o) {
@@ -2890,18 +2938,27 @@ function holdBreakdown(o) {
   var held = holdMinutes(o);
   var live = isHoldFlag(o);
   var net = gross === null ? null : Math.max(0, Math.round(gross - held));
+  var elapsed = Math.max(holdElapsed(o), held);
+  var start = holdStartInfo(o);
   return { gross: gross === null ? null : Math.round(gross), held: held, net: net, live: live,
-           source: holdSource(o), any: held > 0 || live };
+           elapsed: elapsed, start: start, source: holdSource(o), any: elapsed > 0 || held > 0 || live };
 }
 function holdBreakdownText(b) {
   var lines = [];
-  if (b.live) lines.push("On hold right now" + (b.held ? " \u00b7 " + durationText(b.held) + " so far" : ""));
+  if (b.live) {
+    var since = b.start ? new Date(b.start.abs * 60000) : null;
+    lines.push("On hold right now \u00b7 " + (durationText(b.elapsed) || "0m") + " so far" +
+      (since ? " (since " + (b.start.known ? "" : "about ") + prettyTime(pad2(since.getHours()) + ":" + pad2(since.getMinutes())) + ")" : ""));
+    if (b.start && !b.start.known) lines.push("The hold's start time wasn't recorded \u2014 open the hold to set it.");
+  } else if (b.elapsed) {
+    lines.push("Held " + durationText(b.elapsed) + " in total");
+  }
   if (b.gross !== null) {
     lines.push("Start \u2192 finish: " + durationText(b.gross));
-    lines.push("On hold: \u2212" + durationText(b.held));
+    lines.push("Taken off (hold during working time): \u2212" + (durationText(b.held) || "0m"));
     lines.push("Time taken: " + durationText(b.net));
-  } else if (b.held) {
-    lines.push("On hold: " + durationText(b.held) + " (taken off once the order is finished)");
+  } else if (b.elapsed) {
+    lines.push("Hold time during work comes off once the order is started and finished.");
   }
   if (b.source === "log") lines.push("Hold read from the ILS \u2192 ILC stamps in the status log.");
   lines.push("Click to edit the hold.");
@@ -2917,12 +2974,37 @@ function holdChip(o, b, editMode) {
     chip.title = "Enter when a hold started and ended";
     return chip;
   }
+  var guess = b.live && b.start && !b.start.known;
   chip.appendChild(el("span", "hc-lab", b.live ? "On hold" : "Held"));
-  chip.appendChild(el("span", "hc-val", durationText(b.held) || "0m"));
+  chip.appendChild(el("span", "hc-val", (guess ? "~" : "") + (durationText(b.elapsed) || "0m")));
+  if (guess) chip.classList.add("guess");
+  if (b.live) chip.setAttribute("data-hold-live", o.id);
   chip.title = holdBreakdownText(b);
-  chip.setAttribute("aria-label", (b.live ? "On hold, " : "Held ") + (durationText(b.held) || "0m") + ". Edit hold");
+  chip.setAttribute("aria-label", (b.live ? "On hold, " : "Held ") + (durationText(b.elapsed) || "0m") + ". Edit hold");
   return chip;
 }
+/* Live holds count up without redrawing the table (a redraw would disturb
+   typing and scrolling): every 20 seconds each live badge, and the Time taken
+   figure beside it, is updated in place. */
+function tickLiveHolds() {
+  var chips = document.querySelectorAll("[data-hold-live]");
+  Array.prototype.forEach.call(chips, function (chip) {
+    var o = byId(chip.getAttribute("data-hold-live"));
+    if (!o || !isHoldFlag(o)) return;
+    var b = holdBreakdown(o);
+    var val = chip.querySelector(".hc-val");
+    var guess = b.start && !b.start.known;
+    if (val) val.textContent = (guess ? "~" : "") + (durationText(b.elapsed) || "0m");
+    chip.title = holdBreakdownText(b);
+    var td = chip.closest("td");
+    var main = td && td.querySelector(".dur-main");
+    if (main && !main.classList.contains("running") && b.net !== null && !chip.classList.contains("hold-edit")) {
+      main.textContent = durationText(b.net);
+    }
+  });
+}
+setInterval(tickLiveHolds, 20000);
+document.addEventListener("visibilitychange", function () { if (!document.hidden) tickLiveHolds(); });
 function timeTaken(o) {
   var span = stampSpan(o, "startTime", "completionTime");
   if (span === null) return null;
@@ -7134,6 +7216,9 @@ function dayClockFromIso(iso) {
   if (isNaN(d.getTime())) return null;
   return { day: todayKey(d), clock: pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds()) };
 }
+function dayClockFromAbs(abs) {
+  return dayClockFromIso(new Date(abs * 60000).toISOString());
+}
 function toggleHold(id) { openHoldDialog(id); }
 function openHoldDialog(id, after) {
   var o = byId(id);
@@ -7155,10 +7240,12 @@ function openHoldDialog(id, after) {
   /* Where the hold stands right now, in one line, before any editing. */
   var nowState = (function () {
     if (o.held === "TRUE" || o.held === true) {
-      var st0 = o.heldStartedAt ? dayClockFromIso(o.heldStartedAt) : null;
-      return { cls: "live", text: "On hold now" + (st0 ? " \u00b7 since " + prettyTime(st0.clock) +
-        (st0.day !== todayKey() ? ", " + shortDate(st0.day) : "") : "") +
-        (banked > 0 ? " \u00b7 plus " + durationText(Math.round(banked)) + " from earlier holds" : "") };
+      var hs0 = holdStartInfo(o);
+      var st0 = hs0 ? dayClockFromAbs(hs0.abs) : null;
+      return { cls: "live", text: "On hold now \u00b7 " + (durationText(holdElapsed(o)) || "0m") + " so far" +
+        (st0 && hs0.known ? " \u00b7 since " + prettyTime(st0.clock) +
+          (st0.day !== todayKey() ? ", " + shortDate(st0.day) : "") : "") +
+        (banked > 0 ? " \u00b7 includes " + durationText(Math.round(banked)) + " from earlier holds" : "") };
     }
     if (banked > 0) return { cls: "done", text: "Held " + durationText(Math.round(banked)) + " in total \u00b7 hold ended" };
     if (source === "log") return { cls: lw.end ? "done" : "live",
@@ -7169,9 +7256,14 @@ function openHoldDialog(id, after) {
 
   /* Pre-fill */
   var sDay = todayKey(), sClock = nowClock(), eDay = "", eClock = "", mode = "start";
+  var startGuess = null;
   if ((o.held === "TRUE" || o.held === true)) {
-    var st = o.heldStartedAt ? dayClockFromIso(o.heldStartedAt) : null;
+    var hs = holdStartInfo(o);
+    var st = hs ? dayClockFromAbs(hs.abs) : null;
     if (st) { sDay = st.day; sClock = st.clock; }
+    if (hs && !hs.known) startGuess = hs;
+    /* Ending the hold is the likely next step, so End is ready at "now" — but
+       it is only a suggestion: clear it and save to keep the hold running. */
     eDay = todayKey(); eClock = nowClock(); mode = "end";
   } else if (source === "log") {
     sDay = o.date; sClock = lw.start;
@@ -7201,6 +7293,11 @@ function openHoldDialog(id, after) {
   if (eClock) { E.time.value = prettyTime(eClock); E.date.value = eDay; }
   E.time.placeholder = "blank = still on hold";
 
+  if (startGuess) {
+    box.appendChild(el("p", "hold-note warn",
+      "This hold's start time wasn't recorded" + (startGuess.from ? ", so it's a best guess from the " + startGuess.from : "") +
+      ". Check \u201cHold started\u201d before saving."));
+  }
   if (source === "log") {
     box.appendChild(el("p", "hold-note",
       "Filled from the status log: ILS " + prettyTime(lw.start) +
@@ -7239,21 +7336,22 @@ function openHoldDialog(id, after) {
     var w = workWindow(o);
     var mins = overlapMinutes(r.sAbs, r.eAbs === null ? nowAbs() : r.eAbs, w);
     var total = Math.round(banked + mins);
+    var whole = Math.round(banked + Math.max(0, (r.eAbs === null ? nowAbs() : r.eAbs) - r.sAbs));
     var span = stampSpan(o, "startTime", "completionTime");
     var grid = el("div", "hold-sum");
+    grid.appendChild(stat(r.eAbs === null ? "On hold so far" : "Time on hold", durationText(whole) || "0m", "hs-hold"));
     grid.appendChild(stat("Start \u2192 finish", span === null ? (w ? "running" : "not started") : durationText(Math.round(span))));
-    grid.appendChild(stat(r.eAbs === null ? "On hold so far" : "On hold", "\u2212" + (durationText(total) || "0m"), "hs-hold"));
     grid.appendChild(stat("Time taken", span === null ? "\u2014" : durationText(Math.max(0, Math.round(span - total))), "hs-net"));
     out.appendChild(grid);
     var msg = "";
-    if (!w) msg = "The order has not been started, so nothing is taken off yet." +
+    if (w && total < whole) msg = "Only " + (durationText(total) || "0m") + " of the hold falls inside the working time (start \u2192 finish), so that is what comes off time taken.";
+    if (!w) msg += (msg ? " " : "") + "The order has not been started, so nothing is taken off yet." +
                   (r.eAbs === null ? " The hold will count once it starts." : "");
-    else if (!mins && r.eAbs !== null) msg = "This hold falls outside the working time, so it does not change time taken.";
-    else if (r.eAbs === null && !mins && isClock(o.completionTime)) msg = "This order is already finished, so a hold starting now will not change time taken.";
-    else if (r.eAbs === null) msg = mode === "end"
+    else if (!mins && r.eAbs !== null) msg += (msg ? " " : "") + "This hold falls outside the working time, so it does not change time taken.";
+    else if (r.eAbs === null && !mins && isClock(o.completionTime)) msg += (msg ? " " : "") + "This order is already finished, so a hold starting now will not change time taken.";
+    else if (r.eAbs === null) msg += (msg ? " " : "") + (mode === "end"
       ? "Still on hold \u2014 fill in \u201cHold ended\u201d to end it, or leave it blank to keep the clock running."
-      : "Leave \u201cHold ended\u201d blank to start the hold now; it keeps counting until you end it.";
-    if (banked > 0 && !(o.held === "TRUE" || o.held === true)) msg += (msg ? " " : "") + "Includes " + durationText(Math.round(banked)) + " from earlier holds.";
+      : "Leave \u201cHold ended\u201d blank to start the hold now; it keeps counting until you end it.");
     if (msg) out.appendChild(el("p", "hold-msg", msg));
   };
 
