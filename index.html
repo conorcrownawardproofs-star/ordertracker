@@ -3,9 +3,9 @@
 <script>
 /* Apply the saved theme before anything paints (no flash of the wrong colours). */
 try{(function(){var p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}"),t=p.theme||"light",r=document.documentElement,
-dark={dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1},
-glass={podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1},
-f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600"};
+dark={dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1},
+glass={podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1},
+f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600"};
 r.setAttribute("data-theme",t);r.setAttribute("data-tone",dark[t]?"dark":"light");if(p.fx!==false)r.classList.add("fx");if(glass[t])r.classList.add("glass");
 if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fonts.googleapis.com/css2?family='+f[t]+'&display=swap">');})();}catch(e){}
 </script>
@@ -1980,9 +1980,9 @@ html[data-theme="stadium"]{
   --shadow:0 1px 2px rgba(0,0,0,.6),0 14px 30px -16px rgba(0,0,0,.8);
   --glass:rgba(6,14,11,.58); --glass-head:rgba(9,18,15,.9);
 }
-html[data-theme="stadium"] #stage{background:linear-gradient(180deg,#020406 0%,#06101A 30%,#081A14 40%,#050B09 100%)}
+#stage.st-stadium{background:linear-gradient(180deg,#020406 0%,#06101A 30%,#081A14 40%,#050B09 100%)}
 /* the pitch */
-html[data-theme="stadium"] #stage .l1{top:auto;left:-60%;right:-60%;bottom:-12vh;height:66vh;transform:perspective(520px) rotateX(58deg);transform-origin:bottom;
+#stage.st-stadium .l1{top:auto;left:-60%;right:-60%;bottom:-12vh;height:66vh;transform:perspective(520px) rotateX(58deg);transform-origin:bottom;
   background:
     linear-gradient(90deg,transparent calc(50% - 1px),rgba(255,255,255,.55) calc(50% - 1px) calc(50% + 1px),transparent calc(50% + 1px)),
     radial-gradient(circle at 50% 50%,transparent 110px,rgba(255,255,255,.5) 111px 113px,transparent 114px),
@@ -1990,34 +1990,34 @@ html[data-theme="stadium"] #stage .l1{top:auto;left:-60%;right:-60%;bottom:-12vh
     repeating-linear-gradient(90deg,var(--turf-1) 0 90px,var(--turf-2) 90px 180px);
   -webkit-mask-image:linear-gradient(to top,#000 30%,transparent 95%);mask-image:linear-gradient(to top,#000 30%,transparent 95%);opacity:.9}
 /* crowd band: tiny seats catching the light */
-html[data-theme="stadium"] #stage .l2{top:30%;height:12%;
-  background:radial-gradient(rgba(234,246,255,.20) .8px,transparent 1.2px) 0 0/7px 6px,radial-gradient(rgba(255,194,51,.14) .8px,transparent 1.2px) 3px 3px/9px 7px,
+#stage.st-stadium .l2{top:30%;height:12%;
+  background:radial-gradient(var(--crowd-a,rgba(234,246,255,.20)) .8px,transparent 1.2px) 0 0/7px 6px,radial-gradient(var(--crowd-b,rgba(255,194,51,.14)) .8px,transparent 1.2px) 3px 3px/9px 7px,
     linear-gradient(180deg,transparent,rgba(30,50,60,.55) 40%,rgba(10,20,20,.8));
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
 /* floodlight beams from both rigs */
-html[data-theme="stadium"] #stage .l3,html[data-theme="stadium"] #stage .l4{inset:auto;top:9vh;width:130vw;height:120vh;transform-origin:50% 0;mix-blend-mode:screen;
+#stage.st-stadium .l3,#stage.st-stadium .l4{inset:auto;top:9vh;width:130vw;height:120vh;transform-origin:50% 0;mix-blend-mode:screen;
   background:conic-gradient(at 50% 0,transparent 0 166deg,rgba(255,248,220,.3) 173deg,rgba(255,250,232,.55) 180deg,rgba(255,248,220,.3) 187deg,transparent 194deg);
   -webkit-mask-image:linear-gradient(to bottom,#000 10%,transparent 90%);mask-image:linear-gradient(to bottom,#000 10%,transparent 90%)}
-html[data-theme="stadium"] #stage .l3{left:calc(8vw - 65vw);transform:rotate(-34deg)}
-html[data-theme="stadium"] #stage .l4{left:calc(92vw - 65vw);transform:rotate(34deg)}
-html.fx[data-theme="stadium"] #stage .l3{animation:sdBeamL 12s ease-in-out infinite alternate}
-html.fx[data-theme="stadium"] #stage .l4{animation:sdBeamR 14s ease-in-out infinite alternate}
+#stage.st-stadium .l3{left:calc(8vw - 65vw);transform:rotate(-34deg)}
+#stage.st-stadium .l4{left:calc(92vw - 65vw);transform:rotate(34deg)}
+html.fx #stage.st-stadium .l3{animation:sdBeamL 12s ease-in-out infinite alternate}
+html.fx #stage.st-stadium .l4{animation:sdBeamR 14s ease-in-out infinite alternate}
 @keyframes sdBeamL{from{transform:rotate(-42deg)}to{transform:rotate(-24deg)}}
 @keyframes sdBeamR{from{transform:rotate(42deg)}to{transform:rotate(26deg)}}
 /* the rigs themselves: grids of lamps with a hot glow */
-html[data-theme="stadium"] #stage::before,html[data-theme="stadium"] #stage::after{content:"";position:absolute;top:calc(9vh - 17px);width:90px;height:34px;z-index:2;border-radius:3px;
+#stage.st-stadium::before,#stage.st-stadium::after{content:"";position:absolute;top:calc(9vh - 17px);width:90px;height:34px;z-index:2;border-radius:3px;
   background:radial-gradient(circle,#FFFDF2 35%,#FFE9A8 55%,transparent 60%) 0 0/15px 11px,#1A2228;
   box-shadow:0 0 30px 10px rgba(255,245,210,.45),0 0 90px 40px rgba(255,235,170,.18)}
-html[data-theme="stadium"] #stage::before{left:calc(8vw - 45px);transform:rotate(-12deg)}
-html[data-theme="stadium"] #stage::after{right:calc(8vw - 45px);transform:rotate(12deg)}
-html.fx[data-theme="stadium"] #stage::before,html.fx[data-theme="stadium"] #stage::after{animation:sdHum 5s ease-in-out infinite}
+#stage.st-stadium::before{left:calc(8vw - 45px);transform:rotate(-12deg)}
+#stage.st-stadium::after{right:calc(8vw - 45px);transform:rotate(12deg)}
+html.fx #stage.st-stadium::before,html.fx #stage.st-stadium::after{animation:sdHum 5s ease-in-out infinite}
 @keyframes sdHum{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
 /* haze motes + camera flashes */
-html[data-theme="stadium"] #stage .parts i.mote{animation-name:sdMote;animation-timing-function:ease-in-out;animation-direction:alternate}
-html[data-theme="stadium"] #stage .parts i.mote b{border-radius:50%;background:rgba(255,248,220,.75);box-shadow:0 0 8px rgba(255,240,200,.8)}
+#stage.st-stadium .parts i.mote{animation-name:sdMote;animation-timing-function:ease-in-out;animation-direction:alternate}
+#stage.st-stadium .parts i.mote b{border-radius:50%;background:rgba(255,248,220,.75);box-shadow:0 0 8px rgba(255,240,200,.8)}
 @keyframes sdMote{0%{transform:translate(0,0);opacity:.1}50%{opacity:.8}100%{transform:translate(40px,-70px);opacity:.15}}
-html[data-theme="stadium"] #stage .parts i.flash{width:3px;height:3px;border-radius:50%;background:#fff;opacity:0;animation-name:sdFlash;animation-timing-function:steps(1)}
-html[data-theme="stadium"] #stage .parts i.flash b{display:none}
+#stage.st-stadium .parts i.flash{width:3px;height:3px;border-radius:50%;background:#fff;opacity:0;animation-name:sdFlash;animation-timing-function:steps(1)}
+#stage.st-stadium .parts i.flash b{display:none}
 @keyframes sdFlash{0%,96%{opacity:0;box-shadow:none}97%{opacity:1;box-shadow:0 0 10px 4px rgba(255,255,255,.9),0 0 26px 10px rgba(200,230,255,.35)}98%,100%{opacity:0}}
 /* chrome: scoreboard header, LED numbers */
 html[data-theme="stadium"] .console{border-bottom:2px solid #1A262C;box-shadow:0 2px 0 #000,0 10px 30px -10px rgba(255,194,51,.25)}
@@ -2035,8 +2035,14 @@ html[data-theme="stadium"] .chip[aria-pressed="true"]{background:var(--sb-amber)
 html[data-theme="stadium"] .day b{font-family:var(--display);font-size:18px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1}
 html[data-theme="stadium"] .day[aria-current="true"]{color:var(--sb-amber-2);border-bottom-color:var(--sb-amber);
   background:linear-gradient(180deg,transparent,rgba(255,194,51,.12))}
-html[data-theme="stadium"] .day[aria-current="true"]::before{content:"LIVE";position:absolute;top:2px;left:4px;font:600 8px/1 var(--sans);letter-spacing:.1em;
-  color:#fff;background:#E0443A;padding:2px 3px;border-radius:2px}
+html[data-theme="stadium"] .day[aria-current="true"]::before,html[data-theme^="bills"] .day[aria-current="true"]::before{
+  content:"LIVE";position:absolute;top:1px;left:50%;transform:translateX(-50%);font:700 6.5px/1 var(--sans);letter-spacing:.12em;
+  color:#fff;background:var(--live-red,#E0443A);padding:1.5px 3px 1px;border-radius:2px;pointer-events:none}
+@media (max-width:760px){
+  html[data-theme="stadium"] .day[aria-current="true"]::before,html[data-theme^="bills"] .day[aria-current="true"]::before{
+    content:"";width:6px;height:6px;padding:0;border-radius:50%;top:4px;left:5px;right:auto;transform:none;
+    box-shadow:0 0 0 2px color-mix(in srgb,var(--live-red,#E0443A) 30%,transparent)}
+}
 html[data-theme="stadium"] .day .cnt{background:var(--sb-amber);color:#1E1604}
 html[data-theme="stadium"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]){background:linear-gradient(180deg,#FFD76A,#FFB81C);color:#1E1604;border-color:#FFB81C}
 html[data-theme="stadium"] .btn.ghost{color:var(--text)}
@@ -2422,6 +2428,133 @@ html[data-theme="terminal"] .auth-brand{background:repeating-linear-gradient(180
 html[data-theme="terminal"] .auth-brand h1{color:var(--tm-g2);text-shadow:0 0 12px rgba(51,255,119,.6)}
 html[data-theme="terminal"] .auth-brand .plate{border-radius:0;border-color:rgba(51,255,119,.35);border-left-color:var(--tm-g);background:rgba(1,5,2,.6)}
 
+/* ---------- Buffalo Gameday + Buffalo Snow Game ----------
+   Built on the Stadium Night scene (#stage.st-stadium), recoloured in royal
+   blue, red and white: a football field with a painted end zone, fans in team
+   colours, a helmet-stripe rail and a TD badge. No team marks or logos.
+   The snow version adds falling snow, a white-dusted field, drifts and
+   frosted glass. */
+html[data-theme^="bills"]{
+  --bb-blue:#00338D; --bb-blue-2:#1450C8; --bb-red:#C60C30; --bb-red-2:#E8354F; --bb-navy:#0A1F44; --live-red:#E0243F;
+  --turf-1:#0E3B22; --turf-2:#124728; --crowd-a:rgba(80,130,255,.34); --crowd-b:rgba(232,53,79,.30);
+  --crown:#051233; --crown-2:#0A1F4F; --crown-line:#1D3A7A; --crown-ink:#FFFFFF; --crown-dim:#A9BCE8;
+  --paper:#030A1A; --surface:#07132E; --surface-2:#0B1C40; --line:rgba(190,210,255,.17);
+  --text:#F1F5FF; --text-2:#BCC9E8; --muted:#8395C0;
+  --brass:#E8354F; --brass-lit:#FF5A70; --brass-soft:rgba(198,12,48,.2);
+  --go:#6CF0A0; --go-bg:rgba(40,160,90,.22); --stop:#FF6B7F; --stop-bg:rgba(198,12,48,.26);
+  --hold:#FFC96B; --hold-bg:rgba(200,150,40,.22); --code:#7DB3FF; --code-bg:rgba(20,80,200,.3);
+  --idle:#A9B8DA; --idle-bg:rgba(190,210,255,.08); --focus:#FF5A70;
+  --row-a:rgba(7,19,46,.66); --row-b:rgba(10,26,60,.66);
+  --row-code-a:rgba(18,50,120,.6); --row-code-b:rgba(22,58,138,.6);
+  --row-go-a:rgba(14,60,40,.6); --row-go-b:rgba(18,70,46,.6);
+  --row-warn-a:rgba(66,50,14,.6); --row-warn-b:rgba(76,58,16,.6);
+  --row-hot-a:rgba(92,10,36,.6); --row-hot-b:rgba(106,14,42,.6); --row-hover:rgba(232,53,79,.08);
+  --btn-ink:#FFFFFF; --accent-ink:#FFFFFF; --code-ink:#051233; --go-ink:#052414; --stop-ink:#2A0510;
+  --ghost-bg:rgba(190,210,255,.10); --ghost-bg-h:rgba(190,210,255,.18); --ghost-line:rgba(190,210,255,.28); --ghost-line-h:#E8354F;
+  --crest:#FFFFFF;
+  --display:'Teko','Barlow Condensed','Arial Narrow',sans-serif;
+  --hdr-bg:radial-gradient(rgba(255,255,255,.10) 1px,transparent 1.3px) 0 0/5px 5px,linear-gradient(180deg,#0B2A78 0%,#00338D 55%,#062266 100%);
+  --shadow:0 1px 2px rgba(0,0,0,.6),0 14px 30px -16px rgba(0,0,0,.8);
+  --glass:rgba(4,12,32,.58); --glass-head:rgba(7,19,46,.9);
+}
+html[data-theme^="bills"] #stage.st-stadium{background:linear-gradient(180deg,#01030A 0%,#050E24 30%,#071733 40%,#030A1A 100%)}
+/* a football field: royal-blue end zone with white diagonal paint, goal line, yard lines */
+html[data-theme^="bills"] #stage.st-stadium .l1{
+  background:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.16) 0 18px,transparent 18px 36px) top/100% 9% no-repeat,
+    linear-gradient(180deg,#0B3FA8,#00338D) top/100% 9% no-repeat,
+    linear-gradient(transparent calc(9% - 1px),rgba(255,255,255,.9) calc(9% - 1px) calc(9% + 2px),transparent calc(9% + 2px)),
+    repeating-linear-gradient(180deg,transparent 0 calc(9.1% - 2px),rgba(255,255,255,.42) calc(9.1% - 2px) 9.1%),
+    repeating-linear-gradient(180deg,var(--turf-1) 0 4.55%,var(--turf-2) 4.55% 9.1%)}
+/* helmet-stripe rail under the header: white / red / white */
+html[data-theme^="bills"] .console{border-bottom:0;box-shadow:0 10px 30px -10px rgba(0,51,141,.55)}
+html[data-theme^="bills"] .console::after{top:auto;height:7px;background:linear-gradient(180deg,#fff 0 1.5px,var(--bb-red) 1.5px 5.5px,#fff 5.5px 7px)}
+html[data-theme^="bills"] .mark b{font-size:21px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;line-height:1;color:#fff;
+  text-shadow:0 2px 0 rgba(198,12,48,.85),0 0 14px rgba(120,160,255,.35)}
+html[data-theme^="bills"] .mark span{letter-spacing:.2em;text-transform:uppercase;font-size:10px;color:#C9D6F5}
+html[data-theme^="bills"] .stat b{font-family:var(--display);font-weight:500;font-size:32px;line-height:1;letter-spacing:.03em;color:#fff;
+  text-shadow:0 0 12px rgba(80,130,255,.55)}
+html[data-theme^="bills"] .stat.good b{color:#7CFFB2;text-shadow:0 0 12px rgba(108,240,160,.45)}
+html[data-theme^="bills"] .stat.flag b{color:var(--bb-red-2);text-shadow:0 0 12px rgba(232,53,79,.5)}
+html[data-theme^="bills"] .stat span{text-transform:uppercase;letter-spacing:.12em;font-size:10px}
+html[data-theme^="bills"] .modal h3,html[data-theme^="bills"] .entryhead h3,html[data-theme^="bills"] .auth-card h2,html[data-theme^="bills"] .sx-title{
+  font-weight:500;font-size:26px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05}
+html[data-theme^="bills"] thead th{text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;--sort-ink:var(--bb-red-2)}
+html[data-theme^="bills"] .chip[aria-pressed="true"]{background:var(--bb-red);color:#fff;border-color:var(--bb-red);box-shadow:0 0 14px rgba(198,12,48,.45)}
+html[data-theme^="bills"] .day b{font-family:var(--display);font-size:18px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+html[data-theme^="bills"] .day[aria-current="true"]{color:#fff;border-bottom-color:var(--bb-red);background:linear-gradient(180deg,transparent,rgba(0,51,141,.35))}
+html[data-theme^="bills"] .day .cnt{background:var(--bb-red);color:#fff}
+html[data-theme^="bills"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]){background:linear-gradient(180deg,#E8354F,#B00A2A);color:#fff;border-color:#C60C30;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+html[data-theme^="bills"] .btn.ghost{color:var(--text)}
+html[data-theme^="bills"] .icon-btn.accent{background:linear-gradient(180deg,#E8354F,#B00A2A);border-color:#FF5A70;color:#fff}
+html[data-theme^="bills"] td.dur,html[data-theme^="bills"] td.tm{color:#D6E2FF}
+html[data-theme^="bills"] td.taken-cell.best .dur-main::after{content:"TD";background:var(--bb-red);color:#fff;font-family:var(--display);font-size:14px;
+  font-weight:600;letter-spacing:.06em;padding:2px 7px 0;border-radius:3px;box-shadow:inset 0 0 0 1.5px #fff,0 0 12px rgba(198,12,48,.6)}
+html[data-theme^="bills"] .modal{border-color:rgba(120,160,255,.3);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 24px 60px -20px rgba(0,0,0,.9),0 0 40px -10px rgba(0,51,141,.55)}
+html[data-theme^="bills"] .sx-kpi-v{color:#fff}
+html[data-theme^="bills"] .auth-brand{background:radial-gradient(60% 40% at 15% 0%,rgba(230,240,255,.35),transparent 70%),
+  radial-gradient(60% 40% at 85% 0%,rgba(230,240,255,.3),transparent 70%),linear-gradient(180deg,#00338D,#051233 60%,#0E3B22)}
+html[data-theme^="bills"] .auth-brand h1{font-size:44px;font-weight:500;text-transform:uppercase;line-height:1;color:#fff;text-shadow:0 3px 0 var(--bb-red)}
+html[data-theme^="bills"] .auth-brand .plate{border-left-color:var(--bb-red)}
+
+/* ---------- Snow Game additions ---------- */
+html[data-theme="billsnow"]{
+  --turf-1:#DCE6F2; --turf-2:#CBD8E8; --crowd-a:rgba(160,190,255,.3); --crowd-b:rgba(255,120,140,.26);
+  --paper:#0A1428; --surface:#0E1B36; --surface-2:#13244A;
+  --glass:rgba(22,38,74,.46); --glass-head:rgba(14,27,54,.9); --glass-blur:blur(18px) saturate(1.2) brightness(1.08);
+  --row-a:rgba(14,27,54,.62); --row-b:rgba(18,34,66,.62);
+}
+html[data-theme="billsnow"] #stage.st-stadium{background:linear-gradient(180deg,#0B1428 0%,#17264A 30%,#22345C 42%,#0E1B36 100%)}
+/* the field under snow: lines only just showing through */
+html[data-theme="billsnow"] #stage.st-stadium .l1{opacity:1;
+  background:
+    radial-gradient(ellipse 18% 6% at 20% 96%,#F4F8FF 60%,transparent 62%),radial-gradient(ellipse 24% 7% at 62% 98%,#F4F8FF 60%,transparent 62%),
+    radial-gradient(ellipse 16% 5% at 88% 95%,#EEF3FB 60%,transparent 62%),
+    repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 18px,transparent 18px 36px) top/100% 9% no-repeat,
+    linear-gradient(180deg,rgba(40,90,190,.55),rgba(30,70,160,.45)) top/100% 9% no-repeat,
+    linear-gradient(transparent calc(9% - 1px),rgba(255,255,255,.95) calc(9% - 1px) calc(9% + 2px),transparent calc(9% + 2px)),
+    repeating-linear-gradient(180deg,transparent 0 calc(9.1% - 2px),rgba(120,140,170,.35) calc(9.1% - 2px) 9.1%),
+    repeating-linear-gradient(180deg,var(--turf-1) 0 4.55%,var(--turf-2) 4.55% 9.1%)}
+/* snow glowing in the floodlights */
+html[data-theme="billsnow"] #stage.st-stadium .l3,html[data-theme="billsnow"] #stage.st-stadium .l4{
+  background:conic-gradient(at 50% 0,transparent 0 164deg,rgba(225,238,255,.3) 172deg,rgba(240,248,255,.6) 180deg,rgba(225,238,255,.3) 188deg,transparent 196deg)}
+html[data-theme="billsnow"] #stage.st-stadium .l2{filter:blur(.6px);opacity:.8}
+/* haze: the whole scene softened by falling snow */
+html[data-theme="billsnow"] #stage.st-stadium::before,html[data-theme="billsnow"] #stage.st-stadium::after{
+  box-shadow:0 0 36px 14px rgba(230,240,255,.55),0 0 120px 60px rgba(210,225,255,.22)}
+#stage.w-snow .parts i.flake{top:-14px;animation-name:snowFall;animation-timing-function:linear}
+#stage.w-snow .parts i.flake b{border-radius:50%;background:radial-gradient(circle,#fff 0 45%,rgba(255,255,255,.55) 60%,transparent 72%);
+  animation:snowSway ease-in-out infinite alternate}
+#stage.w-snow .parts i.flake.far b{opacity:.55}
+#stage.w-snow .parts i.flake.mid b{opacity:.85}
+#stage.w-snow .parts i.flake.near b{opacity:.75;filter:blur(1.5px)}
+@keyframes snowFall{from{transform:translate3d(0,-4vh,0)}to{transform:translate3d(var(--drift),106vh,0)}}
+@keyframes snowSway{from{transform:translateX(-10px)}to{transform:translateX(10px)}}
+/* snow settling on the glass bars: a soft drift along their top edges */
+html[data-theme="billsnow"] .ribbon,html[data-theme="billsnow"] .appfoot{border-top:0}
+html[data-theme="billsnow"] .ribbon::before,html[data-theme="billsnow"] .appfoot::before{content:"";position:absolute;left:0;right:0;top:-3px;height:7px;pointer-events:none;z-index:1;
+  /* four drift layers on prime-number tiles, so the edge never visibly repeats */
+  background:
+    radial-gradient(ellipse 46px 4px at 40px 7px,#fff 68%,transparent 72%) 0 0/97px 8px repeat-x,
+    radial-gradient(ellipse 70px 5px at 90px 7px,#F4F8FF 68%,transparent 72%) 23px 0/151px 8px repeat-x,
+    radial-gradient(ellipse 30px 3px at 60px 7px,#fff 68%,transparent 72%) 51px 0/223px 8px repeat-x,
+    radial-gradient(ellipse 110px 3.5px at 150px 7px,#EAF1FC 68%,transparent 72%) 0 0/331px 8px repeat-x;
+  height:8px;top:-4px;filter:drop-shadow(0 1px 1px rgba(0,20,60,.3));opacity:.9}
+html[data-theme="billsnow"] .ribbon{position:relative}
+@media (min-width:761px){ html[data-theme="billsnow"] .ribbon{position:sticky} }
+@media (max-width:760px){ html[data-theme="billsnow"] .appfoot{position:relative} }
+html[data-theme="billsnow"] .weekbar,html[data-theme="billsnow"] .ribbon,html[data-theme="billsnow"] .ledger-bar,html[data-theme="billsnow"] .appfoot{
+  border-color:rgba(230,240,255,.22)}
+html[data-theme="billsnow"] .console::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 52px 3.5px at 50px 0,rgba(255,255,255,.9) 68%,transparent 72%) 0 0/113px 5px repeat-x,
+    radial-gradient(ellipse 84px 2.5px at 110px 0,rgba(255,255,255,.75) 68%,transparent 72%) 37px 0/197px 5px repeat-x,
+    radial-gradient(ellipse 28px 2px at 40px 0,rgba(255,255,255,.8) 68%,transparent 72%) 11px 0/281px 5px repeat-x}
+html[data-theme="billsnow"] .auth-brand{background:radial-gradient(60% 40% at 15% 0%,rgba(230,240,255,.45),transparent 70%),
+  radial-gradient(60% 40% at 85% 0%,rgba(230,240,255,.4),transparent 70%),linear-gradient(180deg,#00338D,#17264A 60%,#CBD8E8)}
+html[data-theme="billsnow"] td.taken-cell.best .dur-main::after{content:"TD \2744"}
+
 /* ---------- ambient layer (petals, bubbles) ---------- */
 #ambient{position:fixed;inset:0;z-index:40;pointer-events:none;overflow:hidden}
 #ambient i{position:absolute;top:-24px;display:block;will-change:transform;animation-name:ambFall;animation-timing-function:linear;animation-iteration-count:infinite}
@@ -2469,6 +2602,185 @@ html[data-theme="terminal"] .auth-brand .plate{border-radius:0;border-color:rgba
   #tablewrap thead th{top:calc(var(--kpi-ribbon-height) + var(--ledger-bar-height));z-index:39}
   #tablewrap thead th{box-shadow:0 3px 8px -7px rgba(18,22,28,.5)}
 }
+
+/* =====================================================================
+   SUMMARY DASHBOARD (.sx). Theme tokens only, so it belongs to every theme.
+   Desktop: headline cards across, then a wide main column + a side column.
+   Phone: a full-screen sheet, 2x2 cards, one column.
+   ===================================================================== */
+.scrim.sx-scrim{align-items:center;padding:calc(18px + var(--sa-t,0px)) 18px calc(18px + var(--sa-b,0px))}
+.modal.sx{width:min(1280px,100%);max-width:none;max-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;
+  border-radius:16px;background:var(--surface)}
+.sx-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px 14px;
+  border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--surface-2),var(--surface))}
+.sx-titleblock{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sx-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+.sx-title{margin:0;font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.01em;color:var(--text);line-height:1.15}
+.sx-sub{font-size:12.5px;color:var(--muted)}
+.sx-ctrls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sx-seg{display:inline-flex;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.sx-seg button{border:0;background:transparent;color:var(--text-2);font:600 12.5px/1 var(--sans);padding:8px 14px;border-radius:7px;cursor:pointer;
+  transition:background .15s,color .15s}
+.sx-seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12),0 0 0 1px var(--line)}
+.sx-step{display:inline-flex;align-items:center;gap:4px}
+.sx-ib,.sx-today{height:34px;min-width:34px;display:inline-grid;place-items:center;border-radius:9px;border:1px solid var(--line);
+  background:var(--surface);color:var(--text);font:600 17px/1 var(--sans);cursor:pointer;transition:background .15s,border-color .15s}
+.sx-today{font-size:12.5px;padding:0 12px}
+.sx-today:disabled{opacity:.45;cursor:default}
+.sx-ib:hover,.sx-today:not(:disabled):hover{border-color:var(--brass);background:var(--surface-2)}
+.sx-close{font-size:22px;font-weight:400}
+.sx-body{overflow-y:auto;padding:16px 20px 18px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch}
+html.fx .sx-body.sx-in-r{animation:sxInR .22s var(--ease)} html.fx .sx-body.sx-in-l{animation:sxInL .22s var(--ease)}
+@keyframes sxInR{from{opacity:.3;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes sxInL{from{opacity:.3;transform:translateX(-14px)}to{opacity:1;transform:none}}
+/* headline cards */
+.sx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.sx-kpi{position:relative;padding:14px 16px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);min-width:0;overflow:hidden}
+.sx-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kc,var(--brass))}
+.sx-kpi.k-orders{--kc:var(--code)} .sx-kpi.k-value{--kc:var(--brass)} .sx-kpi.k-time{--kc:var(--go)} .sx-kpi.k-proof{--kc:var(--hold)}
+.sx-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px}
+.sx-kpi-l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sx-kpi-v{display:block;margin:4px 0 6px;font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05;color:var(--text);
+  letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-kpi-s{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text-2)}
+.sx-kpi-s span+span::before{content:"";display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--muted);margin:0 8px 2px -6px;opacity:.7}
+.sx-ring{width:44px;height:44px;position:absolute;right:12px;top:12px}
+.sx-ring .trk{fill:none;stroke:var(--line);stroke-width:3.5}
+.sx-ring .val{fill:none;stroke:var(--go);stroke-width:3.5;stroke-linecap:round;transition:stroke-dasharray .5s var(--ease)}
+.sx-ring text{font:700 8.5px var(--mono);fill:var(--text)}
+.sx-kpi.k-orders .sx-kpi-v,.sx-kpi.k-orders .sx-kpi-s{padding-right:50px}
+.sx-delta{font:700 11px/1 var(--mono);padding:4px 7px;border-radius:999px}
+.sx-delta.up{color:var(--go);background:var(--go-bg)} .sx-delta.down{color:var(--stop);background:var(--stop-bg)}
+/* columns + panels */
+.sx-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+.sx-main,.sx-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sx-panel{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);min-width:0}
+.sx-ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.sx-ph h4{margin:0;font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--text)}
+.sx-empty{font-size:12.5px;color:var(--muted);padding:6px 0}
+.sx-note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+.sx-legend{display:flex;gap:12px;font-size:11.5px;color:var(--text-2)}
+.sx-legend span{display:inline-flex;align-items:center;gap:5px}
+.sx-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.lg-start{background:color-mix(in srgb,var(--code) 35%,transparent);box-shadow:inset 0 0 0 1.5px var(--code)} .lg-fin{background:var(--go)}
+/* hourly chart */
+.sx-hours{display:flex;align-items:stretch;gap:6px;height:150px;padding:8px 2px 0;
+  background:repeating-linear-gradient(to top,transparent 0 calc(25% - 1px),color-mix(in srgb,var(--line) 70%,transparent) calc(25% - 1px) 25%)}
+.sx-hcol{flex:1;display:flex;flex-direction:column;align-items:stretch;min-width:0;position:relative;border-radius:6px}
+.sx-hcol.now{background:color-mix(in srgb,var(--brass) 10%,transparent)}
+.sx-hcol.now::after{content:"now";position:absolute;top:-2px;left:50%;transform:translateX(-50%);font:700 9px var(--mono);color:var(--brass);
+  text-transform:uppercase;letter-spacing:.06em}
+.sx-hbars{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:12px 2px 0}
+.sx-hbars i{flex:1;max-width:16px;border-radius:4px 4px 1px 1px;min-height:0;position:relative;transition:height .45s var(--ease)}
+.sx-hbars i.st{background:color-mix(in srgb,var(--code) 30%,transparent);box-shadow:inset 0 0 0 1.5px var(--code)}
+.sx-hbars i.fn{background:var(--go)}
+.sx-hbars i.fn[data-n]::after{content:attr(data-n);position:absolute;top:-15px;left:50%;transform:translateX(-50%);font:700 10px var(--mono);color:var(--go)}
+.sx-hl{text-align:center;font:600 10px var(--mono);color:var(--muted);padding:5px 0 0;border-top:1px solid var(--line)}
+/* pipeline */
+.sx-pipe{display:grid;grid-template-columns:92px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:5px 0}
+.sx-pipe-l{font-size:12.5px;color:var(--text-2);font-weight:600}
+.sx-pipe-t{height:12px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.sx-pipe-t i{display:block;height:100%;border-radius:999px;background:var(--pc,var(--code));transition:width .5s var(--ease)}
+.sx-pipe-n{text-align:right;font:700 13px var(--mono);color:var(--text)}
+.sx-pipe.p-log{--pc:var(--idle)} .sx-pipe.p-start{--pc:var(--code)} .sx-pipe.p-proof{--pc:var(--hold)} .sx-pipe.p-back{--pc:var(--brass)} .sx-pipe.p-fin{--pc:var(--go)}
+/* week at a glance */
+.sx-week{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.sx-wday{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 9px;border-radius:10px;border:1px solid transparent;
+  background:transparent;color:var(--text);cursor:pointer;font:inherit;transition:background .15s,border-color .15s}
+.sx-wday:hover{background:var(--surface-2);border-color:var(--line)}
+.sx-wday.sel{background:var(--surface-2);border-color:var(--brass);box-shadow:inset 0 -3px 0 var(--brass)}
+.sx-wn{font:700 12px var(--mono);color:var(--text-2);min-height:15px}
+.sx-wbar{width:min(34px,70%);height:84px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:6px;overflow:hidden;
+  background:color-mix(in srgb,var(--line) 45%,transparent)}
+.sx-wbar i{display:block;width:100%;transition:height .45s var(--ease)}
+.sx-wbar i.fn{background:var(--go)} .sx-wbar i.op{background:color-mix(in srgb,var(--hold) 70%,transparent)}
+.sx-wd{font-size:12px;font-weight:700;letter-spacing:.02em}
+.sx-wday.today .sx-wd::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--brass);margin-left:4px;vertical-align:2px}
+.sx-wv{font:600 11px var(--mono);color:var(--muted)}
+.sx-wfoot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.sx-wfoot div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sx-wfoot b{font:700 15px var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-wfoot span{font-size:11px;color:var(--muted)}
+/* attention + fastest rows (buttons: tap to jump to the order) */
+.sx-count{font:700 11px/1 var(--mono);padding:4px 8px;border-radius:999px;background:var(--stop-bg);color:var(--stop)}
+.sx-att,.sx-fast{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;margin:0 0 6px;
+  border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:inherit;text-align:left;cursor:pointer;
+  transition:border-color .15s,transform .15s}
+.sx-att:hover,.sx-fast:hover{border-color:var(--brass);transform:translateX(2px)}
+.sx-att-tag{font:700 10px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:6px;white-space:nowrap;
+  color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
+.sx-att.k-hold{--ac:var(--stop)} .sx-att.k-late{--ac:var(--stop)} .sx-att.k-due{--ac:var(--hold)} .sx-att.k-proof{--ac:var(--code)} .sx-att.k-drive{--ac:var(--muted)}
+.sx-att.k-hold,.sx-att.k-late{border-left:3px solid var(--stop)}
+.sx-att-mid{display:flex;flex-direction:column;min-width:0}
+.sx-att-mid b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-att-mid span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-att-d{font-size:11.5px;color:var(--text-2);white-space:nowrap;text-align:right}
+.sx-allclear{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--go-bg);color:var(--go);font-size:13px;font-weight:600}
+.sx-medal{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:800 12px var(--mono);color:#2A1E05;
+  background:radial-gradient(circle at 35% 30%,#FFF4CC,#E2BE5E 50%,#B8892A);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sx-fast.m2 .sx-medal{background:radial-gradient(circle at 35% 30%,#FFFFFF,#C9D0DA 50%,#8E97A4)}
+.sx-fast.m3 .sx-medal{background:radial-gradient(circle at 35% 30%,#FFD8B5,#C98A55 50%,#8A4E22);color:#2A1206}
+.sx-fast-t{font:700 14px var(--mono);color:var(--go)}
+/* mix */
+.sx-mixgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sx-mix{min-width:0}
+.sx-mix+.sx-mix,.sx-mixgrid+.sx-mix{margin-top:12px}
+.sx-mixgrid .sx-mix{margin-top:0}
+.sx-mix-h{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.sx-mrow{display:grid;grid-template-columns:44px minmax(0,1fr) 22px;align-items:center;gap:8px;padding:3px 0;font-size:12px}
+.sx-mrow-l{font:600 11.5px var(--mono);color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-mrow-t{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.sx-mrow-t i{display:block;height:100%;border-radius:999px;background:var(--brass)}
+.sx-mrow b{text-align:right;font:700 12px var(--mono)}
+.sx-stack{display:flex;height:12px;border-radius:999px;overflow:hidden;gap:2px}
+.sx-stack i{display:block;min-width:4px}
+.sx-stack i.t-code,.sx-stack-lg .t-code i{background:var(--code)} .sx-stack i.t-go,.sx-stack-lg .t-go i{background:var(--go)}
+.sx-stack i.t-warn,.sx-stack-lg .t-warn i{background:var(--hold)} .sx-stack i.t-hot,.sx-stack-lg .t-hot i{background:var(--stop)}
+.sx-stack-lg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px;color:var(--text-2)}
+.sx-stack-lg span{display:inline-flex;align-items:center;gap:5px}
+.sx-stack-lg i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.sx-hint{text-align:center;font-size:11px;color:var(--muted);padding-top:2px}
+/* mid-size screens: side column drops under the main one */
+@media (max-width:1060px){
+  .sx-cols{grid-template-columns:1fr}
+  .sx-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .sx-side .sx-panel:last-child{grid-column:1/-1}
+}
+/* phones: a full-screen sheet */
+@media (max-width:760px){
+  /* beats the generic phone dialog rules (padding / max-height !important) */
+  .scrim.sx-scrim{padding:0!important;align-items:stretch!important;overflow:hidden}
+  .modal.sx{width:100%;height:100%;max-height:none!important;padding:0!important;margin:0;border-radius:0;border:0}
+  .sx-kpi-s{flex-direction:column;gap:1px}
+  .sx-kpi-s span+span::before{display:none}
+  .sx-kpi-l{font-size:10.5px}
+  .sx-att{grid-template-columns:auto minmax(0,1fr);row-gap:3px}
+  .sx-att-d{grid-column:2;text-align:left;font-size:11px;color:var(--muted)}
+  .sx-att-tag{align-self:start;margin-top:2px}
+  .sx-head{position:relative;padding:calc(12px + var(--sa-t,0px)) 14px 12px;gap:10px}
+  .sx-titleblock{flex:1 1 100%;padding-right:44px}
+  .sx-title{font-size:18px}
+  .sx-close{position:absolute;right:12px;top:calc(12px + var(--sa-t,0px))}
+  .sx-ctrls{width:100%;justify-content:space-between}
+  .sx-seg button{padding:9px 16px}
+  .sx-copy{display:none}
+  .sx-body{padding:12px 12px calc(20px + var(--sa-b,0px));gap:12px}
+  .sx-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .sx-kpi{padding:12px 12px 11px}
+  .sx-kpi-v{font-size:24px}
+  .sx-ring{width:36px;height:36px;right:9px;top:9px}
+  .sx-kpi.k-orders .sx-kpi-v,.sx-kpi.k-orders .sx-kpi-s{padding-right:38px}
+  .sx-side{display:flex}
+  .sx-hours{height:120px;gap:3px}
+  .sx-hbars i{max-width:10px}
+  .sx-hbars i.fn[data-n]::after{font-size:9px}
+  .sx-pipe{grid-template-columns:78px minmax(0,1fr) 28px}
+  .sx-wfoot{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sx-wfoot div:nth-child(n+4){grid-column:span 1}
+  .sx-mixgrid{grid-template-columns:1fr}
+  .sx-hint{display:none}
+}
+@media print{ .sx-ctrls,.sx-hint{display:none} .modal.sx{box-shadow:none;border:0} }
 
 /* =====================================================================
    iPhone / home-screen web app.
@@ -6635,204 +6947,435 @@ function clockFromMinutes(m) {
   if (m === null || m === undefined) return "—";
   return prettyTime(pad2(Math.floor(m / 60)) + ":" + pad2(Math.round(m % 60)) + ":00");
 }
-function summaryText(dateKey, s) {
+function summaryText(view, s, orders) {
+  var isWeek = view.scope === "week";
+  var keys = weekdayKeys(mondayOf(view.day));
+  var att = sumAttention(orders);
   var lines = [
-    "Award Order Tracker — " + prettyDate(dateKey),
+    "Crown Awards Order Tracker \u2014 " + (isWeek ? "week of " + shortDate(keys[0]) + " to " + shortDate(keys[4]) : prettyDate(view.day)),
     "Orders: " + s.count + " (" + s.finished + " finished, " + s.open + " open)",
     "Proofs: " + s.proofs + " sent out, " + s.awaiting + " still waiting to come back",
     "CLC: " + s.clc + "   LEC: " + s.lec + "   Held up: " + s.held,
-    "Median time taken: " + (s.medTaken === null ? "—" : durationText(s.medTaken)) +
-      "   Median proof turnaround: " + (s.medTurn === null ? "—" : durationText(s.medTurn)),
+    "Median time taken: " + (s.medTaken === null ? "\u2014" : durationText(s.medTaken)) +
+      "   Median proof turnaround: " + (s.medTurn === null ? "\u2014" : durationText(s.medTurn)),
     "Tracked working time: " + durationText(s.totalTaken) + " across " + s.timed + " timed orders",
     "Pieces: " + (s.qty || 0) + "   Order value: " + (s.amount ? money(s.amount) : "$0.00"),
     "First activity: " + clockFromMinutes(s.first) + "   Last completion: " + clockFromMinutes(s.last)
   ];
-  return lines.join("\n");
-}
-function openSummary() {
-  var dateKey = state.scopeDate;
-  var dayOrders = state.orders.filter(function (o) { return o.date === dateKey; });
-  var s = summarize(dayOrders);
-
-  var host = $("modalHost");
-  host.textContent = "";
-  var scrim = el("div", "scrim");
-  var box = el("div", "modal sum-modal");
-  box.appendChild(el("h3", null, "Summary for " + prettyDate(dateKey)));
-  box.appendChild(el("p", "sub", s.count
-    ? s.finished + " of " + s.count + " orders finished."
-    : "Nothing logged on this day yet."));
-
-  var grid = el("div", "sum-grid");
-  [
-    [s.count, "orders"], [s.finished, "finished"], [s.open, "still open"],
-    [s.proofs, "proofs sent"], [s.awaiting, "proofs outstanding"],
-    [s.medTaken === null ? "—" : durationText(s.medTaken), "median time taken"],
-    [s.medTurn === null ? "—" : durationText(s.medTurn), "median proof turnaround"],
-    [durationText(s.totalTaken), "tracked working time"],
-    [s.qty || "—", "pieces"],
-    [s.amount ? money(s.amount) : "—", "order value"]
-  ].forEach(function (pair) {
-    var c = el("div", "sum-cell");
-    c.appendChild(el("b", null, pair[0]));
-    c.appendChild(el("span", null, pair[1]));
-    grid.appendChild(c);
-  });
-  box.appendChild(grid);
-  /* Four small panels in a 2x2 grid instead of one tall column that ran off
-     the top and bottom of the screen. */
-  var panels = el("div", "sum-panels");
-  var pHours = el("section", "sum-panel"), pWeek = el("section", "sum-panel"),
-      pTypes = el("section", "sum-panel"), pMix = el("section", "sum-panel");
-  panels.appendChild(pHours); panels.appendChild(pWeek);
-  panels.appendChild(pTypes); panels.appendChild(pMix);
-
-  pHours.appendChild(el("div", "sum-h", "Orders completed by hour"));
-  var wrap = el("div", "barwrap");
-  var bars = el("div", "bars");
-  var hours = [], max = 1;
-  for (var h = 7; h <= 18; h++) {
-    var n = s.buckets[h] || 0;
-    hours.push([h, n]);
-    if (n > max) max = n;
-  }
-  hours.forEach(function (pair) {
-    var bar = el("div", pair[1] ? "on" : "");
-    bar.style.height = Math.round((pair[1] / max) * 100) + "%";
-    bar.title = pair[1] + " completed between " + (pair[0] % 12 === 0 ? 12 : pair[0] % 12) +
-                (pair[0] < 12 ? "am" : "pm") + " and the next hour";
-    var lbl = el("span", null, pair[0] % 12 === 0 ? 12 : pair[0] % 12);
-    bar.appendChild(lbl);
-    bars.appendChild(bar);
-  });
-  wrap.appendChild(bars);
-  pHours.appendChild(wrap);
-
-  var typeKeys = Object.keys(s.types).sort();
-  pTypes.appendChild(el("div", "sum-h", "Order types"));
-  if (!typeKeys.length) pTypes.appendChild(el("div", "sum-empty", "No order types logged."));
-  if (typeKeys.length) {
-    typeKeys.forEach(function (t) {
-      var row = el("div", "sum-row");
-      row.appendChild(el("span", null, t));
-      row.appendChild(el("span", null, s.types[t]));
-      pTypes.appendChild(row);
+  if (att.length) {
+    lines.push("", "Needs attention (" + att.length + "):");
+    att.forEach(function (a) {
+      lines.push("  " + a.tag + ": #" + a.o.seq + (a.o.orderId ? " " + a.o.orderId : "") + " " + (a.o.customer || "") + " \u2014 " + a.detail);
     });
   }
-
-  pMix.appendChild(el("div", "sum-h", "Status mix"));
-  [["Routing codes (CLC, LEC, WEE, ILS)", s.tally["t-code"]],
-   ["Approved or sent", s.tally["t-go"]],
-   ["Proof required or requested", s.tally["t-warn"]],
-   ["Held up or waiting", s.tally["t-hot"]],
-   ["CLC", s.clc], ["LEC", s.lec]].forEach(function (pair) {
-    var row = el("div", "sum-row");
-    row.appendChild(el("span", null, pair[0]));
-    row.appendChild(el("span", null, pair[1] || 0));
-    pMix.appendChild(row);
+  return lines.join("\n");
+}
+/* Summary dashboard. One dialog that re-renders in place: Day / Week scope,
+   step through days or weeks without closing, a "needs attention" list that
+   jumps straight to the order, and charts that fold down to one column on a
+   phone. All figures come from summarize(), the same maths as the ribbon. */
+var sumView = null;                 /* { scope: "day" | "week", day: "YYYY-MM-DD" } */
+function sumOrdersFor(view) {
+  if (view.scope === "week") {
+    var keys = weekdayKeys(mondayOf(view.day)), set = {};
+    keys.forEach(function (k) { set[k] = true; });
+    return state.orders.filter(function (o) { return set[o.date]; });
+  }
+  return state.orders.filter(function (o) { return o.date === view.day; });
+}
+function sumPct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
+function sumHourLabel(h) { return (h % 12 === 0 ? 12 : h % 12) + (h < 12 ? "a" : "p"); }
+function sumPanel(title, extra) {
+  var p = el("section", "sx-panel" + (extra ? " " + extra : ""));
+  var h = el("header", "sx-ph");
+  h.appendChild(el("h4", null, title));
+  p.appendChild(h);
+  return p;
+}
+function sumEmpty(text) { return el("div", "sx-empty", text); }
+/* Orders that need someone to do something, most urgent first. */
+function sumAttention(orders) {
+  var today = todayKey(), tomorrow = addWeekdays(today, 1), out = [];
+  orders.forEach(function (o) {
+    var who = { o: o };
+    if (isHoldFlag(o)) {
+      out.push({ o: o, rank: 0, kind: "hold", tag: "On hold", detail: (durationText(holdElapsed(o)) || "0m") + " so far" });
+    }
+    if (o.fin !== "TRUE" && o.reqShipDate) {
+      if (o.reqShipDate < today) out.push({ o: o, rank: 1, kind: "late", tag: "Overdue", detail: "ship date " + shortDate(o.reqShipDate) });
+      else if (o.reqShipDate === today) out.push({ o: o, rank: 2, kind: "due", tag: "Ships today", detail: "not finished yet" });
+      else if (o.reqShipDate === tomorrow) out.push({ o: o, rank: 3, kind: "due", tag: "Ships next", detail: shortDate(o.reqShipDate) });
+    }
+    if (awaitingProof(o)) out.push({ o: o, rank: 4, kind: "proof", tag: "Proof out", detail: "waiting to come back" });
+    if (o.fin === "TRUE" && o.savedToDrive === "FALSE") out.push({ o: o, rank: 5, kind: "drive", tag: "Not on Drive", detail: "finished, not saved" });
   });
-
-  pWeek.classList.add("sum-financial");
-  pWeek.appendChild(el("div", "sum-h", "Week totals"));
-  var weekRows = weekdayKeys(state.weekStart).map(function (key) {
-    var ordersForDay = state.orders.filter(function (o) { return o.date === key; });
-    var ds = summarize(ordersForDay);
-    return { key: key, summary: ds };
-  });
-  var weekAmount = weekRows.reduce(function (sum, d) { return sum + (d.summary.amount || 0); }, 0);
-  var weekQty = weekRows.reduce(function (sum, d) { return sum + (d.summary.qty || 0); }, 0);
-  var activeDays = weekRows.filter(function (d) { return d.summary.count > 0; }).length;
-  var avgDay = activeDays ? weekAmount / activeDays : 0;
-
-  /* Counts for the whole week, not just money. summarize() has already run
-     for each day, so these are folded up rather than recomputed. */
-  var wk = weekRows.reduce(function (a, d) {
-    var t = d.summary;
-    a.count += t.count; a.finished += t.finished; a.open += t.open;
-    a.proofs += t.proofs; a.awaiting += t.awaiting;
-    a.held += t.held; a.clc += t.clc; a.lec += t.lec;
-    a.totalTaken += t.totalTaken;
-    return a;
-  }, { count: 0, finished: 0, open: 0, proofs: 0, awaiting: 0,
-       held: 0, clc: 0, lec: 0, totalTaken: 0 });
-  /* Medians are not additive, so this one is taken over every order in the
-     week rather than averaged out of the per-day figures. */
-  var weekOrders = weekdayKeys(state.weekStart).reduce(function (list, key) {
-    return list.concat(state.orders.filter(function (o) { return o.date === key; }));
-  }, []);
-  var wkMedTaken = medianOf(weekOrders.map(timeTaken));
-
-  pWeek.appendChild(el("div", "sum-scope-h", "Whole week"));
-  var weekGrid = el("div", "sum-grid financial-grid week-grid");
-  [
-    [wk.count, "orders"], [wk.finished, "finished"], [wk.open, "still open"],
-    [wk.proofs, "proofs sent"], [wk.awaiting, "proofs outstanding"],
-    [wk.held, "held"], [activeDays, activeDays === 1 ? "active day" : "active days"],
-    [wkMedTaken === null ? "—" : durationText(wkMedTaken), "median time taken"],
-    [durationText(wk.totalTaken), "tracked working time"],
-    [weekQty || "—", "pieces"], [money(weekAmount), "order value"],
-    [activeDays ? money(avgDay) : "—", "avg value / active day"]
-  ].forEach(function (pair) {
-    var c = el("div", "sum-cell sum-weekcell");
-    c.appendChild(el("b", null, pair[0]));
-    c.appendChild(el("span", null, pair[1]));
-    weekGrid.appendChild(c);
-  });
-  pWeek.appendChild(weekGrid);
-
-  pWeek.appendChild(el("div", "sum-scope-h", "Selected day"));
-  var financialGrid = el("div", "sum-grid financial-grid");
-  [
-    [money(s.amount || 0), "order value"],
-    [s.qty || "—", "pieces"]
-  ].forEach(function (pair) {
-    var c = el("div", "sum-cell");
-    c.appendChild(el("b", null, pair[0]));
-    c.appendChild(el("span", null, pair[1]));
-    financialGrid.appendChild(c);
-  });
-  pWeek.appendChild(financialGrid);
-
-  pWeek.appendChild(el("div", "sum-h", "Daily comparison"));
-  weekRows.forEach(function (d) {
-    var label = DAY_NAMES[dateFromKey(d.key).getDay()] + ", " + shortDate(d.key);
-    var row = el("div", "sum-row" + (d.key === dateKey ? " cur" : ""));
-    var left = el("span", null, label + (d.key === dateKey ? " · selected" : ""));
-    var right = el("span", null, money(d.summary.amount || 0));
-    row.appendChild(left);
-    row.appendChild(right);
-    row.title = d.key === dateKey ? "Selected day" :
-      "Difference from selected day: " + money((d.summary.amount || 0) - (s.amount || 0));
-    pWeek.appendChild(row);
-  });
-  var totalRow = el("div", "sum-row total");
-  totalRow.appendChild(el("span", null, "Week total"));
-  totalRow.appendChild(el("span", null, money(weekAmount)));
-  pWeek.appendChild(totalRow);
-  box.appendChild(panels);
-
-  var acts = el("div", "modal-actions");
-  var copy = el("button", "btn ghost", "Copy as text");
-  copy.type = "button";
-  copy.addEventListener("click", function () {
-    var text = summaryText(dateKey, s);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(
-        function () { toast("Summary copied."); },
-        function () { toast("Copying is blocked in this browser."); });
-    } else toast("Copying is blocked in this browser.");
-  });
-  var close = el("button", "btn", "Close");
-  close.type = "button";
-  close.addEventListener("click", closeModal);
-  acts.appendChild(copy); acts.appendChild(close);
-  box.appendChild(acts);
-
+  out.sort(function (a, b) { return a.rank - b.rank || (a.o.date < b.o.date ? -1 : 1) || a.o.seq - b.o.seq; });
+  return out;
+}
+/* Close the Summary and land on the order: right day, filters cleared if
+   they would hide it, row scrolled into view and flashed. */
+function sumJumpTo(id) {
+  var o = byId(id);
+  if (!o) return;
+  closeModal();
+  state.flashId = o.id;
+  selectDay(o.date);
+  if (visibleOrders().indexOf(o) === -1) {
+    state.filter = "all"; state.query = ""; $("search").value = "";
+    state.flashId = o.id;
+    render();
+  }
+  setTimeout(function () {
+    var tr = document.querySelector('[data-row-id="' + o.id + '"]');
+    if (tr) tr.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, 80);
+}
+function openSummary() {
+  sumView = { scope: sumView && sumView.scope === "week" ? "week" : "day", day: state.scopeDate };
+  var host = $("modalHost");
+  host.textContent = "";
+  var scrim = el("div", "scrim sx-scrim");
+  var box = el("div", "modal sx");
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  box.setAttribute("aria-label", "Summary");
   scrim.appendChild(box);
   scrim.addEventListener("click", function (e) { if (e.target === scrim) closeModal(); });
   host.appendChild(scrim);
-  close.focus({ preventScroll: true });
-  scrim.scrollTop = 0;
+  renderSummary(box);
+  var onKey = function (e) {
+    if (!document.body.contains(box)) { document.removeEventListener("keydown", onKey, true); return; }
+    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault(); e.stopPropagation(); sumStep(e.key === "ArrowRight" ? 1 : -1, box);
+    } else if (e.key === "d" || e.key === "D") { sumView.scope = "day"; renderSummary(box); }
+    else if (e.key === "w" || e.key === "W") { sumView.scope = "week"; renderSummary(box); }
+  };
+  document.addEventListener("keydown", onKey, true);
+}
+function sumStep(delta, box) {
+  sumView.day = sumView.scope === "week"
+    ? addWeekdays(mondayOf(sumView.day), delta * 5)
+    : addWeekdays(sumView.day, delta);
+  renderSummary(box, delta);
+}
+function renderSummary(box, dir) {
+  var view = sumView, isWeek = view.scope === "week";
+  var orders = sumOrdersFor(view);
+  var s = summarize(orders);
+  var weekKeys = weekdayKeys(mondayOf(view.day));
+  box.textContent = "";
+  box.classList.toggle("sx-weekmode", isWeek);
+
+  /* ---------- header */
+  var head = el("header", "sx-head");
+  var tBlock = el("div", "sx-titleblock");
+  tBlock.appendChild(el("span", "sx-eyebrow", isWeek ? "Week summary" : "Day summary"));
+  tBlock.appendChild(el("h3", "sx-title", isWeek
+    ? "Week of " + shortDate(weekKeys[0]) + " \u2013 " + shortDate(weekKeys[4])
+    : prettyDate(view.day)));
+  var subBits = [s.count + (s.count === 1 ? " order" : " orders")];
+  if (s.count) subBits.push(s.finished + " finished", s.open + " open");
+  if (!isWeek && view.day === todayKey()) subBits.unshift("Today");
+  tBlock.appendChild(el("span", "sx-sub", subBits.join(" \u00b7 ")));
+  head.appendChild(tBlock);
+
+  var ctrls = el("div", "sx-ctrls");
+  var seg = el("div", "sx-seg");
+  seg.setAttribute("role", "tablist");
+  [["day", "Day"], ["week", "Week"]].forEach(function (p) {
+    var b = el("button", view.scope === p[0] ? "on" : "", p[1]);
+    b.type = "button"; b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", view.scope === p[0] ? "true" : "false");
+    b.title = p[1] + " view (" + p[1].charAt(0) + ")";
+    b.addEventListener("click", function () { view.scope = p[0]; renderSummary(box); });
+    seg.appendChild(b);
+  });
+  ctrls.appendChild(seg);
+  var step = el("div", "sx-step");
+  var prev = el("button", "sx-ib", "\u2039"); prev.type = "button";
+  prev.title = isWeek ? "Previous week (\u2190)" : "Previous day (\u2190)"; prev.setAttribute("aria-label", prev.title);
+  var now = el("button", "sx-today", isWeek ? "This week" : "Today"); now.type = "button";
+  var next = el("button", "sx-ib", "\u203a"); next.type = "button";
+  next.title = isWeek ? "Next week (\u2192)" : "Next day (\u2192)"; next.setAttribute("aria-label", next.title);
+  prev.addEventListener("click", function () { sumStep(-1, box); });
+  next.addEventListener("click", function () { sumStep(1, box); });
+  now.addEventListener("click", function () { view.day = snapToWeekday(todayKey()); renderSummary(box); });
+  var atNow = isWeek ? mondayOf(view.day) === mondayOf(todayKey()) : view.day === snapToWeekday(todayKey());
+  now.disabled = atNow;
+  step.appendChild(prev); step.appendChild(now); step.appendChild(next);
+  ctrls.appendChild(step);
+  var copy = el("button", "sx-ib sx-copy", ""); copy.type = "button";
+  copy.title = "Copy as text"; copy.setAttribute("aria-label", "Copy summary as text");
+  copy.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  copy.addEventListener("click", function () {
+    var text = summaryText(view, s, orders);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("Summary copied."); },
+        function () { toast("Copying is blocked in this browser."); });
+    } else toast("Copying is blocked in this browser.");
+  });
+  var close = el("button", "sx-ib sx-close", "\u00d7"); close.type = "button";
+  close.title = "Close (Esc)"; close.setAttribute("aria-label", "Close summary");
+  close.addEventListener("click", closeModal);
+  ctrls.appendChild(copy); ctrls.appendChild(close);
+  head.appendChild(ctrls);
+  box.appendChild(head);
+
+  var body = el("div", "sx-body" + (dir ? (dir > 0 ? " sx-in-r" : " sx-in-l") : ""));
+  box.appendChild(body);
+
+  /* ---------- headline cards */
+  var kpis = el("section", "sx-kpis");
+  var weekOrders = sumOrdersFor({ scope: "week", day: view.day });
+  var weekDays = weekKeys.map(function (k) {
+    return { key: k, list: weekOrders.filter(function (o) { return o.date === k; }) };
+  });
+  var activeDays = weekDays.filter(function (d) { return d.list.length; }).length;
+  var weekAmount = sumAmount(weekOrders) || 0;
+  var avgDay = activeDays ? weekAmount / activeDays : 0;
+
+  var kpi = function (cls, label, value, subs, extra) {
+    var c = el("div", "sx-kpi " + cls);
+    var top = el("div", "sx-kpi-top");
+    top.appendChild(el("span", "sx-kpi-l", label));
+    if (extra) top.appendChild(extra);
+    c.appendChild(top);
+    c.appendChild(el("b", "sx-kpi-v", value));
+    var sub = el("div", "sx-kpi-s");
+    subs.forEach(function (t) { if (t) sub.appendChild(typeof t === "string" ? el("span", null, t) : t); });
+    c.appendChild(sub);
+    kpis.appendChild(c);
+    return c;
+  };
+  /* 1. orders, with a completion ring */
+  var pct = sumPct(s.finished, s.count);
+  var ring = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  ring.setAttribute("viewBox", "0 0 36 36"); ring.setAttribute("class", "sx-ring");
+  ring.innerHTML = '<circle cx="18" cy="18" r="15.5" class="trk"/><circle cx="18" cy="18" r="15.5" class="val" ' +
+    'stroke-dasharray="' + (pct * 0.974).toFixed(1) + ' 100" transform="rotate(-90 18 18)"/>' +
+    '<text x="18" y="21.5" text-anchor="middle">' + pct + '%</text>';
+  var live = orders.filter(isLive).length;
+  kpi("k-orders", "Orders", String(s.count),
+    [s.finished + " finished", s.open + " open", live ? live + " in progress" : ""], ring);
+  /* 2. value, compared with the week's average active day */
+  var delta = null;
+  if (!isWeek && avgDay && s.amount) delta = Math.round(((s.amount - avgDay) / avgDay) * 100);
+  var dChip = null;
+  if (delta !== null && activeDays > 1) {
+    dChip = el("span", "sx-delta " + (delta >= 0 ? "up" : "down"), (delta >= 0 ? "\u25B2 " : "\u25BC ") + Math.abs(delta) + "%");
+    dChip.title = "Compared with this week's average active day (" + money(avgDay) + ")";
+  }
+  kpi("k-value", "Order value", s.amount ? money(s.amount) : "$0.00",
+    [(s.qty || 0) + " pieces", isWeek ? (activeDays ? money(avgDay) + " / active day" : "") : (dChip ? "vs week avg" : "")], dChip);
+  /* 3. time */
+  var finishedTimed = orders.filter(function (o) { return isClock(o.completionTime) && timeTaken(o) !== null && timeTaken(o) > 0; });
+  var fastest = finishedTimed.length ? Math.min.apply(null, finishedTimed.map(timeTaken)) : null;
+  kpi("k-time", "Median time taken", s.medTaken === null ? "\u2014" : durationText(s.medTaken),
+    [s.totalTaken ? durationText(s.totalTaken) + " tracked" : "no times yet", fastest !== null ? "fastest " + durationText(fastest) : ""]);
+  /* 4. proofs */
+  var back = orders.filter(function (o) { return o.proof === "TRUE" && isClock(o.proofRcvdTime); }).length;
+  kpi("k-proof", "Proofs", String(s.proofs),
+    [back + " back", s.awaiting + " waiting", s.medTurn !== null ? "turnaround " + durationText(s.medTurn) : ""]);
+  body.appendChild(kpis);
+
+  var cols = el("div", "sx-cols");
+  var main = el("div", "sx-main"), side = el("div", "sx-side");
+  cols.appendChild(main); cols.appendChild(side);
+  body.appendChild(cols);
+
+  /* ---------- throughput by hour: started vs finished */
+  var pT = sumPanel(isWeek ? "Throughput by hour \u00b7 whole week" : "Throughput by hour");
+  var legend = el("div", "sx-legend");
+  legend.innerHTML = '<span><i class="lg-start"></i>Started</span><span><i class="lg-fin"></i>Finished</span>';
+  pT.querySelector(".sx-ph").appendChild(legend);
+  var startB = {}, finB = {};
+  orders.forEach(function (o) {
+    var a = minutesOf(o.startTime), b = minutesOf(o.completionTime);
+    if (a !== null) startB[Math.floor(a / 60)] = (startB[Math.floor(a / 60)] || 0) + 1;
+    if (b !== null) finB[Math.floor(b / 60)] = (finB[Math.floor(b / 60)] || 0) + 1;
+  });
+  var hs = Object.keys(startB).concat(Object.keys(finB)).map(Number);
+  var h0 = Math.min.apply(null, [7].concat(hs)), h1 = Math.max.apply(null, [17].concat(hs));
+  var tmax = 1;
+  for (var h = h0; h <= h1; h++) tmax = Math.max(tmax, startB[h] || 0, finB[h] || 0);
+  var chart = el("div", "sx-hours");
+  var nowH = new Date().getHours();
+  for (h = h0; h <= h1; h++) {
+    var col = el("div", "sx-hcol" + (!isWeek && view.day === todayKey() && h === nowH ? " now" : ""));
+    var pair = el("div", "sx-hbars");
+    var bs = el("i", "st"), bf = el("i", "fn");
+    bs.style.height = ((startB[h] || 0) / tmax * 100) + "%";
+    bf.style.height = ((finB[h] || 0) / tmax * 100) + "%";
+    if (finB[h]) bf.setAttribute("data-n", finB[h]);
+    pair.appendChild(bs); pair.appendChild(bf);
+    col.appendChild(pair);
+    col.appendChild(el("span", "sx-hl", sumHourLabel(h)));
+    col.title = sumHourLabel(h) + "m: " + (startB[h] || 0) + " started, " + (finB[h] || 0) + " finished";
+    chart.appendChild(col);
+  }
+  pT.appendChild(chart);
+  if (!hs.length) pT.appendChild(sumEmpty("No start or finish times logged yet."));
+  main.appendChild(pT);
+
+  /* ---------- pipeline */
+  var pP = sumPanel("Pipeline");
+  var started = orders.filter(function (o) { return isClock(o.startTime); }).length;
+  var needProof = orders.filter(function (o) { return !noProofNeeded(o); }).length;
+  [["Logged", s.count, s.count, "p-log"],
+   ["Started", started, s.count, "p-start"],
+   ["Proof sent", s.proofs, needProof || s.count, "p-proof"],
+   ["Proof back", back, s.proofs || 1, "p-back"],
+   ["Finished", s.finished, s.count, "p-fin"]].forEach(function (r) {
+    var row = el("div", "sx-pipe " + r[3]);
+    row.appendChild(el("span", "sx-pipe-l", r[0]));
+    var track = el("div", "sx-pipe-t");
+    var fill = el("i");
+    fill.style.width = (s.count ? Math.min(100, sumPct(r[1], r[2] || 1)) : 0) + "%";
+    track.appendChild(fill);
+    row.appendChild(track);
+    row.appendChild(el("b", "sx-pipe-n", String(r[1])));
+    pP.appendChild(row);
+  });
+  var noProof = s.count - needProof;
+  if (noProof > 0) pP.appendChild(el("p", "sx-note", noProof + (noProof === 1 ? " order needs" : " orders need") + " no proof (CLC, LEC or marked no)."));
+  main.appendChild(pP);
+
+  /* ---------- week at a glance: tap a day to open it */
+  var pW = sumPanel("Week at a glance");
+  var wmax = 1;
+  weekDays.forEach(function (d) { wmax = Math.max(wmax, d.list.length); });
+  var wk = el("div", "sx-week");
+  weekDays.forEach(function (d) {
+    var ds = summarize(d.list);
+    var b = el("button", "sx-wday" + (!isWeek && d.key === view.day ? " sel" : "") + (d.key === todayKey() ? " today" : ""));
+    b.type = "button";
+    var bar = el("div", "sx-wbar");
+    var fin = el("i", "fn"), open = el("i", "op");
+    fin.style.height = (ds.finished / wmax * 100) + "%";
+    open.style.height = (ds.open / wmax * 100) + "%";
+    bar.appendChild(open); bar.appendChild(fin);
+    b.appendChild(el("span", "sx-wn", String(ds.count || "")));
+    b.appendChild(bar);
+    b.appendChild(el("span", "sx-wd", DAY_NAMES[dateFromKey(d.key).getDay()].slice(0, 3)));
+    b.appendChild(el("span", "sx-wv", ds.amount ? money(ds.amount).replace(/\.00$/, "") : "\u2014"));
+    b.title = DAY_NAMES[dateFromKey(d.key).getDay()] + " " + shortDate(d.key) + ": " + ds.count + " orders, " +
+              ds.finished + " finished, " + money(ds.amount || 0) + ". Open this day.";
+    b.addEventListener("click", function () { view.scope = "day"; view.day = d.key; renderSummary(box); });
+    wk.appendChild(b);
+  });
+  pW.appendChild(wk);
+  var wkS = summarize(weekOrders);
+  var wfoot = el("div", "sx-wfoot");
+  [[String(wkS.count), "orders"], [String(wkS.finished), "finished"], [String(wkS.qty || 0), "pieces"],
+   [money(weekAmount), "week value"], [activeDays ? money(avgDay) : "\u2014", "per active day"]].forEach(function (p) {
+    var c = el("div");
+    c.appendChild(el("b", null, p[0])); c.appendChild(el("span", null, p[1]));
+    wfoot.appendChild(c);
+  });
+  pW.appendChild(wfoot);
+  main.appendChild(pW);
+
+  /* ---------- needs attention */
+  var att = sumAttention(orders);
+  var pA = sumPanel("Needs attention", "sx-attn");
+  if (att.length) pA.querySelector(".sx-ph").appendChild(el("span", "sx-count", String(att.length)));
+  if (!att.length) {
+    var ok = el("div", "sx-allclear");
+    ok.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+    ok.appendChild(el("span", null, "All clear \u2014 nothing on hold, overdue or waiting."));
+    pA.appendChild(ok);
+  }
+  var shown = att.slice(0, 7);
+  shown.forEach(function (a) {
+    var row = el("button", "sx-att k-" + a.kind);
+    row.type = "button";
+    row.appendChild(el("span", "sx-att-tag", a.tag));
+    var mid = el("span", "sx-att-mid");
+    mid.appendChild(el("b", null, "#" + a.o.seq + (a.o.orderId ? " \u00b7 " + a.o.orderId : "")));
+    mid.appendChild(el("span", null, (a.o.customer || "No customer") + (isWeek ? " \u00b7 " + shortDate(a.o.date) : "")));
+    row.appendChild(mid);
+    row.appendChild(el("span", "sx-att-d", a.detail));
+    row.title = "Go to order #" + a.o.seq;
+    row.addEventListener("click", function () { sumJumpTo(a.o.id); });
+    pA.appendChild(row);
+  });
+  if (att.length > shown.length) pA.appendChild(el("p", "sx-note", "+ " + (att.length - shown.length) + " more"));
+  side.appendChild(pA);
+
+  /* ---------- fastest finishes */
+  var pF = sumPanel("Fastest finishes");
+  var podium = finishedTimed.slice().sort(function (a, b) { return timeTaken(a) - timeTaken(b); }).slice(0, 3);
+  if (!podium.length) pF.appendChild(sumEmpty("Finish an order with start and end times to see it here."));
+  podium.forEach(function (o, i) {
+    var r = el("button", "sx-fast m" + (i + 1));
+    r.type = "button";
+    r.appendChild(el("span", "sx-medal", String(i + 1)));
+    var mid = el("span", "sx-att-mid");
+    mid.appendChild(el("b", null, o.customer || ("#" + o.seq)));
+    mid.appendChild(el("span", null, "#" + o.seq + (o.orderId ? " \u00b7 " + o.orderId : "") + (o.otype ? " \u00b7 " + o.otype : "")));
+    r.appendChild(mid);
+    r.appendChild(el("b", "sx-fast-t", durationText(timeTaken(o))));
+    r.addEventListener("click", function () { sumJumpTo(o.id); });
+    pF.appendChild(r);
+  });
+  side.appendChild(pF);
+
+  /* ---------- mix: types, PGroups, status */
+  var pM = sumPanel("Mix");
+  var bars = function (title, map, fmt) {
+    var keys = Object.keys(map).sort(function (a, b) { return map[b].n - map[a].n || (a < b ? -1 : 1); });
+    var wrap = el("div", "sx-mix");
+    wrap.appendChild(el("div", "sx-mix-h", title));
+    if (!keys.length) { wrap.appendChild(sumEmpty("None logged.")); return wrap; }
+    var mx = Math.max.apply(null, keys.map(function (k) { return map[k].n; }));
+    keys.forEach(function (k) {
+      var row = el("div", "sx-mrow");
+      row.appendChild(el("span", "sx-mrow-l", fmt ? fmt(k) : k));
+      var t = el("div", "sx-mrow-t"), f = el("i");
+      f.style.width = (map[k].n / mx * 100) + "%";
+      t.appendChild(f); row.appendChild(t);
+      row.appendChild(el("b", null, String(map[k].n)));
+      if (map[k].v) row.title = k + ": " + map[k].n + " orders, " + money(map[k].v);
+      wrap.appendChild(row);
+    });
+    return wrap;
+  };
+  var tMap = {}, pMap = {};
+  orders.forEach(function (o) {
+    var a = Number(o.amount) || 0;
+    if (o.otype) { tMap[o.otype] = tMap[o.otype] || { n: 0, v: 0 }; tMap[o.otype].n++; tMap[o.otype].v += a; }
+    if (o.pgroup) { pMap[o.pgroup] = pMap[o.pgroup] || { n: 0, v: 0 }; pMap[o.pgroup].n++; pMap[o.pgroup].v += a; }
+  });
+  var mixGrid = el("div", "sx-mixgrid");
+  mixGrid.appendChild(bars("Order types", tMap));
+  mixGrid.appendChild(bars("PGroups", pMap, function (k) { return /^[1-7]$/.test(k) ? "P" + k : pgroupLabel(k); }));
+  pM.appendChild(mixGrid);
+  var mixTotal = s.tally["t-code"] + s.tally["t-go"] + s.tally["t-warn"] + s.tally["t-hot"];
+  var sm = el("div", "sx-mix");
+  sm.appendChild(el("div", "sx-mix-h", "Status"));
+  if (!mixTotal) sm.appendChild(sumEmpty("No statuses logged."));
+  else {
+    var stack = el("div", "sx-stack");
+    var lg = el("div", "sx-stack-lg");
+    [["t-code", "Routing codes"], ["t-go", "Approved / sent"], ["t-warn", "Proof needed"], ["t-hot", "Held / waiting"]].forEach(function (p) {
+      var n = s.tally[p[0]];
+      if (!n) return;
+      var seg = el("i", p[0]); seg.style.flexGrow = n; seg.title = p[1] + ": " + n;
+      stack.appendChild(seg);
+      var li = el("span", p[0]); li.appendChild(el("i")); li.appendChild(document.createTextNode(p[1] + " " + n));
+      lg.appendChild(li);
+    });
+    sm.appendChild(stack); sm.appendChild(lg);
+  }
+  pM.appendChild(sm);
+  side.appendChild(pM);
+
+  /* footer hint (desktop only) */
+  var hint = el("div", "sx-hint", "\u2190 \u2192 step " + (isWeek ? "weeks" : "days") + " \u00b7 D / W switch view \u00b7 Esc close");
+  body.appendChild(hint);
+  if (!dir) box.scrollTop = 0;
 }
 
 /* ------------------------------------------------------- export / import */
@@ -7908,6 +8451,11 @@ var THEMES = [
     font: "Playfair+Display:wght@500;600;700", sw: ["#F2F0EB", "#B08433", "#1C1B19"] },
   { v: "autumn",    l: "Autumn Leaves",    sub: "Rust, mustard, plum, falling leaves", tone: "dark", group: "Showroom", stage: "autumn",
     font: "Lora:ital,wght@0,500;0,600;1,500;1,600", sw: ["#2A1820", "#E07B39", "#F2C14E"] },
+  /* Game Day: the Stadium Night scene in Buffalo royal blue and red. No team marks. */
+  { v: "bills",     l: "Buffalo Gameday",  sub: "Royal blue & red under the lights", tone: "dark", group: "Game Day", stage: "stadium",
+    font: "Teko:wght@400;500;600", sw: ["#00338D", "#C60C30", "#FFFFFF"] },
+  { v: "billsnow",  l: "Buffalo Snow Game", sub: "Lake-effect snow, frozen field",   tone: "dark", group: "Game Day", stage: "stadium", weather: "snow",
+    font: "Teko:wght@400;500;600", sw: ["#00338D", "#C60C30", "#DCE6F2"] },
   { v: "terminal",  l: "Terminal",         sub: "Green phosphor, code rain",       tone: "dark",  group: "Showroom", stage: "terminal",
     sw: ["#020803", "#33FF77", "#7AE7FF"] }
 ];
@@ -8049,6 +8597,20 @@ function stageParticles(kind, box) {
       p.it.style.animationDuration = d + "s";
       p.it.style.animationDelay = -rnd(0, d) + "s";
     }
+  } else if (kind === "snow") {
+    /* three depths: fine distant flakes, mid flakes, and a few big soft ones close to the lens */
+    for (i = 0; i < (small ? 46 : 110); i++) {
+      var depth = i % 10 === 0 ? "near" : (i % 3 === 0 ? "mid" : "far");
+      p = add("flake " + depth);
+      d = depth === "near" ? rnd(6, 10) : depth === "mid" ? rnd(10, 16) : rnd(16, 26);
+      p.it.style.left = rnd(-5, 102) + "%";
+      p.it.style.animationDuration = d + "s";
+      p.it.style.animationDelay = -rnd(0, d) + "s";
+      p.it.style.setProperty("--drift", rnd(-60, 90) + "px");
+      var fs = depth === "near" ? rnd(7, 12) : depth === "mid" ? rnd(3, 5) : rnd(1.5, 3);
+      p.b.style.width = p.b.style.height = fs + "px";
+      p.b.style.animationDuration = rnd(2.5, 5) + "s";
+    }
   } else if (kind === "marble") {
     for (i = 0; i < (small ? 12 : 26); i++) {
       p = add("dust"); d = rnd(18, 34);
@@ -8092,7 +8654,7 @@ function setStage(t) {
   if (old) old.parentNode.removeChild(old);
   document.documentElement.classList.toggle("glass", !!t.stage);
   if (!t.stage) return;
-  var st = el("div", "st-" + t.stage);
+  var st = el("div", "st-" + t.stage + (t.weather ? " w-" + t.weather : ""));
   st.id = "stage";
   st.setAttribute("aria-hidden", "true");
   ["l1", "l2", "l3", "l4"].forEach(function (c) { st.appendChild(el("div", "l " + c)); });
@@ -8107,6 +8669,7 @@ function setStage(t) {
   if (!still) {
     var pbox = el("div", "parts");
     stageParticles(t.stage, pbox);
+    if (t.weather) stageParticles(t.weather, pbox);
     st.appendChild(pbox);
   }
   document.body.insertBefore(st, document.body.firstChild);
