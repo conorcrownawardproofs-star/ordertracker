@@ -1,4 +1,4 @@
-# 👑 Crown Awards Order Tracker
+# 👑 Crown Order Tracker
 
 Trophies don't engrave themselves — but they *do* get tracked here. 🏆
 
@@ -35,11 +35,6 @@ No build step, no install. It's one HTML file.
 | `←` / `→` on a day tab | Previous / next working day |
 | `Esc` | Close / cancel |
 
-## ☁️ Cloud sync (optional)
-
-Drop `assets/supabase-config.js` and `assets/caot-supabase.js` next to `index.html` to sync across devices.
-Without them, everything stays safely in your browser.
-
 ---
 
-Made with ☕ and a lot of engraving at Crown Awards HQ.
+Made with ☕ and a lot of engraving...
