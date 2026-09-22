@@ -1748,7 +1748,15 @@ html.glass #tablewrap thead th[aria-sort],html.glass thead th[aria-sort]{box-sha
 html.glass .auth-panel{background:transparent}
 html.glass .auth-card{padding:30px;border-radius:16px;background:var(--glass);border:1px solid var(--line);
   -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--shadow)}
-html.glass .console{position:relative;isolation:isolate}
+/* Stacking. backdrop-filter makes every glass bar its own layer, painted in
+   page order, and the header is isolated for its sheen effects. Without an
+   explicit order, menus opened from the header (Theme) were painted UNDER the
+   glass bars that come after it, then reappeared over the plain log rows.
+   The header now sits above every glass bar (the sticky ribbon is 41), and
+   the chips bar rises above it only while its own Tools menu is open. */
+html.glass .console{position:relative;z-index:60;isolation:isolate}
+html.glass .ledger-bar:has(.toolmenu[open]){z-index:61}
+@media (max-width:760px){ html.glass .ledger-bar:has(.toolmenu[open]){position:relative} }
 html.glass .console::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
 html.glass .scrim{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 /* The day's fastest finish: every Showroom theme dresses this badge its own way. */
