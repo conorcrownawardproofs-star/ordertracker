@@ -2,7 +2,7 @@
 
 Trophies don't engrave themselves — but they *do* get tracked here. 🏆
 
-A single-page order log for the Crown Awards team: log it, stamp it, hold it, finish it, go home.
+A single-page order log for the CA team: log it, stamp it, hold it, finish it, go home.
 
 ## ✨ What it does
 
