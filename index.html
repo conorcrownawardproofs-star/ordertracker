@@ -446,15 +446,24 @@ thead th{position:sticky;top:calc(var(--kpi-ribbon-height, 0px) + var(--ledger-b
 thead th.note-hd{min-width:56px}
 thead th.sortable{cursor:pointer;user-select:none}
 thead th.sortable:hover{color:var(--text)}
-/* The active sort used to be a thin pale arrow that looked almost the same as
-   the faint double-arrow on every other column. Now only the sorted column
-   shows an arrow — a solid triangle, with the heading underlined — and the
-   others reveal a faint hint only on hover. */
-thead th .arrow{opacity:0;margin-left:4px;font-size:9px;vertical-align:1px;transition:opacity .15s}
+/* Sort arrows. They were a 9px glyph coloured --crown, which is near-black
+   navy on the dark themes' header and was also clipped by the header's
+   ellipsis on narrow columns. Now every sortable column shows a faint double
+   arrow, and the sorted column gets a solid chip in a colour that reads on
+   every theme, plus a thick underline. The last word of the label and the
+   arrow are kept together so the arrow never wraps onto its own line. */
+thead th{--sort-ink:var(--crown-2)}
+html[data-tone="dark"] thead th{--sort-ink:var(--code)}
 thead th[data-sort]{cursor:pointer}
-thead th[data-sort]:hover .arrow{opacity:.4}
-thead th[aria-sort]{color:var(--crown);box-shadow:inset 0 -2px 0 var(--crown)}
-thead th[aria-sort] .arrow{opacity:1;color:var(--crown);font-size:10px}
+thead th .th-tail{white-space:nowrap}
+thead th .arrow{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;
+  margin-left:4px;border-radius:4px;font-size:10px;line-height:1;vertical-align:-2px;font-weight:700;
+  color:var(--muted);opacity:.6;transition:opacity .15s,background .15s,color .15s}
+thead th[data-sort]:hover .arrow{opacity:1;color:var(--text);background:color-mix(in srgb,var(--text) 10%,transparent)}
+thead th[aria-sort]{color:var(--sort-ink)}
+thead th[aria-sort] .arrow,thead th[aria-sort]:hover .arrow{opacity:1;background:var(--sort-ink);color:var(--surface);font-size:9px}
+html thead th[aria-sort],html #tablewrap thead th[aria-sort]{
+  box-shadow:inset 0 -3px 0 var(--sort-ink),0 3px 8px -7px rgba(18,22,28,.5)}
 tbody td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 tbody tr{transition:background .12s var(--ease)}
 /* Banding: plain rows alternate light/dark grey; a row carrying a status
@@ -547,6 +556,40 @@ ul.pgroup-notes li{margin-bottom:6px;break-inside:avoid}
   line-height:13px;vertical-align:top;background:var(--hold-bg);color:var(--hold);
   border:1px solid var(--hold);font-family:var(--sans)}
 td.dur{font-family:var(--mono);font-size:12px}
+/* Time taken + hold badge. The net figure sits on its own line and the hold
+   badge underneath it, so the two never run together in a narrow column. */
+td.taken-cell{line-height:1.3;padding-left:10px!important}
+td.taken-cell .dur-main{display:block;white-space:nowrap}
+.hold-chip{display:inline-flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0 5px;
+  margin-top:4px;max-width:100%;padding:2px 7px;border-radius:999px;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--hold) 55%,transparent);background:var(--hold-bg);color:var(--hold);
+  font:600 10px/1.35 var(--sans);text-align:center;transition:filter .15s,box-shadow .15s}
+.hold-chip:hover{filter:brightness(1.06);box-shadow:0 0 0 2px color-mix(in srgb,var(--hold) 25%,transparent)}
+.hold-chip .hc-lab{text-transform:uppercase;letter-spacing:.06em;font-size:9px;white-space:nowrap}
+.hold-chip .hc-val{font-family:var(--mono);font-size:10.5px;font-weight:700;white-space:nowrap}
+.hold-chip.live{border-color:color-mix(in srgb,var(--stop) 60%,transparent);background:var(--stop-bg);color:var(--stop)}
+.hold-chip.live .hc-lab::before{content:"";display:inline-block;width:6px;height:6px;margin-right:4px;border-radius:50%;
+  background:currentColor;vertical-align:1px;animation:holdBlink 1.6s ease-in-out infinite}
+@keyframes holdBlink{0%,100%{opacity:1}50%{opacity:.25}}
+.hold-chip.empty{background:transparent;border-style:dashed;border-color:var(--line);color:var(--muted)}
+.hold-chip.empty:hover{color:var(--text);border-color:var(--muted)}
+.hold-slot{margin-top:2px}
+.hold-chip.hold-edit{display:flex;width:100%;border-radius:6px;padding:3px 6px}
+/* Hold window: state line and a three-figure breakdown. */
+.hold-state{margin:10px 0 4px;padding:8px 11px;border-radius:8px;font-size:13px;font-weight:600;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--text-2)}
+.hold-state.live{background:var(--stop-bg);color:var(--stop);border-color:color-mix(in srgb,var(--stop) 40%,transparent)}
+.hold-state.done{background:var(--hold-bg);color:var(--hold);border-color:color-mix(in srgb,var(--hold) 40%,transparent)}
+.hold-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hs-cell{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:8px;
+  background:var(--surface-2);border:1px solid var(--line);min-width:0}
+.hs-lab{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.hs-val{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text);white-space:nowrap}
+.hs-cell.hs-hold{background:var(--hold-bg);border-color:color-mix(in srgb,var(--hold) 40%,transparent)}
+.hs-cell.hs-hold .hs-val{color:var(--hold)}
+.hs-cell.hs-net .hs-val{color:var(--sort-ink,var(--text))}
+.hold-msg{margin:8px 0 0;font-size:12.5px;color:var(--text-2)}
+@media (max-width:520px){ .hold-sum{grid-template-columns:1fr} }
 td.num{font-family:var(--mono);font-size:12.5px;text-align:right;white-space:nowrap}
 td.num.zero{color:var(--muted)}
 td.oid{user-select:text;-webkit-user-select:text;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1536,8 +1579,7 @@ html[data-theme="castles"] .day.today b::after{background:var(--cc-pink)}
 html[data-theme="castles"] .chip[aria-pressed="true"]{background:var(--cc-acid);color:#0B0F02;border-color:var(--cc-acid)}
 html[data-theme="castles"] .tri button[aria-pressed="true"],
 html[data-theme="castles"] .quad button[aria-pressed="true"]{background:var(--cc-lilac);color:#0B0714}
-html[data-theme="castles"] thead th[aria-sort] .arrow{color:var(--cc-acid)}
-html[data-theme="castles"] thead th[aria-sort]{color:var(--cc-acid);box-shadow:inset 0 -2px 0 var(--cc-acid)}
+html[data-theme="castles"] thead th{--sort-ink:var(--cc-acid)}
 html[data-theme="castles"] .steps span.on{background:var(--cc-acid)}
 html[data-theme="castles"] .live-dot.live{background:var(--cc-acid);box-shadow:0 0 0 0 rgba(200,255,46,.55)}
 
@@ -1904,9 +1946,9 @@ html[data-theme="ink"] tbody tr{box-shadow:none}
       <button class="btn ghost sm" id="btnThisWeek">This week</button>
     </div>
     <div class="weeknav">
-      <button class="wk" id="weekPrev" title="Previous week" aria-label="Previous week">‹</button>
+      <button class="wk" id="weekPrev" title="Previous day (Shift-click: previous week)" aria-label="Previous day">‹</button>
       <div class="days" id="days" role="tablist"></div>
-      <button class="wk" id="weekNext" title="Next week" aria-label="Next week">›</button>
+      <button class="wk" id="weekNext" title="Next day (Shift-click: next week)" aria-label="Next day">›</button>
     </div>
     <div class="right">
       <button class="btn sm bingo-btn" id="btnBingo" type="button" hidden
@@ -2841,6 +2883,46 @@ function holdMinutes(o) {
   return 0;
 }
 function hasHold(o) { return holdMinutes(o) > 0 || isHoldFlag(o); }
+/* Everything the table and the hold window need to explain a hold in one
+   place: the raw start→finish span, the hold taken out of it, and the net. */
+function holdBreakdown(o) {
+  var gross = stampSpan(o, "startTime", "completionTime");
+  var held = holdMinutes(o);
+  var live = isHoldFlag(o);
+  var net = gross === null ? null : Math.max(0, Math.round(gross - held));
+  return { gross: gross === null ? null : Math.round(gross), held: held, net: net, live: live,
+           source: holdSource(o), any: held > 0 || live };
+}
+function holdBreakdownText(b) {
+  var lines = [];
+  if (b.live) lines.push("On hold right now" + (b.held ? " \u00b7 " + durationText(b.held) + " so far" : ""));
+  if (b.gross !== null) {
+    lines.push("Start \u2192 finish: " + durationText(b.gross));
+    lines.push("On hold: \u2212" + durationText(b.held));
+    lines.push("Time taken: " + durationText(b.net));
+  } else if (b.held) {
+    lines.push("On hold: " + durationText(b.held) + " (taken off once the order is finished)");
+  }
+  if (b.source === "log") lines.push("Hold read from the ILS \u2192 ILC stamps in the status log.");
+  lines.push("Click to edit the hold.");
+  return lines.join("\n");
+}
+/* The small hold badge that sits under Time taken. */
+function holdChip(o, b, editMode) {
+  var chip = el("button", "hold-chip" + (b.live ? " live" : "") + (b.any ? "" : " empty") + (editMode ? " hold-edit" : ""));
+  chip.type = "button";
+  if (!editMode) chip.setAttribute("data-hold", o.id);
+  if (!b.any) {
+    chip.appendChild(el("span", "hc-lab", "+ Add hold"));
+    chip.title = "Enter when a hold started and ended";
+    return chip;
+  }
+  chip.appendChild(el("span", "hc-lab", b.live ? "On hold" : "Held"));
+  chip.appendChild(el("span", "hc-val", durationText(b.held) || "0m"));
+  chip.title = holdBreakdownText(b);
+  chip.setAttribute("aria-label", (b.live ? "On hold, " : "Held ") + (durationText(b.held) || "0m") + ". Edit hold");
+  return chip;
+}
 function timeTaken(o) {
   var span = stampSpan(o, "startTime", "completionTime");
   if (span === null) return null;
@@ -3364,6 +3446,41 @@ function normPGroup(v, status) {
      column. It stays a preset somebody picks on purpose. */
   return "";
 }
+/* Strict version for reading a PGroup OUT OF free text (a status code, a log
+   stamp). normPGroup() keeps any unrecognised value as a custom "Other" group,
+   which is right for the PGroup field itself, but when it was handed a status
+   code like "Waiting on art" it returned that whole string, so every stamp
+   wrote the status into the PGroup column. This only ever returns a real group. */
+function pgroupFromText(text) {
+  var blob = String(text == null ? "" : text);
+  var s = blob.trim().toUpperCase().replace(/\s+/g, "");
+  if (/^[1-7]$/.test(s)) return s;
+  if (s === "STL" || s === "STRAIGHTTOLASER") return "STL";
+  if (s === "NOPAY" || s === "PGRP-NPAY") return "PGRPNPAY";
+  var m = blob.match(/\bPGROUP\s*([1-7])\b/i) || blob.match(/\bPGRP\s*([1-7])\b/i);
+  if (m) return m[1];
+  if (/\bPGRPNPAY\b/i.test(blob)) return "PGRPNPAY";
+  return "";
+}
+/* Repairs rows the old bug already damaged: a custom PGroup that is really one
+   of the order's own status stamps (or its whole status text) is replaced by
+   whatever real group that text names, or cleared. */
+function cleanPGroup(o) {
+  var statusText = o.status || (o.statusLog && statusTextFromLog(o.statusLog)) || "";
+  var v = normPGroup(o.pgroup, statusText);
+  if (!v) return "";
+  if (/^[1-7]$/.test(v) || PGROUP_PRESETS.indexOf(String(v).toUpperCase()) !== -1) return v;
+  var key = function (x) { return String(x || "").trim().toUpperCase().replace(/\s+/g, " "); };
+  var bad = {};
+  bad[key(statusText)] = 1;
+  String(statusText).split("\n").forEach(function (line) { bad[key(line)] = 1; });
+  try {
+    parseStatusLog(o.statusLog, o.status).forEach(function (e) { bad[key(e.code)] = 1; });
+  } catch (err) { /* unreadable log: nothing extra to compare against */ }
+  delete bad[""];
+  if (bad[key(v)]) return pgroupFromText(v) || pgroupFromText(statusText);
+  return v;
+}
 function pgroupLabel(v) {
   var s = String(v || "").trim();
   if (!s) return "";
@@ -3435,7 +3552,7 @@ function normalizeOrder(o) {
     eventDate: parseDay(o.eventDate),
     placedDate: parseDay(o.placedDate),
     otype: normType(o.otype),
-    pgroup: normPGroup(o.pgroup, o.status || (o.statusLog && statusTextFromLog(o.statusLog))),
+    pgroup: cleanPGroup(o),
     qty: parseQty(o.qty),
     amount: parseMoney(o.amount),
     proof: tri(o.proof),
@@ -3628,7 +3745,7 @@ var COL_WEIGHT = {
      Event are tighter, and Type through Turn get enough room for their values. */
   seq: 40, date: 68, placedDate: 66, orderId: 78, customer: 175, reqShipDate: 68, eventDate: 68,
   otype: 62, pgroup: 58, qty: 48, amount: 70, proof: 58, marking: 72, status: 145,
-  startTime: 64, completionTime: 64, taken: 68, proofRcvdTime: 64, turn: 52,
+  startTime: 72, completionTime: 72, taken: 88, proofRcvdTime: 64, turn: 52,
   fin: 52, notes: 68, acts: 80
 };
 function columnWidth(c) {
@@ -3652,10 +3769,16 @@ function buildChrome() {
     var col = document.createElement("col");
     col.style.width = columnWidth(c);
     colgroup.appendChild(col);
-    var th = el("th", c.sort ? "sortable" : "", c.label);
+    var th = el("th", c.sort ? "sortable" : "", c.sort ? null : c.label);
     if (c.sort) {
       th.setAttribute("data-sort", c.sort);
-      th.appendChild(el("span", "arrow", "↕"));
+      th.title = "Sort by " + (c.entryLabel || c.label);
+      var words = String(c.label || "").split(" ");
+      var last = words.pop();
+      if (words.length) th.appendChild(document.createTextNode(words.join(" ") + " "));
+      var tail = el("span", "th-tail", last);
+      tail.appendChild(el("span", "arrow", "\u21C5"));
+      th.appendChild(tail);
     }
     if (c.key === "acts") th.className = "rowacts";
     if (c.key === "notes") th.className = ((th.className || "") + " note-hd").trim();
@@ -4212,10 +4335,10 @@ function renderTable() {
     if (!arrow) return;
     if (th.getAttribute("data-sort") === state.sortKey) {
       th.setAttribute("aria-sort", state.sortDir === 1 ? "ascending" : "descending");
-      arrow.textContent = state.sortDir === 1 ? "▲" : "▼";
+      arrow.textContent = state.sortDir === 1 ? "\u25B2" : "\u25BC";
     } else {
       th.removeAttribute("aria-sort");
-      arrow.textContent = "↕";
+      arrow.textContent = "\u21C5";
     }
   });
 
@@ -4372,9 +4495,16 @@ function readRow(o, cols) {
       case "proofRcvdTime": td = timeCell(o, "proofRcvdTime"); break;
       case "taken":
         var taken = timeTaken(o);
-        td = el("td", "dur" + (taken !== null && taken >= 45 ? " slow" : ""),
-                taken === null && isLive(o) ? "R" : durationText(taken));
-        if (taken === null && isLive(o)) { td.className = "dur running"; td.title = "Running"; }
+        var hb = holdBreakdown(o);
+        td = el("td", "dur taken-cell");
+        var tMain = el("span", "dur-main" + (taken !== null && taken >= 45 ? " slow" : ""),
+                       taken === null && isLive(o) ? "R" : durationText(taken));
+        if (taken === null && isLive(o)) { tMain.className = "dur-main running"; tMain.title = "Running"; }
+        td.appendChild(tMain);
+        if (hb.any) {
+          td.appendChild(holdChip(o, hb, false));
+          td.title = holdBreakdownText(hb).replace(/\nClick to edit the hold\.$/, "");
+        }
         break;
       case "turn":
         if (noProofNeeded(o)) {
@@ -4559,29 +4689,6 @@ function inlineRow(o, cols, focusKey) {
           td.appendChild(dIn);
           upgradeDateInput(dIn);
         }
-        /* Moving the finish onto a later day is only allowed alongside a hold
-           time. An order stuck for three days is not three days of work, and
-           without the hold the "taken" figure would be nonsense, so the two
-           are entered together. */
-        /* Moving the finish onto another day is only allowed when the order
-           has a hold. An order stuck for three days is not three days of work,
-           and without the hold the "taken" figure would be nonsense. */
-        if (c.key === "completionTime") {
-          var hBtn = el("button", "btn ghost sm hold-inline", "");
-          hBtn.type = "button";
-          var gate = function () {
-            var ok = hasHold(o);
-            hBtn.textContent = ok ? "Hold " + durationText(holdMinutes(o)) : "Add hold\u2026";
-            hBtn.title = ok ? "Edit this order's hold" : "Enter when a hold started and ended";
-            dIn.disabled = !ok;
-            dIn.title = ok ? "Date the order was finished"
-                           : "Add a hold first, then the finish can move to another day";
-            td.classList.toggle("hold-gated", !ok);
-          };
-          hBtn.addEventListener("click", function () { openHoldDialog(o.id, gate); });
-          td.appendChild(hBtn);
-          gate();
-        }
         break;
       case "proof": case "fin": case "savedToDrive":
         var sel = document.createElement("select");
@@ -4595,9 +4702,14 @@ function inlineRow(o, cols, focusKey) {
         fields[c.key] = sel;
         td.appendChild(sel);
         break;
-      case "taken": case "turn":
+      case "taken":
+        td.className = "dur taken-cell";
+        td.appendChild(el("span", "dur-main", durationText(timeTaken(o))));
+        td.setAttribute("data-calc", c.key);
+        break;
+      case "turn":
         td.className = "dur";
-        td.textContent = durationText(c.key === "taken" ? timeTaken(o) : turnaround(o));
+        td.textContent = durationText(turnaround(o));
         td.setAttribute("data-calc", c.key);
         break;
       default:
@@ -4613,6 +4725,33 @@ function inlineRow(o, cols, focusKey) {
     td.setAttribute("data-label", c.label || "");
     tr.appendChild(td);
   });
+  /* Hold control. It used to be squeezed into the End cell under the time
+     and date inputs. It now sits under Time taken, where the hold actually
+     changes the number. Moving the finish onto another day is still only
+     allowed when the order has a hold: an order stuck for three days is not
+     three days of work. */
+  var holdHost = tr.querySelector('[data-calc="taken"]') ||
+                 (fields.completionTime && fields.completionTime.closest("td"));
+  if (holdHost) {
+    var hSlot = el("div", "hold-slot");
+    holdHost.appendChild(hSlot);
+    var gateHold = function () {
+      var b = holdBreakdown(o);
+      hSlot.textContent = "";
+      var chip = holdChip(o, b, true);
+      chip.addEventListener("click", function () { openHoldDialog(o.id, gateHold); });
+      hSlot.appendChild(chip);
+      var dIn = fields.completionDate;
+      if (dIn) {
+        dIn.disabled = !b.any;
+        dIn.title = b.any ? "Date the order was finished"
+                          : "Add a hold first, then the finish can move to another day";
+        var dTd = dIn.closest("td");
+        if (dTd) dTd.classList.toggle("hold-gated", !b.any);
+      }
+    };
+    gateHold();
+  }
   /* The table can be redrawn while this row is open — saving a hold from the
      row's own Hold button, or stamping a different order. The editor used to
      be rebuilt from the saved order, throwing away anything typed here but not
@@ -4648,7 +4787,12 @@ function inlineRow(o, cols, focusKey) {
     var b = fields.completionTime ? parseTime(fields.completionTime.value) : { ok: false, value: "" };
     var c2 = fields.proofRcvdTime ? parseTime(fields.proofRcvdTime.value) : { ok: false, value: "" };
     var takenCell = tr.querySelector('[data-calc="taken"]'), turnCell = tr.querySelector('[data-calc="turn"]');
-    if (takenCell) takenCell.textContent = (a.ok && b.ok) ? durationText(spanMinutes(a.value, b.value)) : "?";
+    if (takenCell) {
+      var tSpan = (a.ok && b.ok) ? spanMinutes(a.value, b.value) : null;
+      var tOut = takenCell.querySelector(".dur-main") || takenCell;
+      tOut.textContent = (tSpan === null || tSpan === undefined || isNaN(tSpan)) ? "?"
+        : durationText(Math.max(0, Math.round(tSpan - holdMinutes(o))));
+    }
     if (turnCell) turnCell.textContent = noProofNeeded(o) ? "" : ((b.ok && c2.ok) ? durationText(spanMinutes(b.value, c2.value)) : "?");
   };
   ["startTime", "completionTime", "proofRcvdTime"].forEach(function (k) {
@@ -4856,7 +5000,7 @@ function addLogStamp(id, code) {
     o.proofRcvdTime = o.proofRcvdTime && o.proofRcvdTime !== "N/A" ? o.proofRcvdTime : "";
   }
   completeFromCode(o, code);
-  var pg = normPGroup(code, "");
+  var pg = pgroupFromText(code);
   if (pg) o.pgroup = pg;
   if (!persistOrders()) { saveFailedModal("status log"); return; }
   scheduleRender();
@@ -5139,7 +5283,7 @@ function addStatusStamp() {
   log.push({ t: prettyTime(nowClock()), code: code });
   writeSlog(log);
   if (isCompleteCode(code)) setSeg("segFin", "TRUE");
-  var pg = normPGroup(code, "");
+  var pg = pgroupFromText(code);
   if (pg) setSeg("segPGroup", pg);
   input.value = "";
   input.focus();
@@ -7008,6 +7152,21 @@ function openHoldDialog(id, after) {
   var open = openHoldAbs(o);
   var banked = Number(o.heldMinutes) || 0;
 
+  /* Where the hold stands right now, in one line, before any editing. */
+  var nowState = (function () {
+    if (o.held === "TRUE" || o.held === true) {
+      var st0 = o.heldStartedAt ? dayClockFromIso(o.heldStartedAt) : null;
+      return { cls: "live", text: "On hold now" + (st0 ? " \u00b7 since " + prettyTime(st0.clock) +
+        (st0.day !== todayKey() ? ", " + shortDate(st0.day) : "") : "") +
+        (banked > 0 ? " \u00b7 plus " + durationText(Math.round(banked)) + " from earlier holds" : "") };
+    }
+    if (banked > 0) return { cls: "done", text: "Held " + durationText(Math.round(banked)) + " in total \u00b7 hold ended" };
+    if (source === "log") return { cls: lw.end ? "done" : "live",
+      text: "From the status log: ILS " + prettyTime(lw.start) + (lw.end ? " \u2192 ILC " + prettyTime(lw.end) : " \u00b7 no ILC yet") };
+    return { cls: "none", text: "No hold on this order yet" };
+  })();
+  box.appendChild(el("div", "hold-state " + nowState.cls, nowState.text));
+
   /* Pre-fill */
   var sDay = todayKey(), sClock = nowClock(), eDay = "", eClock = "", mode = "start";
   if ((o.held === "TRUE" || o.held === true)) {
@@ -7048,10 +7207,6 @@ function openHoldDialog(id, after) {
       (lw.end ? " \u2192 ILC " + prettyTime(lw.end) : " (no ILC yet)") +
       ". Saving here takes over from the log for this order."));
   }
-  if (banked > 0 && !(o.held === "TRUE" || o.held === true)) {
-    box.appendChild(el("p", "hold-note",
-      "Already held " + durationText(Math.round(banked)) + " earlier. A new hold is added to that."));
-  }
   var out = el("div", "hold-preview");
   box.appendChild(out);
   var err = el("p", "hold-err"); err.hidden = true;
@@ -7068,31 +7223,38 @@ function openHoldDialog(id, after) {
     if (eAbs !== null && eAbs <= sAbs) return { error: "The hold has to end after it starts." };
     return { sd: sd, st: st.value, sAbs: sAbs, eAbs: eAbs };
   };
+  var stat = function (label, value, cls) {
+    var c = el("div", "hs-cell" + (cls ? " " + cls : ""));
+    c.appendChild(el("span", "hs-lab", label));
+    c.appendChild(el("span", "hs-val", value));
+    return c;
+  };
   var preview = function () {
     var r = read();
     out.textContent = "";
     /* Label first, so it stays right even while the times are mid-edit or wrong. */
     var hasEnd = String(E.time.value || "").trim() !== "";
-    save.textContent = hasEnd ? "Save hold" : (mode === "end" ? "Keep on hold" : "Start hold");
+    save.textContent = hasEnd ? (mode === "end" ? "End hold" : "Save hold") : (mode === "end" ? "Keep on hold" : "Start hold");
     if (r.error) { out.appendChild(el("span", "muted", r.error)); return; }
     var w = workWindow(o);
     var mins = overlapMinutes(r.sAbs, r.eAbs === null ? nowAbs() : r.eAbs, w);
-    var total = banked + mins;
+    var total = Math.round(banked + mins);
     var span = stampSpan(o, "startTime", "completionTime");
-    if (!w) {
-      out.appendChild(el("span", null, "The order has not been started, so nothing is taken off yet. " +
-        (r.eAbs === null ? "The hold will count once it starts." : "")));
-    } else if (!mins && r.eAbs !== null) {
-      out.appendChild(el("span", null, "This hold falls outside the working time, so it does not change time taken."));
-    } else {
-      out.appendChild(el("b", null, "On hold " + durationText(Math.round(total))));
-      if (span !== null) {
-        out.appendChild(el("span", null, " \u00b7 time taken " +
-          durationText(Math.max(0, Math.round(span - total))) + " (was " + durationText(Math.round(span)) + ")"));
-      } else if (r.eAbs === null) {
-        out.appendChild(el("span", null, " so far \u00b7 still counting"));
-      }
-    }
+    var grid = el("div", "hold-sum");
+    grid.appendChild(stat("Start \u2192 finish", span === null ? (w ? "running" : "not started") : durationText(Math.round(span))));
+    grid.appendChild(stat(r.eAbs === null ? "On hold so far" : "On hold", "\u2212" + (durationText(total) || "0m"), "hs-hold"));
+    grid.appendChild(stat("Time taken", span === null ? "\u2014" : durationText(Math.max(0, Math.round(span - total))), "hs-net"));
+    out.appendChild(grid);
+    var msg = "";
+    if (!w) msg = "The order has not been started, so nothing is taken off yet." +
+                  (r.eAbs === null ? " The hold will count once it starts." : "");
+    else if (!mins && r.eAbs !== null) msg = "This hold falls outside the working time, so it does not change time taken.";
+    else if (r.eAbs === null && !mins && isClock(o.completionTime)) msg = "This order is already finished, so a hold starting now will not change time taken.";
+    else if (r.eAbs === null) msg = mode === "end"
+      ? "Still on hold \u2014 fill in \u201cHold ended\u201d to end it, or leave it blank to keep the clock running."
+      : "Leave \u201cHold ended\u201d blank to start the hold now; it keeps counting until you end it.";
+    if (banked > 0 && !(o.held === "TRUE" || o.held === true)) msg += (msg ? " " : "") + "Includes " + durationText(Math.round(banked)) + " from earlier holds.";
+    if (msg) out.appendChild(el("p", "hold-msg", msg));
   };
 
   var acts = el("div", "modal-actions");
@@ -7327,14 +7489,29 @@ function selectDay(key) {
   render();
   swipe(direction);
 }
+/* One working day forward or back: Friday -> Monday, Monday -> Friday.
+   Worked out straight from the calendar, so it no longer goes through
+   shiftWeek(), which keeps the weekday and landed Friday on NEXT Friday. */
+function addWeekdays(key, delta) {
+  var d = dateFromKey(key);
+  if (isNaN(d.getTime())) return todayKey();
+  var step = delta < 0 ? -1 : 1, left = Math.abs(delta);
+  while (left > 0) {
+    d.setDate(d.getDate() + step);
+    var dow = d.getDay();
+    if (dow !== 0 && dow !== 6) left--;
+  }
+  return todayKey(d);
+}
 function stepWeekday(delta) {
-  var keys = weekdayKeys(state.weekStart);
-  var i = keys.indexOf(state.scopeDate);
-  if (i === -1) { selectDay(state.scopeDate); return; }
-  var next = i + delta;
-  if (next < 0) { shiftWeek(-1); selectDay(weekdayKeys(state.weekStart)[4]); return; }
-  if (next > 4) { shiftWeek(1); selectDay(weekdayKeys(state.weekStart)[0]); return; }
-  selectDay(keys[next]);
+  selectDay(addWeekdays(state.scopeDate, delta));
+}
+/* The ‹ › arrows beside the day tabs. In one-day view they move a day; in
+   whole-week view there is no single day to move, so they move a week.
+   Shift-click always jumps a whole week. */
+function stepArrow(delta, e) {
+  if (state.scope === "week" || (e && e.shiftKey)) shiftWeek(delta);
+  else stepWeekday(delta);
 }
 function shiftWeek(delta) {
   state.inlineId = null;
@@ -7886,8 +8063,18 @@ function wire() {
     var b = e.target.closest("[data-day]");
     if (b) selectDay(b.getAttribute("data-day"));
   });
-  $("weekPrev").addEventListener("click", function () { shiftWeek(-1); });
-  $("weekNext").addEventListener("click", function () { shiftWeek(1); });
+  $("weekPrev").addEventListener("click", function (e) { stepArrow(-1, e); });
+  $("weekNext").addEventListener("click", function (e) { stepArrow(1, e); });
+  /* Arrow keys on a focused day tab move a day and keep focus on the tabs. */
+  $("days").addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    if (!e.target.closest("[data-day]")) return;
+    e.preventDefault();
+    stepWeekday(e.key === "ArrowRight" ? 1 : -1);
+    var cur = $("days").querySelector('[aria-current="true"]');
+    if (cur) cur.focus();
+  });
   $("btnThisWeek").addEventListener("click", function () { selectDay(todayKey()); render(); });
   $("btnBingo").addEventListener("click", openBingo);
   $("btnPgroupChart").addEventListener("click", openPGroupChart);
