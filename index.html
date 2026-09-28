@@ -12,7 +12,7 @@ if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fon
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Crown Awards Employee Order Tracker</title>
+<title>CA Order Tracker</title>
 <!-- App/tab identity: the same crown mark is used for browser tabs and iPhone home-screen installs. -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230E3A78'/%3E%3Cpath d='M4 22V12l6 5 6-9 6 9 6-5v10H4Z' fill='%23D9B45F'/%3E%3Crect x='4' y='24' width='24' height='4' rx='1' fill='%23D9B45F'/%3E%3C/svg%3E">
 <!-- iOS ignores SVG home-screen icons (it falls back to a page screenshot), so this is a real 180x180 PNG.
@@ -3767,9 +3767,9 @@ button,a,summary,label,.chip,.day,[data-sort]{-webkit-tap-highlight-color:transp
     <div class="plate">
       <h1>Crown Awards Employee<br>Order Tracker</h1>
       <div class="owner">Crown Awards International HQ</div>
-      <p>Every order of the day in one ledger: proof status, start and finish times, time taken, and what is still waiting on a proof.</p>
+      <p>Log all your orders securely here, good for reference and metric tracking.</p>
     </div>
-    <div class="foot">Accounts and orders are stored in this browser only. Passwords are salted and hashed with PBKDF2-SHA256 before they are written to storage — the password itself is never saved.</div>
+    <div class="foot">Order information stored in a secure encrypted server.</div>
   </div>
   <div class="auth-panel">
     <div class="auth-card">
@@ -3804,7 +3804,7 @@ button,a,summary,label,.chip,.day,[data-sort]{-webkit-tap-highlight-color:transp
 
       <section id="paneRegister" hidden>
         <h2>Create an account</h2>
-        <p class="sub">Your orders stay private to this login.</p>
+        <p class="sub">Your orders stay private to this account.</p>
         <div class="alert err" id="regErr" hidden></div>
         <form id="formRegister" novalidate>
           <div class="field">
@@ -3900,8 +3900,8 @@ button,a,summary,label,.chip,.day,[data-sort]{-webkit-tap-highlight-color:transp
         <rect x="4" y="24" width="24" height="4" rx="1" style="fill:var(--crest)"/>
       </svg>
       <div class="marktext">
-        <b>Crown Awards Employee Order Tracker</b>
-        <span>Crown Awards International HQ</span>
+        <b>Engraving Order Tracker</b>
+        <span>Crown Awards HQ</span>
       </div>
     </div>
     <div class="spacer"></div>
