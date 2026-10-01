@@ -3514,223 +3514,336 @@ html.fx #stage.st-nyc .ny-tb{animation:nyTB 2.4s steps(1) infinite}
 
 /* =====================================================================
    SUMMARY DASHBOARD (.sx). Theme tokens only, so it belongs to every theme.
-   Desktop: headline cards across, then a wide main column + a side column.
-   Phone: a full-screen sheet, 2x2 cards, one column.
+   A long, roomy vertical scroll: headline cards, then numbered sections
+   (highlights, flow, week, comparisons, attention, breakdown, records).
+   Desktop: a 3-column grid, wide panels span two. Tablet: 2 columns.
+   Phone: a full-screen sheet, one column.
    ===================================================================== */
 .scrim.sx-scrim{align-items:center;padding:calc(18px + var(--sa-t,0px)) 18px calc(18px + var(--sa-b,0px))}
-.modal.sx{width:min(1760px,100%);max-width:none;max-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;
-  border-radius:16px;background:var(--surface)}
-.sx-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px 14px;
+.modal.sx{width:min(1280px,100%);max-width:none;max-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;
+  border-radius:18px;background:var(--surface)}
+.sx-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 28px 16px;flex:0 0 auto;
   border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--surface-2),var(--surface))}
-.sx-titleblock{display:flex;flex-direction:column;gap:2px;min-width:0}
-.sx-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
-.sx-title{margin:0;font-family:var(--display);font-size:21px;font-weight:700;letter-spacing:-.01em;color:var(--text);line-height:1.15}
-.sx-sub{font-size:12.5px;color:var(--muted)}
-.sx-ctrls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.sx-seg{display:inline-flex;padding:3px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
-.sx-seg button{border:0;background:transparent;color:var(--text-2);font:600 12.5px/1 var(--sans);padding:8px 14px;border-radius:7px;cursor:pointer;
+.sx-titleblock{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sx-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brass)}
+.sx-title{margin:0;font-family:var(--display);font-size:27px;font-weight:700;letter-spacing:-.01em;color:var(--text);line-height:1.15}
+.sx-sub{font-size:13.5px;color:var(--muted)}
+.sx-ctrls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sx-seg{display:inline-flex;padding:3px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line)}
+.sx-seg button{border:0;background:transparent;color:var(--text-2);font:600 13.5px/1 var(--sans);padding:9px 16px;border-radius:8px;cursor:pointer;
   transition:background .15s,color .15s}
 .sx-seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12),0 0 0 1px var(--line)}
-.sx-step{display:inline-flex;align-items:center;gap:4px}
-.sx-ib,.sx-today{height:34px;min-width:34px;display:inline-grid;place-items:center;border-radius:9px;border:1px solid var(--line);
-  background:var(--surface);color:var(--text);font:600 17px/1 var(--sans);cursor:pointer;transition:background .15s,border-color .15s}
-.sx-today{font-size:12.5px;padding:0 12px}
+.sx-step{display:inline-flex;align-items:center;gap:5px}
+.sx-ib,.sx-today{height:38px;min-width:38px;display:inline-grid;place-items:center;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface);color:var(--text);font:600 18px/1 var(--sans);cursor:pointer;transition:background .15s,border-color .15s}
+.sx-today{font-size:13.5px;padding:0 15px}
 .sx-today:disabled{opacity:.45;cursor:default}
 .sx-ib:hover,.sx-today:not(:disabled):hover{border-color:var(--brass);background:var(--surface-2)}
-.sx-close{font-size:22px;font-weight:400}
-.sx-body{overflow-y:auto;padding:16px 20px 18px;-webkit-overflow-scrolling:touch}
-.sx-fit{display:flex;flex-direction:column;gap:14px}
+.sx-close{font-size:24px;font-weight:400}
+.sx-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:24px 28px 34px;-webkit-overflow-scrolling:touch;outline:none;
+  scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--muted) 55%,transparent) transparent}
+.sx-fit{display:flex;flex-direction:column}
 html.fx .sx-body.sx-in-r{animation:sxInR .22s var(--ease)} html.fx .sx-body.sx-in-l{animation:sxInL .22s var(--ease)}
 @keyframes sxInR{from{opacity:.3;transform:translateX(14px)}to{opacity:1;transform:none}}
 @keyframes sxInL{from{opacity:.3;transform:translateX(-14px)}to{opacity:1;transform:none}}
-/* headline cards */
-.sx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.sx-kpi{position:relative;padding:14px 16px 13px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);min-width:0;overflow:hidden}
-.sx-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kc,var(--brass))}
+
+/* ---- headline cards */
+.sx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.sx-kpi{position:relative;padding:18px 20px 12px 24px;border-radius:14px;border:1px solid var(--line);background:var(--surface-2);min-width:0;overflow:hidden}
+.sx-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--kc,var(--brass))}
 .sx-kpi.k-orders{--kc:var(--code)} .sx-kpi.k-value{--kc:var(--brass)} .sx-kpi.k-time{--kc:var(--go)} .sx-kpi.k-proof{--kc:var(--hold)}
-.sx-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px}
-.sx-kpi-l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.sx-kpi-v{display:block;margin:4px 0 6px;font-family:var(--display);font-size:30px;font-weight:700;line-height:1.05;color:var(--text);
-  letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sx-kpi-s{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text-2)}
-.sx-kpi-s span+span::before{content:"";display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--muted);margin:0 8px 2px -6px;opacity:.7}
-.sx-ring{width:44px;height:44px;position:absolute;right:12px;top:12px}
+.sx-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:26px}
+.sx-kpi-l{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.sx-kpi-v{display:block;margin:6px 0 14px;font-family:var(--display);font-size:clamp(28px,2.9vw,38px);font-weight:700;line-height:1.05;color:var(--text);
+  letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-kpi-rows{display:flex;flex-direction:column}
+.sx-kr{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px dashed var(--line);font-size:13.5px}
+.sx-kr span{color:var(--muted)}
+.sx-kr b{font:700 14px var(--mono);color:var(--text);white-space:nowrap}
+.sx-ring{width:58px;height:58px;position:absolute;right:16px;top:14px}
 .sx-ring .trk{fill:none;stroke:var(--line);stroke-width:3.5}
 .sx-ring .val{fill:none;stroke:var(--go);stroke-width:3.5;stroke-linecap:round;transition:stroke-dasharray .5s var(--ease)}
 .sx-ring text{font:700 8.5px var(--mono);fill:var(--text)}
-.sx-kpi.k-orders .sx-kpi-v,.sx-kpi.k-orders .sx-kpi-s{padding-right:50px}
-.sx-delta{font:700 11px/1 var(--mono);padding:4px 7px;border-radius:999px}
+.sx-kpi.k-orders .sx-kpi-v{padding-right:64px}
+.sx-delta{font:700 12px/1 var(--mono);padding:5px 9px;border-radius:999px}
 .sx-delta.up{color:var(--go);background:var(--go-bg)} .sx-delta.down{color:var(--stop);background:var(--stop-bg)}
-/* columns + panels */
-.sx-cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
-.sx-col{display:flex;flex-direction:column;gap:14px;min-width:0}
-.sx-panel{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);min-width:0}
-.sx-ph{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-.sx-ph h4{margin:0;font-size:13px;font-weight:700;letter-spacing:.01em;color:var(--text)}
-.sx-empty{font-size:12.5px;color:var(--muted);padding:6px 0}
-.sx-note{margin:8px 0 0;font-size:12px;color:var(--muted)}
-.sx-legend{display:flex;gap:12px;font-size:11.5px;color:var(--text-2)}
-.sx-legend span{display:inline-flex;align-items:center;gap:5px}
-.sx-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* ---- numbered section headings (route-bullet style) */
+.sx-sec{display:flex;align-items:center;gap:14px;margin:38px 0 16px}
+.sx-sec::after{content:"";flex:1 1 auto;height:1px;background:var(--line);order:3}
+.sx-bullet{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:800 15px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;
+  color:#fff;background:var(--bc,var(--brass));box-shadow:0 0 0 2px color-mix(in srgb,var(--bc,var(--brass)) 28%,transparent)}
+.sx-sec.s1{--bc:var(--code)} .sx-sec.s2{--bc:var(--go)} .sx-sec.s3{--bc:var(--brass)} .sx-sec.s4{--bc:var(--hold)}
+.sx-sec.s5{--bc:var(--stop)} .sx-sec.s6{--bc:var(--idle)} .sx-sec.s7{--bc:var(--code)}
+.sx-sec.s2 .sx-bullet{color:var(--go-ink,#052420)} .sx-sec.s4 .sx-bullet{color:#14161A}
+.sx-sec-t{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sx-sec-t h4{margin:0;font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.005em;color:var(--text)}
+.sx-sec-t span{font-size:13px;color:var(--muted)}
+
+/* ---- grid + panels */
+.sx-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.sx-grid>.w2{grid-column:span 2} .sx-grid>.w3{grid-column:1/-1}
+.sx-panel{border:1px solid var(--line);border-radius:14px;padding:18px 20px 20px;background:var(--surface);min-width:0;display:flex;flex-direction:column}
+.sx-ph{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex:0 0 auto}
+.sx-ph-t{min-width:0}
+.sx-ph h4{margin:0;font-size:15.5px;font-weight:700;letter-spacing:.005em;color:var(--text)}
+.sx-ph-sub{display:block;margin-top:3px;font-size:12.5px;color:var(--muted);line-height:1.35}
+.sx-empty{font-size:13.5px;color:var(--muted);padding:8px 0}
+.sx-note{margin:12px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.sx-legend{display:flex;gap:14px;font-size:12.5px;color:var(--text-2);flex:0 0 auto}
+.sx-legend span{display:inline-flex;align-items:center;gap:6px}
+.sx-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
 .lg-start{background:color-mix(in srgb,var(--code) 35%,transparent);box-shadow:inset 0 0 0 1.5px var(--code)} .lg-fin{background:var(--go)}
-/* hourly chart */
-.sx-hours{display:flex;align-items:stretch;gap:6px;height:150px;padding:8px 2px 0;
+.sx-foot3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:auto;padding-top:16px}
+.sx-foot3 div{display:flex;flex-direction:column;gap:3px;min-width:0;padding:11px 13px;border-radius:10px;background:var(--surface-2)}
+.sx-foot3 b{font:700 16px var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-foot3 span{font-size:12px;color:var(--muted)}
+
+/* ---- highlights */
+.sx-ins-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.sx-ins{--ic:var(--brass);width:100%;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:16px;row-gap:2px;align-items:center;padding:18px 20px;
+  border:1px solid var(--line);border-radius:14px;background:var(--surface-2);color:var(--text);font:inherit;text-align:left;min-width:0}
+button.sx-ins{cursor:pointer;transition:border-color .15s,transform .15s}
+button.sx-ins:hover{border-color:var(--ic);transform:translateY(-1px)}
+.sx-ins.t-code{--ic:var(--code)} .sx-ins.t-go{--ic:var(--go)} .sx-ins.t-hold{--ic:var(--hold)} .sx-ins.t-brass{--ic:var(--brass)}
+.sx-ins.t-stop{--ic:var(--stop)} .sx-ins.t-idle{--ic:var(--idle)}
+.sx-ins-dot{grid-row:1/4;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--ic);
+  background:color-mix(in srgb,var(--ic) 18%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ic) 45%,transparent)}
+.sx-ins-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sx-ins-v{font-family:var(--display);font-size:25px;font-weight:700;line-height:1.15;color:var(--text);letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.sx-ins-d{font-size:13px;color:var(--text-2);line-height:1.35;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* ---- hourly chart */
+.sx-hours{display:flex;align-items:stretch;gap:8px;height:230px;padding:10px 4px 0;flex:1 1 auto;min-height:230px;
   background:repeating-linear-gradient(to top,transparent 0 calc(25% - 1px),color-mix(in srgb,var(--line) 70%,transparent) calc(25% - 1px) 25%)}
-.sx-hcol{flex:1;display:flex;flex-direction:column;align-items:stretch;min-width:0;position:relative;border-radius:6px}
+.sx-hcol{flex:1;display:flex;flex-direction:column;align-items:stretch;min-width:0;position:relative;border-radius:8px}
 .sx-hcol.now{background:color-mix(in srgb,var(--brass) 10%,transparent)}
-.sx-hcol.now::after{content:"now";position:absolute;top:-2px;left:50%;transform:translateX(-50%);font:700 9px var(--mono);color:var(--brass);
+.sx-hcol.now::after{content:"now";position:absolute;top:-4px;left:50%;transform:translateX(-50%);font:700 10px var(--mono);color:var(--brass);
   text-transform:uppercase;letter-spacing:.06em}
-.sx-hbars{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:12px 2px 0}
-.sx-hbars i{flex:1;max-width:16px;border-radius:4px 4px 1px 1px;min-height:0;position:relative;transition:height .45s var(--ease)}
+.sx-hbars{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:4px;padding:18px 3px 0}
+.sx-hbars i{flex:1;max-width:26px;border-radius:5px 5px 1px 1px;min-height:0;position:relative;transition:height .45s var(--ease)}
 .sx-hbars i.st{background:color-mix(in srgb,var(--code) 30%,transparent);box-shadow:inset 0 0 0 1.5px var(--code)}
 .sx-hbars i.fn{background:var(--go)}
-.sx-hbars i.fn[data-n]::after{content:attr(data-n);position:absolute;top:-15px;left:50%;transform:translateX(-50%);font:700 10px var(--mono);color:var(--go)}
-.sx-hl{text-align:center;font:600 10px var(--mono);color:var(--muted);padding:5px 0 0;border-top:1px solid var(--line)}
-/* pipeline */
-.sx-pipe{display:grid;grid-template-columns:92px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:5px 0}
-.sx-pipe-l{font-size:12.5px;color:var(--text-2);font-weight:600}
-.sx-pipe-t{height:12px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.sx-hbars i.fn[data-n]::after{content:attr(data-n);position:absolute;top:-17px;left:50%;transform:translateX(-50%);font:700 12px var(--mono);color:var(--go)}
+.sx-hl-lab{text-align:center;font:600 11.5px var(--mono);color:var(--muted);padding:7px 0 0;border-top:1px solid var(--line)}
+
+/* ---- pipeline */
+.sx-pipe{display:grid;grid-template-columns:96px minmax(0,1fr) 34px 44px;align-items:center;gap:12px;padding:9px 0}
+.sx-pipe-l{font-size:13.5px;color:var(--text-2);font-weight:600}
+.sx-pipe-t{height:16px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
 .sx-pipe-t i{display:block;height:100%;border-radius:999px;background:var(--pc,var(--code));transition:width .5s var(--ease)}
-.sx-pipe-n{text-align:right;font:700 13px var(--mono);color:var(--text)}
+.sx-pipe-n{text-align:right;font:700 15px var(--mono);color:var(--text)}
+.sx-pipe-p{text-align:right;font:600 12px var(--mono);color:var(--muted)}
 .sx-pipe.p-log{--pc:var(--idle)} .sx-pipe.p-start{--pc:var(--code)} .sx-pipe.p-proof{--pc:var(--hold)} .sx-pipe.p-back{--pc:var(--brass)} .sx-pipe.p-fin{--pc:var(--go)}
-/* week at a glance */
-.sx-week{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-.sx-wday{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 9px;border-radius:10px;border:1px solid transparent;
-  background:transparent;color:var(--text);cursor:pointer;font:inherit;transition:background .15s,border-color .15s}
-.sx-wday:hover{background:var(--surface-2);border-color:var(--line)}
-.sx-wday.sel{background:var(--surface-2);border-color:var(--brass);box-shadow:inset 0 -3px 0 var(--brass)}
-.sx-wn{font:700 12px var(--mono);color:var(--text-2);min-height:15px}
-.sx-wbar{width:min(34px,70%);height:84px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:6px;overflow:hidden;
+
+/* ---- week at a glance */
+.sx-week{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.sx-wday{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px 14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface-2);color:var(--text);cursor:pointer;font:inherit;transition:background .15s,border-color .15s,transform .15s}
+.sx-wday:hover{border-color:var(--brass);transform:translateY(-1px)}
+.sx-wday.sel{border-color:var(--brass);box-shadow:inset 0 -4px 0 var(--brass)}
+.sx-wn{font:700 20px var(--display);color:var(--text);min-height:24px}
+.sx-wbar{width:min(54px,70%);height:150px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:8px;overflow:hidden;
   background:color-mix(in srgb,var(--line) 45%,transparent)}
 .sx-wbar i{display:block;width:100%;transition:height .45s var(--ease)}
 .sx-wbar i.fn{background:var(--go)} .sx-wbar i.op{background:color-mix(in srgb,var(--hold) 70%,transparent)}
-.sx-wd{font-size:12px;font-weight:700;letter-spacing:.02em}
-.sx-wday.today .sx-wd::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--brass);margin-left:4px;vertical-align:2px}
-.sx-wv{font:600 11px var(--mono);color:var(--muted)}
-.sx-wfoot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
-.sx-wfoot div{display:flex;flex-direction:column;gap:2px;min-width:0}
-.sx-wfoot b{font:700 15px var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sx-wfoot span{font-size:11px;color:var(--muted)}
-/* attention + fastest rows (buttons: tap to jump to the order) */
-.sx-count{font:700 11px/1 var(--mono);padding:4px 8px;border-radius:999px;background:var(--stop-bg);color:var(--stop)}
-.sx-att,.sx-fast{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;margin:0 0 6px;
-  border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:inherit;text-align:left;cursor:pointer;
+.sx-wd{font-size:14px;font-weight:700;letter-spacing:.02em}
+.sx-wday.today .sx-wd::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brass);margin-left:6px;vertical-align:2px}
+.sx-wv{font:700 13.5px var(--mono);color:var(--text-2)}
+.sx-wsub{font-size:12px;color:var(--muted)}
+.sx-wlegend{display:flex;gap:16px;margin:14px 0 0;font-size:12.5px;color:var(--text-2)}
+.sx-wlegend span{display:inline-flex;align-items:center;gap:6px}
+.sx-wlegend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.sx-wfoot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:auto;padding-top:18px}
+.sx-wfoot div{display:flex;flex-direction:column;gap:3px;min-width:0;padding:11px 13px;border-radius:10px;background:var(--surface-2)}
+.sx-wfoot b{font:700 17px var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-wfoot span{font-size:12px;color:var(--muted)}
+
+/* ---- weekday pattern */
+.sx-wp{display:grid;grid-template-columns:46px minmax(0,1fr) 64px;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.sx-wp:last-of-type{border-bottom:0}
+.sx-wp-l{font:700 13.5px var(--mono);color:var(--text-2)}
+.sx-wp.cur .sx-wp-l{color:var(--brass)}
+.sx-wp-t{height:18px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.sx-wp-t i{display:block;height:100%;border-radius:999px;background:color-mix(in srgb,var(--brass) 55%,transparent);transition:width .5s var(--ease)}
+.sx-wp.top .sx-wp-t i{background:var(--brass)}
+.sx-wp-n{text-align:right;font:700 14px var(--mono);color:var(--text)}
+
+/* ---- attention + fastest rows (buttons: click to jump to the order) */
+.sx-chips{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 16px}
+.sx-chip{font:700 12px/1 var(--sans);padding:7px 11px;border-radius:999px;color:var(--ac);background:color-mix(in srgb,var(--ac) 15%,transparent);white-space:nowrap}
+.sx-count{font:700 12px/1 var(--mono);padding:6px 10px;border-radius:999px;background:var(--stop-bg);color:var(--stop)}
+.sx-att-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sx-att,.sx-fast{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:13px 15px;margin:0;
+  border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:inherit;text-align:left;cursor:pointer;
   transition:border-color .15s,transform .15s}
+.sx-fast-list{display:flex;flex-direction:column;gap:10px}
 .sx-att:hover,.sx-fast:hover{border-color:var(--brass);transform:translateX(2px)}
-.sx-att-tag{font:700 10px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:6px;white-space:nowrap;
-  color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
-.sx-att.k-hold{--ac:var(--stop)} .sx-att.k-late{--ac:var(--stop)} .sx-att.k-due{--ac:var(--hold)} .sx-att.k-proof{--ac:var(--code)} .sx-att.k-drive{--ac:var(--muted)}
-.sx-att.k-hold,.sx-att.k-late{border-left:3px solid var(--stop)}
-.sx-att-mid{display:flex;flex-direction:column;min-width:0}
-.sx-att-mid b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sx-att-mid span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sx-att-d{font-size:11.5px;color:var(--text-2);white-space:nowrap;text-align:right}
-.sx-allclear{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--go-bg);color:var(--go);font-size:13px;font-weight:600}
-.sx-medal{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:800 12px var(--mono);color:#2A1E05;
+.sx-att-tag{font:700 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:7px 9px;border-radius:7px;white-space:nowrap;min-width:92px;text-align:center;
+  color:var(--ac);background:color-mix(in srgb,var(--ac) 15%,transparent)}
+.sx-att.k-hold,.sx-chip.k-hold{--ac:var(--stop)} .sx-att.k-late,.sx-chip.k-late{--ac:var(--stop)} .sx-att.k-due,.sx-chip.k-due{--ac:var(--hold)}
+.sx-att.k-proof,.sx-chip.k-proof{--ac:var(--code)} .sx-att.k-drive,.sx-chip.k-drive{--ac:var(--muted)}
+.sx-att.k-hold,.sx-att.k-late{border-left:4px solid var(--stop)}
+.sx-att-mid{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sx-att-mid b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-att-mid span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-att-d{font-size:12.5px;color:var(--text-2);white-space:nowrap;text-align:right}
+.sx-more{margin-top:12px;align-self:flex-start;border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);font:600 13px/1 var(--sans);
+  padding:10px 14px;border-radius:9px;cursor:pointer}
+.sx-more:hover{border-color:var(--brass);color:var(--text)}
+.sx-allclear{display:flex;align-items:center;gap:12px;padding:16px 16px;border-radius:12px;background:var(--go-bg);color:var(--go);font-size:14.5px;font-weight:600}
+.sx-medal{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:800 14px var(--mono);color:#2A1E05;
   background:radial-gradient(circle at 35% 30%,#FFF4CC,#E2BE5E 50%,#B8892A);box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .sx-fast.m2 .sx-medal{background:radial-gradient(circle at 35% 30%,#FFFFFF,#C9D0DA 50%,#8E97A4)}
 .sx-fast.m3 .sx-medal{background:radial-gradient(circle at 35% 30%,#FFD8B5,#C98A55 50%,#8A4E22);color:#2A1206}
-.sx-fast-t{font:700 14px var(--mono);color:var(--go)}
-/* mix */
-.sx-mixgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sx-fast .sx-medal.plain{background:var(--surface);color:var(--text-2);box-shadow:inset 0 0 0 1.5px var(--line)}
+.sx-fast-t{font:700 16px var(--mono);color:var(--go)}
+
+/* ---- breakdown: types, PGroups, marking, status */
 .sx-mix{min-width:0}
-.sx-mix+.sx-mix,.sx-mixgrid+.sx-mix{margin-top:12px}
-.sx-mixgrid .sx-mix{margin-top:0}
-.sx-mix-h{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.sx-mrow{display:grid;grid-template-columns:44px minmax(0,1fr) 22px;align-items:center;gap:8px;padding:3px 0;font-size:12px}
-.sx-mrow-l{font:600 11.5px var(--mono);color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sx-mrow-t{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.sx-mix+.sx-mix{margin-top:22px}
+.sx-mix-h{font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sx-mrow{display:grid;grid-template-columns:62px minmax(0,1fr) 28px 66px;align-items:center;gap:10px;padding:6px 0;font-size:13px}
+.sx-mrow-l{font:600 13px var(--mono);color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-mrow-t{height:11px;border-radius:999px;background:var(--surface-2);overflow:hidden}
 .sx-mrow-t i{display:block;height:100%;border-radius:999px;background:var(--brass)}
-.sx-mrow b{text-align:right;font:700 12px var(--mono)}
-.sx-stack{display:flex;height:12px;border-radius:999px;overflow:hidden;gap:2px}
-.sx-stack i{display:block;min-width:4px}
+.sx-mrow b{text-align:right;font:700 13.5px var(--mono)}
+.sx-mrow-v{text-align:right;font:600 12px var(--mono);color:var(--muted);white-space:nowrap}
+.sx-stack{display:flex;height:16px;border-radius:999px;overflow:hidden;gap:3px}
+.sx-stack i{display:block;min-width:5px}
 .sx-stack i.t-code,.sx-stack-lg .t-code i{background:var(--code)} .sx-stack i.t-go,.sx-stack-lg .t-go i{background:var(--go)}
 .sx-stack i.t-warn,.sx-stack-lg .t-warn i{background:var(--hold)} .sx-stack i.t-hot,.sx-stack-lg .t-hot i{background:var(--stop)}
-.sx-stack-lg{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11.5px;color:var(--text-2)}
-.sx-stack-lg span{display:inline-flex;align-items:center;gap:5px}
-.sx-stack-lg i{width:9px;height:9px;border-radius:3px;display:inline-block}
-.sx-hint{text-align:center;font-size:11px;color:var(--muted);padding-top:2px}
-/* vs last week */
-.sx-cmp-go{border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);font:600 11px/1 var(--mono);
-  padding:5px 8px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.sx-stack-lg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-size:12.5px;color:var(--text-2)}
+.sx-stack-lg span{display:inline-flex;align-items:center;gap:6px}
+.sx-stack-lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.sx-hint{text-align:center;font-size:12px;color:var(--muted);padding-top:26px}
+
+/* ---- comparison table + trend */
+.sx-cmp-go{border:1px solid var(--line);background:var(--surface-2);color:var(--text-2);font:600 12px/1 var(--mono);
+  padding:8px 11px;border-radius:8px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
 .sx-cmp-go:hover{border-color:var(--brass);color:var(--text)}
 .sx-cmp{display:flex;flex-direction:column}
-.sx-cmp-r{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.9fr) minmax(0,.9fr) minmax(0,1.1fr);align-items:center;gap:8px;
-  padding:5px 0;border-bottom:1px dashed var(--line);font-size:12px}
+.sx-cmp-r{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr) minmax(0,.85fr) minmax(0,1.25fr) minmax(0,.85fr);align-items:center;gap:12px;
+  padding:11px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
 .sx-cmp-r:last-child{border-bottom:0}
-.sx-cmp-hd{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding-top:0}
+.sx-cmp-hd{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:0;padding-bottom:9px;border-bottom:1px solid var(--line)}
 .sx-cmp-hd span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sx-cmp-l{color:var(--text-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sx-cmp-now{font:700 13px var(--mono);color:var(--text);white-space:nowrap}
-.sx-cmp-was{font:600 12px var(--mono);color:var(--muted);white-space:nowrap}
-.sx-cmp-d{justify-self:start;font:700 10.5px/1 var(--mono);padding:4px 7px;border-radius:999px;white-space:nowrap}
+.sx-cmp-now{font:700 15px var(--mono);color:var(--text);white-space:nowrap}
+.sx-cmp-was{font:600 13.5px var(--mono);color:var(--muted);white-space:nowrap}
+.sx-cmp-avg{font:600 13.5px var(--mono);color:var(--text-2);white-space:nowrap}
+.sx-cmp-d{justify-self:start;font:700 12px/1 var(--mono);padding:6px 9px;border-radius:999px;white-space:nowrap}
 .sx-cmp-d.up{color:var(--go);background:var(--go-bg)} .sx-cmp-d.down{color:var(--stop);background:var(--stop-bg)}
 .sx-cmp-d.flat{color:var(--muted);background:var(--surface-2)}
-/* desktop: a tighter, wider layout so the whole summary fits one screen */
-@media (min-width:761px){
-  .sx-head{padding:11px 18px 10px}
-  .sx-title{font-size:19px}
-  .sx-ib,.sx-today{height:31px;min-width:31px}
-  .sx-seg button{padding:7px 12px}
-  .sx-body{padding:12px 16px 10px;overflow-x:hidden}
-  .sx-fit{gap:11px}
-  .sx-kpis{gap:11px}
-  .sx-kpi{padding:10px 14px 9px}
-  .sx-kpi-v{font-size:25px;margin:2px 0 4px}
-  .sx-ring{width:40px;height:40px;right:10px;top:10px}
-  .sx-cols,.sx-col{gap:11px}
-  .sx-panel{padding:10px 13px 11px}
-  .sx-ph{margin-bottom:8px}
-  .sx-hours{height:122px}
-  .sx-pipe{padding:3px 0}
-  .sx-wday{padding:5px 4px 6px;gap:3px}
-  .sx-wbar{height:62px}
-  .sx-wfoot{margin-top:8px;padding-top:8px}
-  .sx-wfoot b{font-size:14px}
-  .sx-att,.sx-fast{padding:6px 9px;margin-bottom:5px}
-  .sx-medal{width:23px;height:23px}
-  .sx-mixgrid{gap:12px}
-  .sx-mrow{padding:2px 0}
-  .sx-allclear{padding:9px 12px}
+.sx-trend{display:flex;align-items:stretch;gap:10px;height:210px}
+.sx-tcol{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 2px 8px;border-radius:10px;border:1px solid transparent;
+  background:transparent;color:var(--text);font:inherit;cursor:pointer;transition:background .15s,border-color .15s}
+.sx-tcol:hover{background:var(--surface-2);border-color:var(--line)}
+.sx-tcol.cur{background:var(--surface-2);border-color:var(--brass);box-shadow:inset 0 -3px 0 var(--brass)}
+.sx-tv{font:700 12px var(--mono);color:var(--text-2);white-space:nowrap}
+.sx-tbar{flex:1;width:min(34px,75%);display:flex;align-items:flex-end;border-radius:7px;background:color-mix(in srgb,var(--line) 40%,transparent);overflow:hidden}
+.sx-tbar i{display:block;width:100%;background:var(--brass);border-radius:6px 6px 0 0;min-height:2px;transition:height .45s var(--ease)}
+.sx-tcol.cur .sx-tbar i{background:var(--brass-lit,var(--brass))}
+.sx-tl{font:600 11px var(--mono);color:var(--muted);white-space:nowrap}
+.sx-tn{font:600 11px var(--mono);color:var(--text-2);white-space:nowrap}
+
+/* ---- records + customers */
+.sx-rec-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sx-rec{width:100%;display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:14px;row-gap:1px;align-items:center;padding:13px 15px;border-radius:12px;
+  border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:inherit;text-align:left;min-width:0}
+button.sx-rec{cursor:pointer;transition:border-color .15s,transform .15s}
+button.sx-rec:hover{border-color:var(--brass);transform:translateX(2px)}
+.sx-rec-ic{grid-row:1/4;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--brass);
+  background:color-mix(in srgb,var(--brass) 16%,transparent)}
+.sx-rec-k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sx-rec-v{font:700 18px var(--display);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-rec-d{font-size:12.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-vs{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:12px}
+.sx-vs-r{display:grid;grid-template-columns:110px minmax(0,1fr) 130px;align-items:center;gap:12px;font-size:13px}
+.sx-vs-l{color:var(--text-2);font-weight:600}
+.sx-vs-t{height:12px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.sx-vs-t i{display:block;height:100%;border-radius:999px;background:var(--go)}
+.sx-vs-n{text-align:right;font:600 12.5px var(--mono);color:var(--muted);white-space:nowrap}
+.sx-cust{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.sx-cust:last-of-type{border-bottom:0}
+.sx-cust-n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:800 12.5px var(--mono);background:var(--surface-2);color:var(--text-2);
+  box-shadow:inset 0 0 0 1.5px var(--line)}
+.sx-cust-m{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sx-cust-m b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-cust-m span{font-size:12.5px;color:var(--muted)}
+.sx-cust-v{font:700 14px var(--mono);color:var(--text)}
+
+/* ---- NYC · 1991: station-mosaic rule under each section, subway-line bullets */
+html[data-theme^="nyc91"] .sx-sec::after{height:5px;border-radius:2px;opacity:.9;
+  background:repeating-linear-gradient(90deg,#FF6319 0 27px,#E9E4D6 27px 36px,#0039A6 36px 63px,#E9E4D6 63px 72px,#FCCC0A 72px 99px,#E9E4D6 99px 108px,#A7A9AC 108px 135px,#E9E4D6 135px 144px)}
+html[data-theme^="nyc91"] .sx-sec.s1{--bc:#EE352E} html[data-theme^="nyc91"] .sx-sec.s2{--bc:#00933C} html[data-theme^="nyc91"] .sx-sec.s3{--bc:#0039A6}
+html[data-theme^="nyc91"] .sx-sec.s4{--bc:#FF6319} html[data-theme^="nyc91"] .sx-sec.s5{--bc:#FCCC0A} html[data-theme^="nyc91"] .sx-sec.s6{--bc:#B933AD}
+html[data-theme^="nyc91"] .sx-sec.s7{--bc:#6CBE45}
+html[data-theme^="nyc91"] .sx-sec .sx-bullet{color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.16)}
+html[data-theme^="nyc91"] .sx-sec.s4 .sx-bullet{color:#fff}
+html[data-theme^="nyc91"] .sx-sec.s5 .sx-bullet,html[data-theme^="nyc91"] .sx-sec.s7 .sx-bullet{color:#14161A}
+html[data-theme^="nyc91"] .sx-sec.s2 .sx-bullet{color:#fff}
+html[data-theme^="nyc91"] .sx-sec-t h4{font-weight:800;letter-spacing:-.01em}
+html[data-theme^="nyc91"] .sx-ins-dot,html[data-theme^="nyc91"] .sx-rec-ic{border-radius:50%}
+html[data-theme^="nyc91"] .sx-kpi,html[data-theme^="nyc91"] .sx-panel,html[data-theme^="nyc91"] .sx-ins{border-color:rgba(167,169,172,.26)}
+
+.sx-body:focus-visible{outline:none}
+/* mid-size screens: two columns */
+@media (max-width:1180px){
+  .sx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sx-kpi-v{font-size:34px}
 }
-/* mid-size screens: side column drops under the main one */
-@media (max-width:1060px){
-  .sx-cols{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .sx-col-c{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:1100px){
+  .sx-grid,.sx-ins-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sx-grid>.w2,.sx-grid>:last-child{grid-column:1/-1}
+  .sx-ins-grid>:last-child:nth-child(odd){grid-column:1/-1}
 }
 /* phones: a full-screen sheet */
 @media (max-width:760px){
   /* beats the generic phone dialog rules (padding / max-height !important) */
   .scrim.sx-scrim{padding:0!important;align-items:stretch!important;overflow:hidden}
   .modal.sx{width:100%;height:100%;max-height:none!important;padding:0!important;margin:0;border-radius:0;border:0}
-  .sx-kpi-s{flex-direction:column;gap:1px}
-  .sx-kpi-s span+span::before{display:none}
-  .sx-kpi-l{font-size:10.5px}
-  .sx-att{grid-template-columns:auto minmax(0,1fr);row-gap:3px}
-  .sx-att-d{grid-column:2;text-align:left;font-size:11px;color:var(--muted)}
-  .sx-att-tag{align-self:start;margin-top:2px}
   .sx-head{position:relative;padding:calc(12px + var(--sa-t,0px)) 14px 12px;gap:10px}
   .sx-titleblock{flex:1 1 100%;padding-right:44px}
-  .sx-title{font-size:18px}
+  .sx-title{font-size:20px}
   .sx-close{position:absolute;right:12px;top:calc(12px + var(--sa-t,0px))}
   .sx-ctrls{width:100%;justify-content:space-between}
-  .sx-seg button{padding:9px 16px}
+  .sx-seg button{padding:10px 16px}
   .sx-copy{display:none}
-  .sx-body{padding:12px 12px calc(20px + var(--sa-b,0px));gap:12px}
-  .sx-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .sx-kpi{padding:12px 12px 11px}
-  .sx-kpi-v{font-size:24px}
-  .sx-ring{width:36px;height:36px;right:9px;top:9px}
-  .sx-kpi.k-orders .sx-kpi-v,.sx-kpi.k-orders .sx-kpi-s{padding-right:38px}
-  .sx-cols{grid-template-columns:1fr}
-  .sx-col-c{display:flex}
-  .sx-hours{height:120px;gap:3px}
-  .sx-hbars i{max-width:10px}
-  .sx-hbars i.fn[data-n]::after{font-size:9px}
-  .sx-pipe{grid-template-columns:78px minmax(0,1fr) 28px}
-  .sx-wfoot{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .sx-wfoot div:nth-child(n+4){grid-column:span 1}
-  .sx-mixgrid{grid-template-columns:1fr}
+  .sx-body{padding:14px 12px calc(28px + var(--sa-b,0px))}
+  .sx-kpis{gap:10px}
+  .sx-kpi{padding:14px 12px 8px 16px}
+  .sx-kpi-v{font-size:27px;margin:4px 0 8px}
+  .sx-kpi.k-orders .sx-kpi-v{padding-right:42px}
+  .sx-ring{width:38px;height:38px;right:9px;top:9px}
+  .sx-kpi-l{font-size:10.5px}
+  .sx-kr{font-size:12.5px;padding:6px 0}
+  .sx-sec{margin:28px 0 12px}
+  .sx-sec-t h4{font-size:18px}
+  .sx-grid,.sx-ins-grid{grid-template-columns:1fr;gap:12px}
+  .sx-grid>.w2,.sx-grid>.w3{grid-column:auto}
+  .sx-panel{padding:14px 14px 16px}
+  .sx-hours{height:190px;min-height:190px;gap:4px}
+  .sx-hbars{gap:2px}
+  .sx-hbars i{max-width:12px}
+  .sx-hbars i.fn[data-n]::after{font-size:10px}
+  .sx-pipe{grid-template-columns:84px minmax(0,1fr) 28px 38px;gap:8px}
+  .sx-week{gap:6px}
+  .sx-wday{padding:10px 2px}
+  .sx-wbar{height:100px}
+  .sx-wv{font-size:11px}
+  .sx-wsub{display:none}
+  .sx-wfoot{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .sx-foot3{grid-template-columns:1fr;gap:8px}
+  .sx-att-list,.sx-rec-grid{grid-template-columns:1fr}
+  .sx-att{grid-template-columns:auto minmax(0,1fr);row-gap:4px}
+  .sx-att-d{grid-column:2;text-align:left;color:var(--muted)}
+  .sx-att-tag{align-self:start;margin-top:2px;min-width:0}
+  .sx-cmp-r{grid-template-columns:minmax(0,1.1fr) minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.1fr);gap:8px;font-size:12.5px}
+  .sx-cmp-r>:nth-child(5){display:none}
+  .sx-trend{height:180px;gap:5px}
+  .sx-vs-r{grid-template-columns:84px minmax(0,1fr) 92px}
   .sx-hint{display:none}
 }
 @media print{ .sx-ctrls,.sx-hint{display:none} .modal.sx{box-shadow:none;border:0} }
@@ -8193,8 +8306,9 @@ function summaryText(view, s, orders) {
 }
 /* Summary dashboard. One dialog that re-renders in place: Day / Week scope,
    step through days or weeks without closing, a "needs attention" list that
-   jumps straight to the order, and charts that fold down to one column on a
-   phone. All figures come from summarize(), the same maths as the ribbon. */
+   jumps straight to the order. It is a long vertical scroll in numbered
+   sections, folding to one column on a phone. Core figures come from
+   summarize(), the same maths as the ribbon. */
 var sumView = null;                 /* { scope: "day" | "week", day: "YYYY-MM-DD" } */
 function sumOrdersFor(view) {
   if (view.scope === "week") {
@@ -8206,10 +8320,13 @@ function sumOrdersFor(view) {
 }
 function sumPct(n, d) { return d ? Math.round((n / d) * 100) : 0; }
 function sumHourLabel(h) { return (h % 12 === 0 ? 12 : h % 12) + (h < 12 ? "a" : "p"); }
-function sumPanel(title, extra) {
+function sumPanel(title, extra, sub) {
   var p = el("section", "sx-panel" + (extra ? " " + extra : ""));
   var h = el("header", "sx-ph");
-  h.appendChild(el("h4", null, title));
+  var tt = el("div", "sx-ph-t");
+  tt.appendChild(el("h4", null, title));
+  if (sub) tt.appendChild(el("span", "sx-ph-sub", sub));
+  h.appendChild(tt);
   p.appendChild(h);
   return p;
 }
@@ -8293,6 +8410,8 @@ function renderSummary(box, dir) {
   var orders = sumOrdersFor(view);
   var s = summarize(orders);
   var weekKeys = weekdayKeys(mondayOf(view.day));
+  var prevBody = box.querySelector(".sx-body");
+  var keepScroll = prevBody ? prevBody.scrollTop : 0;
   box.textContent = "";
   box.classList.toggle("sx-weekmode", isWeek);
 
@@ -8357,26 +8476,44 @@ function renderSummary(box, dir) {
   var fitWrap = el("div", "sx-fit");
   body.appendChild(fitWrap);
 
-  /* ---------- headline cards */
-  var kpis = el("section", "sx-kpis");
+  /* The page is one long scroll, so every part gets the room it needs. The
+     numbered sections follow the order you would read them in. */
+  var today = todayKey();
+  var byDate = {};
+  state.orders.forEach(function (o) { (byDate[o.date] = byDate[o.date] || []).push(o); });
   var weekOrders = sumOrdersFor({ scope: "week", day: view.day });
-  var weekDays = weekKeys.map(function (k) {
-    return { key: k, list: weekOrders.filter(function (o) { return o.date === k; }) };
-  });
+  var weekDays = weekKeys.map(function (k) { return { key: k, list: byDate[k] || [] }; });
   var activeDays = weekDays.filter(function (d) { return d.list.length; }).length;
   var weekAmount = sumAmount(weekOrders) || 0;
   var avgDay = activeDays ? weekAmount / activeDays : 0;
+  var wkS = summarize(weekOrders);
+  var back = sumBackCount(orders);
+  var live = orders.filter(isLive).length;
+  var finishedTimed = orders.filter(function (o) { return isClock(o.completionTime) && timeTaken(o) !== null && timeTaken(o) > 0; });
+  var takenList = finishedTimed.map(timeTaken);
+  var fastest = takenList.length ? Math.min.apply(null, takenList) : null;
+  var slowest = takenList.length ? Math.max.apply(null, takenList) : null;
+  var avgOrder = sumAvgOrder(orders);
+  var dash = "\u2014";
+  var moneyShort = function (n) { return money(n).replace(/\.00$/, ""); };
 
-  var kpi = function (cls, label, value, subs, extra) {
+  /* ---------- headline cards */
+  var kpis = el("section", "sx-kpis");
+  var kpi = function (cls, label, value, rows, extra) {
     var c = el("div", "sx-kpi " + cls);
     var top = el("div", "sx-kpi-top");
     top.appendChild(el("span", "sx-kpi-l", label));
     if (extra) top.appendChild(extra);
     c.appendChild(top);
     c.appendChild(el("b", "sx-kpi-v", value));
-    var sub = el("div", "sx-kpi-s");
-    subs.forEach(function (t) { if (t) sub.appendChild(typeof t === "string" ? el("span", null, t) : t); });
-    c.appendChild(sub);
+    var list = el("div", "sx-kpi-rows");
+    rows.forEach(function (r) {
+      var row = el("div", "sx-kr");
+      row.appendChild(el("span", null, r[0]));
+      row.appendChild(el("b", null, r[1]));
+      list.appendChild(row);
+    });
+    c.appendChild(list);
     kpis.appendChild(c);
     return c;
   };
@@ -8387,9 +8524,9 @@ function renderSummary(box, dir) {
   ring.innerHTML = '<circle cx="18" cy="18" r="15.5" class="trk"/><circle cx="18" cy="18" r="15.5" class="val" ' +
     'stroke-dasharray="' + (pct * 0.974).toFixed(1) + ' 100" transform="rotate(-90 18 18)"/>' +
     '<text x="18" y="21.5" text-anchor="middle">' + pct + '%</text>';
-  var live = orders.filter(isLive).length;
-  kpi("k-orders", "Orders", String(s.count),
-    [s.finished + " finished", s.open + " open", live ? live + " in progress" : ""], ring);
+  var kOrders = kpi("k-orders", "Orders", String(s.count),
+    [["Finished", String(s.finished)], ["Open", String(s.open)], ["In progress", String(live)]]);
+  kOrders.appendChild(ring);
   /* 2. value, compared with the week's average active day */
   var delta = null;
   if (!isWeek && avgDay && s.amount) delta = Math.round(((s.amount - avgDay) / avgDay) * 100);
@@ -8399,30 +8536,30 @@ function renderSummary(box, dir) {
     dChip.title = "Compared with this week's average active day (" + money(avgDay) + ")";
   }
   kpi("k-value", "Order value", s.amount ? money(s.amount) : "$0.00",
-    [(s.qty || 0) + " pieces", isWeek ? (activeDays ? money(avgDay) + " / active day" : "") : (dChip ? "vs week avg" : "")], dChip);
+    [["Pieces", String(s.qty || 0)],
+     ["Avg order", avgOrder !== null ? moneyShort(avgOrder) : dash],
+     isWeek ? ["Per active day", activeDays ? moneyShort(avgDay) : dash] : ["Week total", moneyShort(weekAmount)]], dChip);
   /* 3. time */
-  var finishedTimed = orders.filter(function (o) { return isClock(o.completionTime) && timeTaken(o) !== null && timeTaken(o) > 0; });
-  var fastest = finishedTimed.length ? Math.min.apply(null, finishedTimed.map(timeTaken)) : null;
-  kpi("k-time", "Median time taken", s.medTaken === null ? "\u2014" : durationText(s.medTaken),
-    [s.totalTaken ? durationText(s.totalTaken) + " tracked" : "no times yet", fastest !== null ? "fastest " + durationText(fastest) : ""]);
+  kpi("k-time", "Median time taken", s.medTaken === null ? dash : durationText(s.medTaken),
+    [["Tracked", s.totalTaken ? durationText(s.totalTaken) : dash],
+     ["Fastest", fastest !== null ? durationText(fastest) : dash],
+     ["Slowest", slowest !== null ? durationText(slowest) : dash]]);
   /* 4. proofs */
-  var back = orders.filter(function (o) { return o.proof === "TRUE" && isClock(o.proofRcvdTime); }).length;
-  kpi("k-proof", "Proofs", String(s.proofs),
-    [back + " back", s.awaiting + " waiting", s.medTurn !== null ? "turnaround " + durationText(s.medTurn) : ""]);
+  kpi("k-proof", "Proofs sent", String(s.proofs),
+    [["Back", String(back)], ["Waiting", String(s.awaiting)],
+     ["Turnaround", s.medTurn !== null ? durationText(s.medTurn) : dash]]);
   fitWrap.appendChild(kpis);
 
-  /* three columns so the whole summary fits one screen on a desktop:
-     A = throughput, pipeline, fastest · B = week, vs last week · C = attention, mix */
-  var cols = el("div", "sx-cols");
-  var main = el("div", "sx-col sx-col-a"), mid = el("div", "sx-col sx-col-b"), side = el("div", "sx-col sx-col-c");
-  cols.appendChild(main); cols.appendChild(mid); cols.appendChild(side);
-  fitWrap.appendChild(cols);
+  var secN = 0;
+  var section = function (title, sub) {
+    fitWrap.appendChild(sumSection(++secN, title, sub));
+    var g = el("div", "sx-grid");
+    fitWrap.appendChild(g);
+    return g;
+  };
+  var scopeWord = isWeek ? "week" : "day";
 
-  /* ---------- throughput by hour: started vs finished */
-  var pT = sumPanel(isWeek ? "Throughput by hour \u00b7 whole week" : "Throughput by hour");
-  var legend = el("div", "sx-legend");
-  legend.innerHTML = '<span><i class="lg-start"></i>Started</span><span><i class="lg-fin"></i>Finished</span>';
-  pT.querySelector(".sx-ph").appendChild(legend);
+  /* hour buckets, used by the highlights and the chart */
   var startB = {}, finB = {};
   orders.forEach(function (o) {
     var a = minutesOf(o.startTime), b = minutesOf(o.completionTime);
@@ -8430,13 +8567,102 @@ function renderSummary(box, dir) {
     if (b !== null) finB[Math.floor(b / 60)] = (finB[Math.floor(b / 60)] || 0) + 1;
   });
   var hs = Object.keys(startB).concat(Object.keys(finB)).map(Number);
+
+  var bestH = null, bestHN = 0;
+  Object.keys(finB).forEach(function (k) { if (finB[k] > bestHN) { bestHN = finB[k]; bestH = +k; } });
+
+  /* customers in this day / week */
+  var custMap = {};
+  orders.forEach(function (o) {
+    var nm = (o.customer || "").trim();
+    if (!nm) return;
+    var key = nm.toLowerCase();
+    var c = custMap[key] || (custMap[key] = { name: nm, n: 0, v: 0 });
+    c.n++; c.v += Number(o.amount) || 0;
+  });
+  var custs = Object.keys(custMap).map(function (k) { return custMap[k]; });
+
+  /* ================= 1. highlights */
+  if (s.count) {
+    fitWrap.appendChild(sumSection(++secN, "Highlights", "Things worth knowing about this " + scopeWord));
+    var insGrid = el("div", "sx-ins-grid");
+    var ins = [];
+    var addIns = function (icon, tone, k, v, d, id) { ins.push({ icon: icon, tone: tone, k: k, v: v, d: d, id: id }); };
+
+    if (bestHN >= 2) addIns("clock", "code", isWeek ? "Busiest finish hour" : "Busiest hour", sumHourFull(bestH), bestHN + " orders finished in that hour");
+
+    if (isWeek) {
+      var bd = null;
+      weekDays.forEach(function (d) { if (d.list.length && (!bd || d.list.length > bd.list.length)) bd = d; });
+      if (bd && activeDays > 1) addIns("cal", "brass", "Busiest day", DAY_NAMES[dateFromKey(bd.key).getDay()],
+        bd.list.length + " orders \u00b7 " + moneyShort(sumAmount(bd.list) || 0));
+    } else if (wkS.count > s.count) {
+      addIns("pie", "brass", "Share of the week", sumPct(s.count, wkS.count) + "%",
+        s.count + " of " + wkS.count + " orders this week \u00b7 " + moneyShort(s.amount || 0) + " of " + moneyShort(weekAmount));
+    }
+
+    var big = null;
+    orders.forEach(function (o) { var a = Number(o.amount) || 0; if (a > 0 && (!big || a > Number(big.amount))) big = o; });
+    if (big) addIns("dollar", "go", "Biggest order", moneyShort(Number(big.amount)),
+      "#" + big.seq + " \u00b7 " + (big.customer || "No customer") + (isWeek ? " \u00b7 " + shortDate(big.date) : ""), big.id);
+
+    var tSum = takenList.reduce(function (a, b) { return a + b; }, 0);
+    var timedAmt = sumAmount(finishedTimed) || 0;
+    if (tSum >= 20 && timedAmt) addIns("bolt", "hold", "Value per work hour", moneyShort(timedAmt / (tSum / 60)),
+      "from " + durationText(tSum) + " of tracked time on " + finishedTimed.length + (finishedTimed.length === 1 ? " order" : " orders"));
+
+    var due = orders.filter(function (o) { return o.fin === "TRUE" && o.reqShipDate; });
+    if (due.length) {
+      var onTime = due.filter(function (o) { return (o.completionDate || o.date) <= o.reqShipDate; }).length;
+      addIns("check", onTime === due.length ? "go" : "stop", "On-time finishing", sumPct(onTime, due.length) + "%",
+        onTime + " of " + due.length + " finished orders were done by their ship date");
+    }
+
+    if (!isWeek && s.finished >= 4 && s.first !== null && s.last !== null && s.last - s.first >= 60) {
+      var rate = s.finished / ((s.last - s.first) / 60);
+      addIns("bolt", "code", "Pace", rate.toFixed(1) + " / hr", "finished between " + clockFromMinutes(s.first) + " and " + clockFromMinutes(s.last));
+    }
+
+    var topC = custs.slice().sort(function (a, b) { return b.n - a.n || b.v - a.v; })[0];
+    if (topC && topC.n >= 2) addIns("users", "code", "Most orders from", topC.name, topC.n + " orders" + (topC.v ? " \u00b7 " + moneyShort(topC.v) : ""));
+
+    var slowT = null;
+    orders.forEach(function (o) { var t = turnaround(o); if (t !== null && t >= 0 && (!slowT || t > slowT.t)) slowT = { t: t, o: o }; });
+    if (slowT && slowT.t >= 30) addIns("hourglass", "hold", "Slowest proof back", durationText(slowT.t),
+      "#" + slowT.o.seq + " \u00b7 " + (slowT.o.customer || "No customer"), slowT.o.id);
+
+    var holdTot = 0, holdN = 0;
+    orders.forEach(function (o) { var h = holdElapsed(o); if (h > 0) { holdTot += h; holdN++; } });
+    if (holdN) addIns("pause", "stop", "Time on hold", durationText(holdTot), "across " + holdN + (holdN === 1 ? " order" : " orders"));
+
+    ins.slice(0, 6).forEach(function (t) {
+      var tile = el(t.id ? "button" : "div", "sx-ins t-" + t.tone);
+      if (t.id) { tile.type = "button"; tile.title = "Go to this order"; tile.addEventListener("click", function () { sumJumpTo(t.id); }); }
+      var dot = el("span", "sx-ins-dot");
+      dot.innerHTML = sumIcon(t.icon, 24);
+      tile.appendChild(dot);
+      tile.appendChild(el("span", "sx-ins-k", t.k));
+      tile.appendChild(el("b", "sx-ins-v", t.v));
+      tile.appendChild(el("span", "sx-ins-d", t.d));
+      insGrid.appendChild(tile);
+    });
+    if (!ins.length) insGrid.appendChild(sumEmpty("Highlights show up once a few orders have times, prices or ship dates."));
+    fitWrap.appendChild(insGrid);
+  }
+
+  /* ================= 2. flow of the day / week */
+  var g2 = section(isWeek ? "How the week flowed" : "How the day flowed", "When work started and finished, and where orders sit now");
+  var pT = sumPanel(isWeek ? "Throughput by hour \u00b7 whole week" : "Throughput by hour", "w2", "Orders started and finished in each hour");
+  var legend = el("div", "sx-legend");
+  legend.innerHTML = '<span><i class="lg-start"></i>Started</span><span><i class="lg-fin"></i>Finished</span>';
+  pT.querySelector(".sx-ph").appendChild(legend);
   var h0 = Math.min.apply(null, [7].concat(hs)), h1 = Math.max.apply(null, [17].concat(hs));
-  var tmax = 1;
-  for (var h = h0; h <= h1; h++) tmax = Math.max(tmax, startB[h] || 0, finB[h] || 0);
+  var tmax = 1, h;
+  for (h = h0; h <= h1; h++) tmax = Math.max(tmax, startB[h] || 0, finB[h] || 0);
   var chart = el("div", "sx-hours");
   var nowH = new Date().getHours();
   for (h = h0; h <= h1; h++) {
-    var col = el("div", "sx-hcol" + (!isWeek && view.day === todayKey() && h === nowH ? " now" : ""));
+    var col = el("div", "sx-hcol" + (!isWeek && view.day === today && h === nowH ? " now" : ""));
     var pair = el("div", "sx-hbars");
     var bs = el("i", "st"), bf = el("i", "fn");
     bs.style.height = ((startB[h] || 0) / tmax * 100) + "%";
@@ -8444,16 +8670,23 @@ function renderSummary(box, dir) {
     if (finB[h]) bf.setAttribute("data-n", finB[h]);
     pair.appendChild(bs); pair.appendChild(bf);
     col.appendChild(pair);
-    col.appendChild(el("span", "sx-hl", sumHourLabel(h)));
-    col.title = sumHourLabel(h) + "m: " + (startB[h] || 0) + " started, " + (finB[h] || 0) + " finished";
+    col.appendChild(el("span", "sx-hl-lab", sumHourLabel(h)));
+    col.title = sumHourFull(h) + ": " + (startB[h] || 0) + " started, " + (finB[h] || 0) + " finished";
     chart.appendChild(col);
   }
   pT.appendChild(chart);
   if (!hs.length) pT.appendChild(sumEmpty("No start or finish times logged yet."));
-  main.appendChild(pT);
+  var foot3 = el("div", "sx-foot3");
+  var windowMin = (s.first !== null && s.last !== null) ? Math.round(s.last - s.first) : null;
+  [[clockFromMinutes(s.first), "first activity"], [clockFromMinutes(s.last), "last completion"],
+   [(!isWeek && windowMin !== null && windowMin > 0) ? durationText(windowMin) : (bestH !== null && bestHN ? sumHourFull(bestH) : dash),
+    (!isWeek && windowMin !== null && windowMin > 0) ? "start to last finish" : "busiest finish hour"]].forEach(function (p) {
+    var c = el("div"); c.appendChild(el("b", null, p[0])); c.appendChild(el("span", null, p[1])); foot3.appendChild(c);
+  });
+  pT.appendChild(foot3);
+  g2.appendChild(pT);
 
-  /* ---------- pipeline */
-  var pP = sumPanel("Pipeline");
+  var pP = sumPanel("Pipeline", "", "How far the " + scopeWord + "'s orders have got");
   var started = orders.filter(function (o) { return isClock(o.startTime); }).length;
   var needProof = orders.filter(function (o) { return !noProofNeeded(o); }).length;
   [["Logged", s.count, s.count, "p-log"],
@@ -8465,24 +8698,27 @@ function renderSummary(box, dir) {
     row.appendChild(el("span", "sx-pipe-l", r[0]));
     var track = el("div", "sx-pipe-t");
     var fill = el("i");
-    fill.style.width = (s.count ? Math.min(100, sumPct(r[1], r[2] || 1)) : 0) + "%";
+    var pc = s.count ? Math.min(100, sumPct(r[1], r[2] || 1)) : 0;
+    fill.style.width = pc + "%";
     track.appendChild(fill);
     row.appendChild(track);
     row.appendChild(el("b", "sx-pipe-n", String(r[1])));
+    row.appendChild(el("span", "sx-pipe-p", s.count ? pc + "%" : ""));
     pP.appendChild(row);
   });
   var noProof = s.count - needProof;
-  if (noProof > 0) pP.appendChild(el("p", "sx-note", noProof + (noProof === 1 ? " order needs" : " orders need") + " no proof (CLC, LEC or marked no)."));
-  main.appendChild(pP);
+  if (noProof > 0) pP.appendChild(el("p", "sx-note", noProof + (noProof === 1 ? " order needs" : " orders need") + " no proof (CLC, LEC or marked no), so the proof bars count only the rest."));
+  g2.appendChild(pP);
 
-  /* ---------- week at a glance: tap a day to open it */
-  var pW = sumPanel("Week at a glance");
+  /* ================= 3. the week */
+  var g3 = section("The week", "Every day side by side, and which weekdays run busiest");
+  var pW = sumPanel("Week at a glance", "w2", "Click a day to open it");
   var wmax = 1;
   weekDays.forEach(function (d) { wmax = Math.max(wmax, d.list.length); });
   var wk = el("div", "sx-week");
   weekDays.forEach(function (d) {
     var ds = summarize(d.list);
-    var b = el("button", "sx-wday" + (!isWeek && d.key === view.day ? " sel" : "") + (d.key === todayKey() ? " today" : ""));
+    var b = el("button", "sx-wday" + (!isWeek && d.key === view.day ? " sel" : "") + (d.key === today ? " today" : ""));
     b.type = "button";
     var bar = el("div", "sx-wbar");
     var fin = el("i", "fn"), open = el("i", "op");
@@ -8492,39 +8728,81 @@ function renderSummary(box, dir) {
     b.appendChild(el("span", "sx-wn", String(ds.count || "")));
     b.appendChild(bar);
     b.appendChild(el("span", "sx-wd", DAY_NAMES[dateFromKey(d.key).getDay()].slice(0, 3)));
-    b.appendChild(el("span", "sx-wv", ds.amount ? money(ds.amount).replace(/\.00$/, "") : "\u2014"));
+    b.appendChild(el("span", "sx-wv", ds.amount ? moneyShort(ds.amount) : dash));
+    b.appendChild(el("span", "sx-wsub", ds.count ? ds.finished + " of " + ds.count + " done" : "no orders"));
     b.title = DAY_NAMES[dateFromKey(d.key).getDay()] + " " + shortDate(d.key) + ": " + ds.count + " orders, " +
               ds.finished + " finished, " + money(ds.amount || 0) + ". Open this day.";
     b.addEventListener("click", function () { view.scope = "day"; view.day = d.key; renderSummary(box); });
     wk.appendChild(b);
   });
   pW.appendChild(wk);
-  var wkS = summarize(weekOrders);
+  var wl = el("div", "sx-wlegend");
+  wl.innerHTML = '<span><i style="background:var(--go)"></i>Finished</span><span><i style="background:color-mix(in srgb,var(--hold) 70%,transparent)"></i>Still open</span>';
+  pW.appendChild(wl);
   var wfoot = el("div", "sx-wfoot");
   [[String(wkS.count), "orders"], [String(wkS.finished), "finished"], [String(wkS.qty || 0), "pieces"],
-   [money(weekAmount), "week value"], [activeDays ? money(avgDay) : "\u2014", "per active day"]].forEach(function (p) {
+   [moneyShort(weekAmount), "week value"], [activeDays ? moneyShort(avgDay) : dash, "per active day"]].forEach(function (p) {
     var c = el("div");
     c.appendChild(el("b", null, p[0])); c.appendChild(el("span", null, p[1]));
     wfoot.appendChild(c);
   });
   pW.appendChild(wfoot);
-  mid.appendChild(pW);
+  g3.appendChild(pW);
 
-  /* ---------- compared with the same day last week (or the week before) */
-  mid.appendChild(sumComparePanel(view, s, orders, box));
+  /* typical weekday: average orders on days that had orders, last 8 weeks */
+  var pD = sumPanel("Busiest weekdays", "", "Average orders per day, last 8 weeks");
+  var wdTot = [0, 0, 0, 0, 0], wdDays = [0, 0, 0, 0, 0];
+  for (var w = 0; w < 8; w++) {
+    var wkKeys = weekdayKeys(sumWeekBack(view.day, w));
+    for (var wi = 0; wi < 5; wi++) {
+      var wl2 = byDate[wkKeys[wi]];
+      if (wl2 && wl2.length) { wdTot[wi] += wl2.length; wdDays[wi]++; }
+    }
+  }
+  var wdAvg = wdTot.map(function (t, i) { return wdDays[i] ? t / wdDays[i] : 0; });
+  var wdMax = Math.max.apply(null, wdAvg.concat([0.0001]));
+  var curDow = (dateFromKey(view.day).getDay() + 6) % 7;
+  if (!wdTot.some(function (t) { return t > 0; })) pD.appendChild(sumEmpty("Not enough history yet."));
+  else {
+    wdAvg.forEach(function (a, i) {
+      var row = el("div", "sx-wp" + (a === wdMax ? " top" : "") + (!isWeek && i === curDow ? " cur" : ""));
+      row.appendChild(el("span", "sx-wp-l", ["Mon", "Tue", "Wed", "Thu", "Fri"][i]));
+      var t = el("div", "sx-wp-t"), f = el("i");
+      f.style.width = (a / wdMax * 100) + "%";
+      t.appendChild(f); row.appendChild(t);
+      row.appendChild(el("b", "sx-wp-n", wdDays[i] ? (Math.round(a * 10) / 10) + "" : dash));
+      row.title = wdDays[i] ? ["Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays"][i] + ": " + wdTot[i] + " orders over " + wdDays[i] + " days" : "";
+      pD.appendChild(row);
+    });
+    pD.appendChild(el("p", "sx-note", "Counts only days that had orders logged. The brightest bar is the busiest weekday."));
+  }
+  g3.appendChild(pD);
 
-  /* ---------- needs attention */
+  /* ================= 4. comparisons */
+  var g4 = section("Compared with before", "Against last " + scopeWord + ", the recent average, and the last six weeks");
+  g4.appendChild(sumComparePanel(view, s, orders, box));
+  g4.appendChild(sumTrendPanel(view, box, byDate));
+
+  /* ================= 5. attention + fastest */
+  var g5 = section("Needs attention", "Click any order to jump straight to it in the log");
   var att = sumAttention(orders);
-  var pA = sumPanel("Needs attention", "sx-attn");
+  var pA = sumPanel("Open items", "w2 sx-attn", att.length ? "Most urgent first" : "");
   if (att.length) pA.querySelector(".sx-ph").appendChild(el("span", "sx-count", String(att.length)));
   if (!att.length) {
     var ok = el("div", "sx-allclear");
-    ok.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+    ok.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
     ok.appendChild(el("span", null, "All clear \u2014 nothing on hold, overdue or waiting."));
     pA.appendChild(ok);
+  } else {
+    var kinds = {}, kindOrder = [];
+    att.forEach(function (a) { if (!kinds[a.tag]) { kinds[a.tag] = { n: 0, kind: a.kind }; kindOrder.push(a.tag); } kinds[a.tag].n++; });
+    var chips = el("div", "sx-chips");
+    kindOrder.forEach(function (t) { chips.appendChild(el("span", "sx-chip k-" + kinds[t].kind, kinds[t].n + " " + t.toLowerCase())); });
+    pA.appendChild(chips);
   }
-  var shown = att.slice(0, window.innerWidth > 760 ? 5 : 7);
-  shown.forEach(function (a) {
+  var attLimit = view.attAll ? att.length : 8;
+  var attList = el("div", "sx-att-list");
+  att.slice(0, attLimit).forEach(function (a) {
     var row = el("button", "sx-att k-" + a.kind);
     row.type = "button";
     row.appendChild(el("span", "sx-att-tag", a.tag));
@@ -8535,31 +8813,42 @@ function renderSummary(box, dir) {
     row.appendChild(el("span", "sx-att-d", a.detail));
     row.title = "Go to order #" + a.o.seq;
     row.addEventListener("click", function () { sumJumpTo(a.o.id); });
-    pA.appendChild(row);
+    attList.appendChild(row);
   });
-  if (att.length > shown.length) pA.appendChild(el("p", "sx-note", "+ " + (att.length - shown.length) + " more"));
-  side.appendChild(pA);
+  if (att.length) pA.appendChild(attList);
+  if (att.length > 8) {
+    var more = el("button", "sx-more", view.attAll ? "Show fewer" : "Show all " + att.length);
+    more.type = "button";
+    more.addEventListener("click", function () {
+      var st = body.scrollTop;
+      view.attAll = !view.attAll; renderSummary(box);
+      var nb = box.querySelector(".sx-body"); if (nb) nb.scrollTop = st;
+    });
+    pA.appendChild(more);
+  }
+  g5.appendChild(pA);
 
-  /* ---------- fastest finishes */
-  var pF = sumPanel("Fastest finishes");
-  var podium = finishedTimed.slice().sort(function (a, b) { return timeTaken(a) - timeTaken(b); }).slice(0, 3);
+  var pF = sumPanel("Fastest finishes", "", "Shortest time taken, holds removed");
+  var podium = finishedTimed.slice().sort(function (a, b) { return timeTaken(a) - timeTaken(b); }).slice(0, 5);
   if (!podium.length) pF.appendChild(sumEmpty("Finish an order with start and end times to see it here."));
+  var fastList = el("div", "sx-fast-list");
   podium.forEach(function (o, i) {
-    var r = el("button", "sx-fast m" + (i + 1));
+    var r = el("button", "sx-fast" + (i < 3 ? " m" + (i + 1) : ""));
     r.type = "button";
-    r.appendChild(el("span", "sx-medal", String(i + 1)));
+    r.appendChild(el("span", "sx-medal" + (i < 3 ? "" : " plain"), String(i + 1)));
     var mid = el("span", "sx-att-mid");
     mid.appendChild(el("b", null, o.customer || ("#" + o.seq)));
-    mid.appendChild(el("span", null, "#" + o.seq + (o.orderId ? " \u00b7 " + o.orderId : "") + (o.otype ? " \u00b7 " + o.otype : "")));
+    mid.appendChild(el("span", null, "#" + o.seq + (o.orderId ? " \u00b7 " + o.orderId : "") + (o.otype ? " \u00b7 " + o.otype : "") + (isWeek ? " \u00b7 " + shortDate(o.date) : "")));
     r.appendChild(mid);
     r.appendChild(el("b", "sx-fast-t", durationText(timeTaken(o))));
     r.addEventListener("click", function () { sumJumpTo(o.id); });
-    pF.appendChild(r);
+    fastList.appendChild(r);
   });
-  main.appendChild(pF);
+  pF.appendChild(fastList);
+  g5.appendChild(pF);
 
-  /* ---------- mix: types, PGroups, status */
-  var pM = sumPanel("Mix");
+  /* ================= 6. breakdown */
+  var g6 = section("What the work was made of", "Order types, PGroups, marking and status for this " + scopeWord);
   var bars = function (title, map, fmt) {
     var keys = Object.keys(map).sort(function (a, b) { return map[b].n - map[a].n || (a < b ? -1 : 1); });
     var wrap = el("div", "sx-mix");
@@ -8573,21 +8862,28 @@ function renderSummary(box, dir) {
       f.style.width = (map[k].n / mx * 100) + "%";
       t.appendChild(f); row.appendChild(t);
       row.appendChild(el("b", null, String(map[k].n)));
-      if (map[k].v) row.title = k + ": " + map[k].n + " orders, " + money(map[k].v);
+      row.appendChild(el("span", "sx-mrow-v", map[k].v ? moneyShort(map[k].v) : ""));
+      row.title = k + ": " + map[k].n + (map[k].n === 1 ? " order" : " orders") + (map[k].v ? ", " + money(map[k].v) : "");
       wrap.appendChild(row);
     });
     return wrap;
   };
-  var tMap = {}, pMap = {};
+  var tMap = {}, pMap = {}, mkMap = {};
   orders.forEach(function (o) {
     var a = Number(o.amount) || 0;
     if (o.otype) { tMap[o.otype] = tMap[o.otype] || { n: 0, v: 0 }; tMap[o.otype].n++; tMap[o.otype].v += a; }
     if (o.pgroup) { pMap[o.pgroup] = pMap[o.pgroup] || { n: 0, v: 0 }; pMap[o.pgroup].n++; pMap[o.pgroup].v += a; }
+    var mk = markingLabel(o.marking);
+    mkMap[mk] = mkMap[mk] || { n: 0, v: 0 }; mkMap[mk].n++; mkMap[mk].v += a;
   });
-  var mixGrid = el("div", "sx-mixgrid");
-  mixGrid.appendChild(bars("Order types", tMap));
-  mixGrid.appendChild(bars("PGroups", pMap, function (k) { return /^[1-7]$/.test(k) ? "P" + k : pgroupLabel(k); }));
-  pM.appendChild(mixGrid);
+  var pTy = sumPanel("Order types", "", "Count and value of each type");
+  pTy.appendChild(bars("Type", tMap));
+  g6.appendChild(pTy);
+  var pPg = sumPanel("PGroups", "", "Count and value of each group");
+  pPg.appendChild(bars("Group", pMap, function (k) { return /^[1-7]$/.test(k) ? "P" + k : pgroupLabel(k); }));
+  g6.appendChild(pPg);
+  var pMk = sumPanel("Marking and status", "", "What the orders need, and where they stand");
+  pMk.appendChild(bars("Marking", mkMap));
   var mixTotal = s.tally["t-code"] + s.tally["t-go"] + s.tally["t-warn"] + s.tally["t-hot"];
   var sm = el("div", "sx-mix");
   sm.appendChild(el("div", "sx-mix-h", "Status"));
@@ -8605,96 +8901,274 @@ function renderSummary(box, dir) {
     });
     sm.appendChild(stack); sm.appendChild(lg);
   }
-  pM.appendChild(sm);
-  side.appendChild(pM);
+  pMk.appendChild(sm);
+  g6.appendChild(pMk);
+
+  /* ================= 7. records and regulars */
+  var g7 = section("Records and regulars", "How this " + scopeWord + " stacks up against everything you have logged");
+  var pR = sumPanel("Personal bests", "w2", "Across every " + scopeWord + " in the log");
+  var recMap = {};
+  state.orders.forEach(function (o) {
+    var k = isWeek ? mondayOf(o.date) : o.date;
+    var r = recMap[k] || (recMap[k] = { k: k, n: 0, v: 0 });
+    r.n++; r.v += Number(o.amount) || 0;
+  });
+  var recs = Object.keys(recMap).map(function (k) { return recMap[k]; });
+  var recLabel = function (k) {
+    return isWeek ? "Week of " + shortDate(k) : DAY_NAMES[dateFromKey(k).getDay()].slice(0, 3) + " " + shortDate(k);
+  };
+  var bestN = null, bestV = null;
+  recs.forEach(function (r) {
+    if (!bestN || r.n > bestN.n) bestN = r;
+    if (r.v > 0 && (!bestV || r.v > bestV.v)) bestV = r;
+  });
+  var allTimed = null, allBig = null;
+  state.orders.forEach(function (o) {
+    if (isClock(o.completionTime)) { var t = timeTaken(o); if (t !== null && t > 0 && (!allTimed || t < allTimed.t)) allTimed = { t: t, o: o }; }
+    var a = Number(o.amount) || 0;
+    if (a > 0 && (!allBig || a > Number(allBig.amount))) allBig = o;
+  });
+  var recGrid = el("div", "sx-rec-grid");
+  var addRec = function (icon, k, v, d, run) {
+    var r = el(run ? "button" : "div", "sx-rec");
+    if (run) { r.type = "button"; r.addEventListener("click", run); }
+    var ic = el("span", "sx-rec-ic"); ic.innerHTML = sumIcon(icon, 20);
+    r.appendChild(ic);
+    r.appendChild(el("span", "sx-rec-k", k));
+    r.appendChild(el("b", "sx-rec-v", v));
+    r.appendChild(el("span", "sx-rec-d", d));
+    recGrid.appendChild(r);
+  };
+  var openRec = function (rec) { return function () { view.day = rec.k; renderSummary(box); }; };
+  if (bestN) addRec("star", isWeek ? "Most orders in a week" : "Most orders in a day", bestN.n + (bestN.n === 1 ? " order" : " orders"), recLabel(bestN.k), openRec(bestN));
+  if (bestV) addRec("dollar", isWeek ? "Best week by value" : "Best day by value", moneyShort(bestV.v), recLabel(bestV.k), openRec(bestV));
+  if (allTimed) addRec("bolt", "Fastest finish ever", durationText(allTimed.t), "#" + allTimed.o.seq + " \u00b7 " + (allTimed.o.customer || "No customer") + " \u00b7 " + shortDate(allTimed.o.date),
+    function () { sumJumpTo(allTimed.o.id); });
+  if (allBig) addRec("trophy", "Biggest order ever", moneyShort(Number(allBig.amount)), "#" + allBig.seq + " \u00b7 " + (allBig.customer || "No customer") + " \u00b7 " + shortDate(allBig.date),
+    function () { sumJumpTo(allBig.id); });
+  var daysLogged = Object.keys(byDate).length, allValue = sumAmount(state.orders) || 0;
+  if (state.orders.length) addRec("cal", "Everything logged", state.orders.length + " orders", daysLogged + " days \u00b7 " + moneyShort(allValue) + " in total");
+  if (daysLogged) addRec("pie", "Typical day", (Math.round(state.orders.length / daysLogged * 10) / 10) + " orders", moneyShort(allValue / daysLogged) + " per day on average");
+  if (!recGrid.childNodes.length) pR.appendChild(sumEmpty("Records appear as you log more orders."));
+  else pR.appendChild(recGrid);
+  /* this day / week against the record */
+  if (bestN && s.count) {
+    var vs = el("div", "sx-vs");
+    var vsRow = function (label, now, best, fmtF) {
+      var r = el("div", "sx-vs-r");
+      r.appendChild(el("span", "sx-vs-l", label));
+      var t = el("div", "sx-vs-t"), f = el("i");
+      f.style.width = Math.min(100, best ? now / best * 100 : 0) + "%";
+      t.appendChild(f); r.appendChild(t);
+      r.appendChild(el("span", "sx-vs-n", fmtF(now) + " of " + fmtF(best)));
+      vs.appendChild(r);
+    };
+    vsRow("Orders vs best", s.count, bestN.n, function (n) { return String(n); });
+    if (bestV && s.amount) vsRow("Value vs best", s.amount, bestV.v, moneyShort);
+    pR.appendChild(vs);
+  }
+  g7.appendChild(pR);
+
+  var pC = sumPanel("Top customers", "", "Biggest spenders this " + scopeWord);
+  var topCust = custs.slice().sort(function (a, b) { return b.v - a.v || b.n - a.n || (a.name < b.name ? -1 : 1); }).slice(0, 6);
+  if (!topCust.length) pC.appendChild(sumEmpty("No customer names logged."));
+  topCust.forEach(function (c, i) {
+    var row = el("div", "sx-cust");
+    row.appendChild(el("span", "sx-cust-n", String(i + 1)));
+    var m = el("div", "sx-cust-m");
+    m.appendChild(el("b", null, c.name));
+    m.appendChild(el("span", null, c.n + (c.n === 1 ? " order" : " orders")));
+    row.appendChild(m);
+    row.appendChild(el("span", "sx-cust-v", c.v ? moneyShort(c.v) : dash));
+    pC.appendChild(row);
+  });
+  g7.appendChild(pC);
 
   /* footer hint (desktop only) */
   var hint = el("div", "sx-hint", "\u2190 \u2192 step " + (isWeek ? "weeks" : "days") + " \u00b7 D / W switch view \u00b7 Esc close");
   fitWrap.appendChild(hint);
-  if (!dir) box.scrollTop = 0;
+  body.tabIndex = -1;
+  try { body.focus({ preventScroll: true }); } catch (e) {}
+  body.scrollTop = dir ? keepScroll : 0;
   sumFit(box);
 }
 
-/* Shrinks the summary so it all fits on one screen with no vertical scroll.
-   The layout is already compact on a desktop; this only kicks in on shorter
-   windows, scaling the whole body down just enough. Phones keep scrolling. */
+/* The summary scrolls now, so there is nothing to shrink. This stays so the
+   resize and font hooks that call it keep working, and it clears any zoom
+   left over from the old one-screen layout. */
 function sumFit(box) {
-  var body = box && box.querySelector(".sx-body"), fit = box && box.querySelector(".sx-fit");
-  if (!body || !fit) return;
-  fit.style.zoom = "";
-  if (window.innerWidth <= 760 || !("zoom" in fit.style)) return;
-  var over = function () { return body.scrollHeight > body.clientHeight + 1; };
-  if (!over()) return;
-  var z = Math.max(0.55, (body.clientHeight / body.scrollHeight) * 1.02);
-  fit.style.zoom = z.toFixed(3);
-  /* the wrapper reflows a little once it is scaled, so settle it */
-  for (var i = 0; i < 20 && over() && z > 0.55; i++) {
-    z -= 0.015; fit.style.zoom = z.toFixed(3);
-  }
+  var fit = box && box.querySelector(".sx-fit");
+  if (fit) fit.style.zoom = "";
 }
 
-/* The same weekday one week back (day view), or the previous week (week view),
-   side by side with the one on screen. */
+/* ---- helpers for the new layout */
+var SX_ICONS = {
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  dollar: '<path d="M12 3v18"/><path d="M16.5 7.5C16.5 5.8 14.5 5 12 5S7.5 6 7.5 8s2 2.6 4.5 3 4.5 1 4.5 3-2 3-4.5 3-4.5-.9-4.5-2.5"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+  bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.6 3.5 2.6 3.5 5"/>',
+  pause: '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>',
+  star: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  hourglass: '<path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
+  pie: '<circle cx="12" cy="12" r="9"/><path d="M12 3v9h9"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4M12 13v4M8.5 20h7M10 17h4"/>'
+};
+function sumIcon(name, size) {
+  return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (SX_ICONS[name] || "") + '</svg>';
+}
+function sumHourFull(h) { return (h % 12 === 0 ? 12 : h % 12) + (h < 12 ? " AM" : " PM"); }
+function sumSection(n, title, sub) {
+  var h = el("div", "sx-sec s" + n);
+  h.appendChild(el("span", "sx-bullet", String(n)));
+  var t = el("div", "sx-sec-t");
+  t.appendChild(el("h4", null, title));
+  if (sub) t.appendChild(el("span", null, sub));
+  h.appendChild(t);
+  return h;
+}
+function sumBackCount(list) {
+  return list.filter(function (o) { return o.proof === "TRUE" && isClock(o.proofRcvdTime); }).length;
+}
+function sumAvgOrder(list) {
+  var priced = list.filter(function (o) { return Number(o.amount) > 0; });
+  return priced.length ? (sumAmount(priced) || 0) / priced.length : null;
+}
+/* The Monday `back` weeks before the week that holds `day`. */
+function sumWeekBack(day, back) {
+  var d = dateFromKey(mondayOf(day));
+  d.setDate(d.getDate() - 7 * back);
+  return todayKey(d);
+}
+/* The same scope `back` periods earlier: the same weekday `back` weeks ago
+   (day view), or the week `back` weeks ago (week view). */
+function sumPeriod(view, back) {
+  var key;
+  if (view.scope === "week") key = sumWeekBack(view.day, back);
+  else { var d = dateFromKey(view.day); d.setDate(d.getDate() - 7 * back); key = todayKey(d); }
+  var list = sumOrdersFor({ scope: view.scope, day: key });
+  return { key: key, list: list, s: summarize(list), back: sumBackCount(list) };
+}
+
+/* Now beside the last one, with the average of the last four that had orders. */
 function sumComparePanel(view, s, orders, box) {
   var isWeek = view.scope === "week";
-  var d = dateFromKey(isWeek ? mondayOf(view.day) : view.day);
-  d.setDate(d.getDate() - 7);
-  var prevKey = todayKey(d);
-  var prevView = { scope: view.scope, day: prevKey };
-  var prevOrders = sumOrdersFor(prevView);
-  var p = summarize(prevOrders);
+  var P = [1, 2, 3, 4].map(function (b) { return sumPeriod(view, b); });
+  var prev = P[0];
+  var prevKey = prev.key;
   var dayName = DAY_NAMES[dateFromKey(prevKey).getDay()];
-  var panel = sumPanel(isWeek ? "vs last week" : "vs last " + dayName, "sx-cmp-panel");
+  var panel = sumPanel(isWeek ? "Compared with last week" : "Compared with last " + dayName, "sx-cmp-panel w2",
+    isWeek ? "Plus the average of the last four weeks that had orders" : "Plus the average of the last four " + dayName + "s that had orders");
   var go = el("button", "sx-cmp-go", (isWeek ? "Week of " : "") + shortDate(prevKey) + " \u203a");
   go.type = "button";
   go.title = "Open " + (isWeek ? "the week of " + shortDate(prevKey) : dayName + " " + shortDate(prevKey));
   go.addEventListener("click", function () { view.day = prevKey; renderSummary(box, -1); });
   panel.querySelector(".sx-ph").appendChild(go);
 
+  var now = { s: s, back: sumBackCount(orders), list: orders };
+  var active = P.filter(function (p) { return p.s.count > 0; });
   var tbl = el("div", "sx-cmp");
   var hd = el("div", "sx-cmp-r sx-cmp-hd");
-  [["", ""], [isWeek ? "This week" : (view.day === todayKey() ? "Today" : DAY_NAMES[dateFromKey(view.day).getDay()].slice(0, 3) + " " + shortDate(view.day)), ""],
-   [isWeek ? "Last week" : "Last " + dayName.slice(0, 3), ""], ["Change", ""]].forEach(function (h) { hd.appendChild(el("span", null, h[0])); });
+  [isWeek ? "" : "", isWeek ? "This week" : (view.day === todayKey() ? "Today" : DAY_NAMES[dateFromKey(view.day).getDay()].slice(0, 3) + " " + shortDate(view.day)),
+   isWeek ? "Last week" : "Last " + dayName.slice(0, 3), "Change", "4-avg"].forEach(function (t) { hd.appendChild(el("span", null, t)); });
   tbl.appendChild(hd);
 
-  var back = function (list) { return list.filter(function (o) { return o.proof === "TRUE" && isClock(o.proofRcvdTime); }).length; };
   /* kind: "n" count, "m" money, "t" minutes (lower is better) */
   var rows = [
-    ["Orders", s.count, p.count, "n"],
-    ["Finished", s.finished, p.finished, "n"],
-    ["Order value", s.amount || 0, p.amount || 0, "m"],
-    ["Pieces", s.qty || 0, p.qty || 0, "n"],
-    ["Proofs sent", s.proofs, p.proofs, "n"],
-    ["Proofs back", back(orders), back(prevOrders), "n"],
-    ["Median time", s.medTaken, p.medTaken, "t"]
+    ["Orders", function (p) { return p.s.count; }, "n"],
+    ["Finished", function (p) { return p.s.finished; }, "n"],
+    ["Order value", function (p) { return p.s.amount || 0; }, "m"],
+    ["Pieces", function (p) { return p.s.qty || 0; }, "n"],
+    ["Avg order", function (p) { return sumAvgOrder(p.list); }, "m"],
+    ["Proofs sent", function (p) { return p.s.proofs; }, "n"],
+    ["Proofs back", function (p) { return p.back; }, "n"],
+    ["Median time", function (p) { return p.s.medTaken; }, "t"],
+    ["Proof turnaround", function (p) { return p.s.medTurn; }, "t"]
   ];
   var fmt = function (v, k) {
-    if (v === null || v === undefined) return "\u2014";
-    return k === "m" ? money(v).replace(/\.00$/, "") : k === "t" ? durationText(v) : String(v);
+    if (v === null || v === undefined || !isFinite(v)) return "\u2014";
+    if (k === "m") return money(v).replace(/\.00$/, "");
+    if (k === "t") return durationText(Math.round(v));
+    return String(Math.round(v * 10) / 10);
   };
   rows.forEach(function (r) {
+    var cur = r[1](now), was = r[1](prev);
+    var vals = active.map(r[1]).filter(function (v) { return v !== null && v !== undefined && isFinite(v); });
+    var avg = vals.length ? vals.reduce(function (a, b) { return a + b; }, 0) / vals.length : null;
     var row = el("div", "sx-cmp-r");
     row.appendChild(el("span", "sx-cmp-l", r[0]));
-    row.appendChild(el("b", "sx-cmp-now", fmt(r[1], r[3])));
-    row.appendChild(el("span", "sx-cmp-was", fmt(r[2], r[3])));
+    row.appendChild(el("b", "sx-cmp-now", fmt(cur, r[2])));
+    row.appendChild(el("span", "sx-cmp-was", fmt(was, r[2])));
     var chip;
-    if (r[1] === null || r[2] === null || r[1] === undefined || r[2] === undefined) chip = el("span", "sx-cmp-d flat", "\u2014");
+    if (cur === null || was === null || cur === undefined || was === undefined) chip = el("span", "sx-cmp-d flat", "\u2014");
     else {
-      var diff = r[1] - r[2];
+      var diff = cur - was;
       if (!diff) chip = el("span", "sx-cmp-d flat", "same");
       else {
-        var good = r[3] === "t" ? diff < 0 : diff > 0;
-        var txt = r[3] === "m" ? money(Math.abs(diff)).replace(/\.00$/, "") : r[3] === "t" ? durationText(Math.abs(diff)) : String(Math.abs(diff));
-        var pctTxt = (r[3] === "m" && r[2]) ? " (" + Math.round(Math.abs(diff) / r[2] * 100) + "%)" : "";
+        var good = r[2] === "t" ? diff < 0 : diff > 0;
+        var txt = r[2] === "m" ? money(Math.abs(diff)).replace(/\.00$/, "") : r[2] === "t" ? durationText(Math.abs(diff)) : String(Math.abs(diff));
+        var pctTxt = (r[2] === "m" && was) ? " (" + Math.round(Math.abs(diff) / was * 100) + "%)" : "";
         chip = el("span", "sx-cmp-d " + (good ? "up" : "down"), (diff > 0 ? "\u25B2 " : "\u25BC ") + txt + pctTxt);
       }
     }
     row.appendChild(chip);
+    row.appendChild(el("span", "sx-cmp-avg", fmt(avg, r[2])));
     tbl.appendChild(row);
   });
   panel.appendChild(tbl);
-  if (!prevOrders.length) panel.appendChild(el("p", "sx-note", "Nothing was logged " + (isWeek ? "that week." : "last " + dayName + ".")));
+  if (!prev.list.length) panel.appendChild(el("p", "sx-note", "Nothing was logged " + (isWeek ? "last week." : "last " + dayName + ".")));
+  else if (active.length < 4) panel.appendChild(el("p", "sx-note", "The average uses the " + active.length + (active.length === 1 ? " period" : " periods") + " with orders out of the last four."));
   return panel;
+}
+
+/* The last six weeks, one bar each (order value). Click a bar to open that week. */
+function sumTrendPanel(view, box, byDate) {
+  var panel = sumPanel("Last six weeks", "", "Order value per week. Click a week to open it.");
+  var weeks = [];
+  for (var b = 5; b >= 0; b--) {
+    var mon = sumWeekBack(view.day, b), n = 0, v = 0;
+    weekdayKeys(mon).forEach(function (k) {
+      (byDate[k] || []).forEach(function (o) { n++; v += Number(o.amount) || 0; });
+    });
+    weeks.push({ key: mon, n: n, v: v, cur: b === 0 });
+  }
+  var any = weeks.some(function (w) { return w.n > 0; });
+  if (!any) { panel.appendChild(sumEmpty("No orders in the last six weeks.")); return panel; }
+  var vmax = Math.max.apply(null, weeks.map(function (w) { return w.v; }).concat([1]));
+  var nmax = Math.max.apply(null, weeks.map(function (w) { return w.n; }).concat([1]));
+  var useValue = weeks.some(function (w) { return w.v > 0; });
+  var trend = el("div", "sx-trend");
+  weeks.forEach(function (w) {
+    var c = el("button", "sx-tcol" + (w.cur ? " cur" : ""));
+    c.type = "button";
+    c.appendChild(el("span", "sx-tv", useValue ? sumMoneyShort(w.v) : String(w.n)));
+    var bar = el("div", "sx-tbar"), f = el("i");
+    f.style.height = (useValue ? w.v / vmax : w.n / nmax) * 100 + "%";
+    bar.appendChild(f); c.appendChild(bar);
+    c.appendChild(el("span", "sx-tn", w.n + (w.n === 1 ? " order" : " orders")));
+    c.appendChild(el("span", "sx-tl", shortDate(w.key)));
+    c.title = "Week of " + shortDate(w.key) + ": " + w.n + " orders, " + money(w.v);
+    c.addEventListener("click", function () { view.scope = "week"; view.day = w.key; renderSummary(box); });
+    trend.appendChild(c);
+  });
+  panel.appendChild(trend);
+  var done = weeks.filter(function (w) { return !w.cur && w.n > 0; });
+  var cur = weeks[weeks.length - 1];
+  if (done.length) {
+    var avgN = done.reduce(function (a, w) { return a + w.n; }, 0) / done.length;
+    var avgV = done.reduce(function (a, w) { return a + w.v; }, 0) / done.length;
+    var note = "Earlier weeks averaged " + (Math.round(avgN * 10) / 10) + " orders" + (avgV ? " and " + money(avgV).replace(/\.00$/, "") : "") + ".";
+    panel.appendChild(el("p", "sx-note", note));
+  }
+  return panel;
+}
+function sumMoneyShort(n) {
+  n = Number(n) || 0;
+  if (n >= 10000) return "$" + Math.round(n / 1000) + "k";
+  if (n >= 1000) return "$" + (n / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+  return "$" + Math.round(n);
 }
 
 /* ------------------------------------------------------- export / import */
