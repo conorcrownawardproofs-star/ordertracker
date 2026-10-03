@@ -3,9 +3,9 @@
 <script>
 /* Apply the saved theme before anything paints (no flash of the wrong colours). */
 try{(function(){var p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}"),t=p.theme||"light",r=document.documentElement;if(t==="nyc91g"||t==="nyc91t")t="nyc91";var 
-dark={dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,jets:1,giants:1,yankees:1},
-glass={podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,jets:1,giants:1,yankees:1},
-f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
+dark={dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
+glass={podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
+f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
 r.setAttribute("data-theme",t);r.setAttribute("data-tone",dark[t]?"dark":"light");if(p.fx!==false)r.classList.add("fx");if(glass[t])r.classList.add("glass");
 if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fonts.googleapis.com/css2?family='+f[t]+'&display=swap">');})();}catch(e){}
 </script>
@@ -275,8 +275,9 @@ html[data-tone="dark"] .day[aria-current="true"]{color:var(--code);border-bottom
 /* Labels were 10.5px in --muted, which is the main dark-mode legibility
    problem in here. Bigger, heavier, and a full contrast step brighter. */
 .ecell label{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.04em;
-  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ecell .hint{font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:0;
+  text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:center;padding-left:.04em}   /* centred over the field; the padding balances the letter-spacing after the last letter */
+.ecell .hint{font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:0;text-align:center;
   text-transform:none;line-height:1.3;margin-top:-2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Every control sits at the same height under its label + hint, so a row lines up. */
 .ecell>input,.ecell>textarea,.ecell>.datefield input,.ecell .timefield input{height:40px}
@@ -1290,7 +1291,7 @@ input.date-proxy{position:absolute!important;width:1px!important;height:1px!impo
   .ecell .hint{display:none}
   .ecell label{font-size:11px;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis}
   .ecell input,.ecell textarea,.ecell select{padding:10px 10px;min-height:44px}
-  .ecell .timefield{flex-wrap:nowrap!important}
+  .ecell .timefield{flex-wrap:wrap!important}      /* time + Now on one line, the stamp date on its own line below */
   .ecell .timefield .stamp{padding:0 8px;min-height:44px}
   .ecell .calcbox{min-height:44px!important;display:flex!important}
   .ecell:has(.calcbox){display:flex!important}
@@ -4131,6 +4132,143 @@ html[data-theme="gct"] .auth-brand h1{font-family:var(--display);font-weight:400
 html[data-theme="gct"] .auth-brand::after{content:"42ND STREET";position:absolute;right:28px;bottom:24px;font:400 30px/1 var(--display);letter-spacing:.18em;
   color:var(--gc-lime);opacity:.85;text-shadow:-1px -1px 0 rgba(0,0,0,.6),1px 1px 0 rgba(255,250,235,.15);pointer-events:none}
 html[data-theme="gct"] .auth-brand .plate{border-left-color:var(--gc-taxi);background:rgba(211,196,166,.05)}
+
+/* =====================================================================
+   52ND & SIXTH: night on the plaza, looking north up the avenue.
+   Office-window amber, verdigris bronze, cart-umbrella red and yellow on a
+   deep night blue. Display type is Instrument Serif, like a gallery wall
+   label. The chrome borrows two things from the street: the striped cart
+   umbrellas (edges) and the lit office windows (highlights).
+   ===================================================================== */
+html[data-theme="sixth"]{
+  --s6-amber:#F4C46A; --s6-patina:#4E766A; --s6-patina-lit:#8DB5A6; --s6-red:#D23A2E; --s6-yel:#F6C83A; --s6-night:#0E1222; --s6-lamp:#FFF3D6;
+  --s6-stripe:repeating-linear-gradient(90deg,#D23A2E 0 22px,#F6C83A 22px 44px);
+  --s6-windows:repeating-linear-gradient(90deg,#F4C46A 0 9px,#252A3A 9px 12px,#F4C46A 12px 21px,#252A3A 21px 24px,#181C28 24px 33px,#252A3A 33px 36px);
+  --crown:#0B0E18; --crown-2:#121624; --crown-line:#2C3246; --crown-ink:#F2EEE6; --crown-dim:#B9B6C4;
+  --paper:#0B0E18; --surface:#131726; --surface-2:#1A1F31; --line:rgba(190,198,226,.16);
+  --text:#F2EEE6; --text-2:#C9C6D2; --muted:#8E8FA3;
+  --brass:#F4C46A; --brass-lit:#FFD88A; --brass-soft:rgba(244,196,106,.16);
+  --go:#8DB5A6; --go-bg:rgba(141,181,166,.18); --stop:#F06A5A; --stop-bg:rgba(210,58,46,.24);
+  --hold:#F6C83A; --hold-bg:rgba(246,200,58,.15); --code:#9DB4FF; --code-bg:rgba(120,145,240,.2);
+  --idle:#A3A2B4; --idle-bg:rgba(190,198,226,.08); --focus:#F4C46A;
+  --row-a:rgba(18,22,36,.8); --row-b:rgba(23,27,44,.8);
+  --row-code-a:rgba(30,40,78,.72); --row-code-b:rgba(34,46,88,.72);
+  --row-go-a:rgba(24,48,42,.72); --row-go-b:rgba(28,54,47,.72);
+  --row-warn-a:rgba(66,54,22,.72); --row-warn-b:rgba(74,60,24,.72);
+  --row-hot-a:rgba(80,26,24,.72); --row-hot-b:rgba(92,30,27,.72); --row-hover:rgba(244,196,106,.07);
+  --btn-ink:#FFFFFF; --accent-ink:#1A1408; --code-ink:#0D1430; --go-ink:#0D221C; --stop-ink:#2A0806;
+  --ghost-bg:rgba(190,198,226,.08); --ghost-bg-h:rgba(190,198,226,.15); --ghost-line:rgba(190,198,226,.26); --ghost-line-h:#F4C46A;
+  --crest:#F4C46A;
+  --display:'Instrument Serif',Georgia,serif;
+  --hdr-bg:linear-gradient(180deg,#151A2A,#0B0E18);
+  --shadow:0 1px 2px rgba(0,0,0,.55),0 16px 36px -18px rgba(0,0,0,.9);
+  --glass:rgba(16,20,34,.62); --glass-head:rgba(20,24,40,.93);
+}
+
+/* ---------- stage ---------- */
+html[data-theme="sixth"] #stage{background:#0B0E18}
+#stage.st-sixth .s6{position:absolute;inset:0;width:100%;height:100%}
+#stage.st-sixth .l1,#stage.st-sixth .l2,#stage.st-sixth .l3,#stage.st-sixth .l4{display:none}
+/* office windows switching on and off, about once a minute each */
+#stage.st-sixth .s6tw{animation:s6Win 100s steps(1) infinite}
+@keyframes s6Win{0%,46%{opacity:1}47%,88%{opacity:0}89%,100%{opacity:1}}
+/* the plane crossing the gap of sky, its beacon blinking */
+#stage.st-sixth .s6plane{animation:s6Plane 70s linear infinite}
+#stage.st-sixth .s6plane circle:first-child{animation:s6Blink 1.2s steps(1) infinite}
+@keyframes s6Plane{0%{transform:translate(250px,40px);opacity:0}2%{opacity:1}40%{transform:translate(470px,150px);opacity:1}42%,100%{transform:translate(480px,155px);opacity:0}}
+@keyframes s6Blink{0%,50%{opacity:1}51%,100%{opacity:.15}}
+/* the far signal: green, yellow-ish, red */
+#stage.st-sixth .s6sig.r{animation:s6SigR 36s steps(1) infinite}
+#stage.st-sixth .s6sig.g{animation:s6SigG 36s steps(1) infinite}
+@keyframes s6SigR{0%,52%{opacity:.12}53%,100%{opacity:1}}
+@keyframes s6SigG{0%,46%{opacity:1;fill:#3BFF9A}47%,52%{opacity:1;fill:#FFB020}53%,100%{opacity:.12}}
+/* taillights receding up the avenue (perspective: fast and big up close, slow and tiny far off) */
+#stage.st-sixth .s6car{animation:s6Car 16s linear infinite;opacity:0}
+@keyframes s6Car{0%{transform:translate(1250.0px,885.0px) scale(0.6200);opacity:0}4%{transform:translate(1092.4px,863.4px) scale(0.4697);opacity:1}10%{transform:translate(961.1px,845.4px) scale(0.3444);opacity:1}18%{transform:translate(866.4px,832.5px) scale(0.2541);opacity:1}28%{transform:translate(800.6px,823.5px) scale(0.1914);opacity:1}40%{transform:translate(754.8px,817.2px) scale(0.1476);opacity:1}54%{transform:translate(722.2px,812.7px) scale(0.1165);opacity:1}70%{transform:translate(698.5px,809.5px) scale(0.0939);opacity:1}85%{transform:translate(683.3px,807.4px) scale(0.0795);opacity:0.6}100%{transform:translate(672.2px,805.9px) scale(0.0689);opacity:0}}
+/* headlights crossing at the next corner */
+#stage.st-sixth .s6x{opacity:0;animation:s6Cross 11s linear infinite}
+#stage.st-sixth .s6x.b{animation-duration:17s;animation-delay:-6s;animation-direction:reverse}
+@keyframes s6Cross{0%{transform:translate(540px,801px);opacity:0}3%{opacity:1}22%{transform:translate(690px,801px);opacity:1}24%,100%{transform:translate(700px,801px);opacity:0}}
+/* people strolling past behind the plinth */
+#stage.st-sixth .s6walk{animation-timing-function:linear;animation-iteration-count:infinite}
+#stage.st-sixth .s6walk.w1{animation-name:s6WalkL}
+#stage.st-sixth .s6walk.w2{animation-name:s6WalkR}
+@keyframes s6WalkL{from{transform:translate(1250px,872px)}to{transform:translate(460px,872px)}}
+@keyframes s6WalkR{from{transform:translate(460px,872px)}to{transform:translate(1250px,872px)}}
+#stage.st-sixth .s6bob{animation:s6Bob .6s ease-in-out infinite alternate}
+@keyframes s6Bob{from{transform:translateY(0)}to{transform:translateY(-2.5px)}}
+/* the van's hazards */
+#stage.st-sixth .s6haz{animation:s6Haz 1.1s steps(1) infinite}
+@keyframes s6Haz{0%,50%{opacity:1}51%,100%{opacity:.12}}
+/* steam off the cart's grill */
+#stage.st-sixth .s6steam{transform-box:fill-box;transform-origin:50% 50%;animation:s6Steam 6.4s ease-out infinite}
+@keyframes s6Steam{0%{transform:translate(0,0) scale(.5);opacity:0}15%{opacity:.8}100%{transform:translate(14px,-90px) scale(2.4);opacity:0}}
+/* the street lamp breathes a little */
+#stage.st-sixth .s6lamp{animation:s6Lamp 7s ease-in-out infinite alternate}
+@keyframes s6Lamp{from{opacity:.85}to{opacity:1}}
+/* the planter catching a breeze */
+#stage.st-sixth .s6sway{transform-box:fill-box;transform-origin:50% 100%;animation:s6Sway 6s ease-in-out infinite alternate}
+#stage.st-sixth .s6sway.b{animation-duration:7.4s;animation-delay:-2s}
+#stage.st-sixth .s6sway.c{animation-duration:5.2s;animation-delay:-3.5s}
+@keyframes s6Sway{from{transform:rotate(-.8deg)}to{transform:rotate(.9deg)}}
+/* effects off or reduced motion: everything holds still on a spread-out frame */
+html:not(.fx) #stage.st-sixth *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){#stage.st-sixth *{animation-play-state:paused!important}}
+
+/* ---------- chrome ---------- */
+html[data-theme="sixth"] .console{border-bottom:0}
+html[data-theme="sixth"] .console::after{top:auto;height:6px;background:var(--s6-stripe)}
+html[data-theme="sixth"] .mark b{font-family:var(--display);font-weight:400;font-size:23px;letter-spacing:.005em;color:#F7F2E8}
+html[data-theme="sixth"] .mark span{font-family:var(--display);font-style:italic;font-size:14px;color:var(--s6-amber)}
+html[data-theme="sixth"] .modal h3,html[data-theme="sixth"] .entryhead h3,html[data-theme="sixth"] .auth-card h2{font-weight:400;font-size:1.25em;letter-spacing:.005em}
+html[data-theme="sixth"] .stat b{font-family:var(--display);font-weight:400;font-size:29px;color:#F7F2E8}
+html[data-theme="sixth"] .stat.flag b{color:var(--s6-yel)}
+html[data-theme="sixth"] .stat.good b{color:var(--s6-patina-lit)}
+html[data-theme="sixth"] thead th{--sort-ink:var(--s6-amber)}
+/* the selected day is a lit office window */
+html[data-theme="sixth"] .day[aria-current="true"]{color:var(--text);border-bottom-color:transparent}
+html[data-theme="sixth"] .day[aria-current="true"] b{display:inline-grid;place-items:center;min-width:34px;height:26px;padding:0 7px;margin:-3px auto 1px;border-radius:2px;
+  background:linear-gradient(180deg,#FFE3A0,#F4C46A);color:#1A1408;box-shadow:0 0 0 1px #8A6A2A,0 0 18px rgba(244,196,106,.45)}
+html[data-theme="sixth"] .day .cnt{background:var(--s6-red);color:#fff}
+html[data-theme="sixth"] .day.today b::after{background:var(--s6-red)}
+html[data-theme="sixth"] .day.today[aria-current="true"] b::after{display:none}
+/* order numbers: small lit windows */
+html[data-theme="sixth"] td.seq{text-align:center}
+html[data-theme="sixth"] tbody td.seq::before{content:none}
+html[data-theme="sixth"] td.seq .seq-n{display:inline-grid;place-items:center;box-sizing:border-box;min-width:24px;height:24px;padding:0 5px;border-radius:2px;
+  background:linear-gradient(180deg,#FFE7AE,#F0BE5E);color:#1A1408;font:600 12px/1 var(--sans);box-shadow:0 0 10px rgba(244,196,106,.3)}
+html[data-theme="sixth"] .chip{border-color:rgba(190,198,226,.28)}
+html[data-theme="sixth"] .chip[aria-pressed="true"]{background:var(--s6-red);color:#fff;border-color:var(--s6-red)}
+/* main buttons are the bronze */
+html[data-theme="sixth"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]){background:linear-gradient(180deg,#5E8A7C,#4E766A);color:#fff;border-color:#3F6257;
+  box-shadow:inset 0 1px 0 rgba(200,230,215,.25)}
+html[data-theme="sixth"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]):hover{background:linear-gradient(180deg,#6A9888,#58816F)}
+html[data-theme="sixth"] .btn.ghost{color:var(--text)}
+html[data-theme="sixth"] .icon-btn.accent{background:var(--s6-yel);color:#1A1408;border-color:var(--s6-yel);font-weight:700}
+html[data-theme="sixth"] .icon-btn.accent:hover{filter:brightness(1.06)}
+html[data-theme="sixth"] td.taken-cell.best .dur-main::after{content:"\2605 FASTEST";background:var(--s6-amber);color:#1A1408;font-weight:800;letter-spacing:.07em}
+/* dialogs: an umbrella stripe along the top */
+html[data-theme="sixth"] .modal{border-color:rgba(190,198,226,.22);background:var(--s6-stripe) top/100% 6px no-repeat,var(--surface)}
+html[data-theme="sixth"] .modal.sx{background:var(--surface)}
+html[data-theme="sixth"] .sx-head{border-top:6px solid transparent;border-image:var(--s6-stripe) 6 0 0 0}
+html[data-theme="sixth"] .sx-eyebrow{color:var(--s6-amber)}
+html[data-theme="sixth"] .sx-title,html[data-theme="sixth"] .sx-kpi-v,html[data-theme="sixth"] .sx-ins-v,html[data-theme="sixth"] .sx-sec-t h4{font-weight:400}
+html[data-theme="sixth"] .sx-kpi.k-orders{--kc:var(--s6-amber)} html[data-theme="sixth"] .sx-kpi.k-value{--kc:var(--s6-yel)}
+html[data-theme="sixth"] .sx-kpi.k-time{--kc:var(--s6-patina-lit)} html[data-theme="sixth"] .sx-kpi.k-proof{--kc:var(--s6-red)}
+/* Summary section rules: a row of office windows, some lit */
+html[data-theme="sixth"] .sx-sec::after{height:6px;border-radius:1px;background:var(--s6-windows)}
+html[data-theme="sixth"] .sx-sec.s1{--bc:var(--s6-red)} html[data-theme="sixth"] .sx-sec.s2{--bc:var(--s6-patina)} html[data-theme="sixth"] .sx-sec.s3{--bc:var(--s6-amber)}
+html[data-theme="sixth"] .sx-sec.s4{--bc:var(--s6-yel)} html[data-theme="sixth"] .sx-sec.s5{--bc:var(--s6-red)} html[data-theme="sixth"] .sx-sec.s6{--bc:#8E8FA3}
+html[data-theme="sixth"] .sx-sec.s7{--bc:var(--s6-patina)}
+html[data-theme="sixth"] .sx-sec .sx-bullet{color:#fff;font-family:var(--display);font-weight:400;font-size:18px}
+html[data-theme="sixth"] .sx-sec.s3 .sx-bullet,html[data-theme="sixth"] .sx-sec.s4 .sx-bullet{color:#1A1408}
+/* sign-in: the corner, set like a wall label */
+html[data-theme="sixth"] .auth-brand{position:relative;background:linear-gradient(180deg,#151A2A,#0B0E18);border-right:6px solid transparent;
+  border-image:linear-gradient(180deg,#D23A2E 0 50%,#F6C83A 50%) 0 6 0 0}
+html[data-theme="sixth"] .auth-brand h1{font-family:var(--display);font-weight:400;letter-spacing:0;color:#F7F2E8}
+html[data-theme="sixth"] .auth-brand::after{content:"52nd & Sixth";position:absolute;right:28px;bottom:22px;font:italic 400 38px/1 var(--display);
+  color:var(--s6-amber);text-shadow:0 0 22px rgba(244,196,106,.35);pointer-events:none}
+html[data-theme="sixth"] .auth-brand .plate{border-left-color:var(--s6-amber);background:rgba(244,196,106,.05)}
 </style>
 </head>
 <body>
@@ -6546,6 +6684,42 @@ function buildEntryRow(cols) {
     grid.appendChild(cell);
   });
   wireEntryRow();
+  watchEntryLabels(grid);
+}
+/* Field titles are centred over the box you type in, not over the whole
+   cell: on fields with a side button (the "now" stamp, the calendar, the
+   status log button) the cell is wider than the box, which pushed the title
+   off to the right. Measured, so it holds at any width, theme or font. */
+function alignEntryLabels(grid) {
+  if (!grid || !grid.getBoundingClientRect().width) return;
+  Array.prototype.forEach.call(grid.querySelectorAll(".ecell"), function (cell) {
+    var heads = cell.querySelectorAll(":scope > label, :scope > .hint");
+    if (!heads.length) return;
+    var box = cell.querySelector("input:not([hidden]):not([type=hidden]), select, textarea, .calcbox, .tri, .quad, .pgrp-grid");
+    var c = cell.getBoundingClientRect(), b = box ? box.getBoundingClientRect() : null;
+    var left = 0, right = 0;
+    if (b && b.width && b.width < c.width - 4) {
+      left = Math.max(0, Math.round(b.left - c.left));
+      right = Math.max(0, Math.round(c.right - b.right));
+    }
+    Array.prototype.forEach.call(heads, function (h) {
+      h.style.paddingLeft = left ? "calc(.04em + " + left + "px)" : "";
+      h.style.paddingRight = right ? right + "px" : "";
+    });
+  });
+}
+var entryLabelWatch = null;
+function watchEntryLabels(grid) {
+  var run = function () { requestAnimationFrame(function () { alignEntryLabels(grid); }); };
+  run();
+  if (window.ResizeObserver) {
+    if (entryLabelWatch) entryLabelWatch.disconnect();
+    entryLabelWatch = new ResizeObserver(run);
+    entryLabelWatch.observe(grid);
+  } else {
+    window.addEventListener("resize", run);
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(run);
 }
 function wireEntryRow() {
   ["segProof", "segFin", "segDrive", "segMark", "segPGroup"].forEach(function (id) {
@@ -10399,6 +10573,8 @@ var THEMES = [
   /* Midtown: looking down past Grand Central's stone figures to 42nd Street. */
   { v: "gct",       l: "Above 42nd Street", sub: "Stone figures over the bus lane, midday traffic", tone: "dark", group: "Midtown", stage: "gct",
     font: "Marcellus", sw: ["#D3C4A6", "#A33520", "#F3B21C"] },
+  { v: "sixth",     l: "52nd & Sixth", sub: "Night on the plaza, looking up the avenue", tone: "dark", group: "Midtown", stage: "sixth",
+    font: "Instrument+Serif:ital@0;1", sw: ["#0E1222", "#F4C46A", "#D23A2E"] },
   /* Game Day: the Stadium Night scene in Buffalo royal blue and red. No team marks. */
   { v: "bills",     l: "Buffalo Gameday",  sub: "Royal blue & red under the lights", tone: "dark", group: "Game Day", stage: "stadium", kit: "football",
     font: "Teko:wght@400;500;600", sw: ["#00338D", "#C60C30", "#FFFFFF"] },
@@ -10530,6 +10706,280 @@ var STAGE_ART = {
     '</pre>'
 };
 STAGE_ART.gct = gctSceneArt();
+STAGE_ART.sixth = sixthSceneArt();
+
+/* ---------- 52nd & Sixth: the stage ----------
+   Night, eye level, standing on the plaza at the northwest corner of 52nd St
+   and Sixth Avenue, looking north up the avenue. A lit lobby and a planter on
+   the left, a bronze of stacked stones on a low granite plinth in the middle,
+   office towers behind, a food cart under striped umbrellas and a parked van
+   on the right, the avenue running away to its vanishing point.
+   Built as stacked SVG layers that share one viewBox, so moving things pass
+   behind the right objects: sky and towers / traffic and people / plaza,
+   plinth, bronze, cart, van / planter shrubs / light and steam. Only the
+   small middle and top layers animate. Seeded, so it is the same every load. */
+function sixthSceneArt() {
+  var seed = 52;
+  var rnd = function (a, b) { seed = (seed * 9301 + 49297) % 233280; return a + (seed / 233280) * (b - a); };
+  var pick = function (l) { return l[Math.floor(rnd(0, l.length))]; };
+  var VB = 'viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMax slice"';
+  var svg = function (cls, body, defs) { return '<svg class="art s6 ' + cls + '" ' + VB + '>' + (defs ? '<defs>' + defs + '</defs>' : '') + body + '</svg>'; };
+  var r = function (x, y, w, h, fill, extra) { return '<rect x="' + (+x).toFixed(1) + '" y="' + (+y).toFixed(1) + '" width="' + (+w).toFixed(1) + '" height="' + (+h).toFixed(1) + '" fill="' + fill + '"' + (extra || '') + '/>'; };
+  var WARM = ["#F6D58E", "#F4C46A", "#FBE3A8", "#F0D9A6", "#FFF0C8"], COOL = ["#DCE6F6", "#C9D8F2", "#E8EEF8"], BLUE = ["#5E7CF0", "#7B95FF"];
+  var flick = 0;
+  /* a grid of office windows; only the lit ones are drawn, a few switch on and off */
+  var windows = function (x0, y0, x1, y1, cols, rows, lit, palette, gx, gy) {
+    var s = '', cw = (x1 - x0) / cols, rh = (y1 - y0) / rows;
+    for (var ry = 0; ry < rows; ry++) for (var cx = 0; cx < cols; cx++) {
+      if (rnd(0, 1) > lit) continue;
+      var tw = rnd(0, 1) < 0.035 && flick < 60;
+      if (tw) flick++;
+      s += r(x0 + cx * cw + gx, y0 + ry * rh + gy, cw - 2 * gx, rh - 2 * gy, pick(palette),
+        tw ? ' class="s6tw" style="animation-delay:-' + rnd(0, 90).toFixed(1) + 's;animation-duration:' + rnd(70, 140).toFixed(0) + 's"' : '');
+    }
+    return s;
+  };
+
+  /* ================= back: sky, towers, the far avenue */
+  var B = '';
+  B += r(0, 0, 1600, 1000, 'url(#s6Sky)');
+  /* distant midtown, low between the towers */
+  B += r(286, 470, 140, 330, '#1E2130') + windows(292, 480, 420, 790, 9, 22, .45, WARM.concat(COOL), 2, 3);
+  B += r(400, 560, 110, 240, '#262836') + windows(404, 566, 506, 790, 7, 14, .5, WARM, 2, 3);
+  /* the slim dark tower */
+  B += r(408, 160, 104, 640, '#11131B') + r(408, 160, 104, 6, '#22252F');
+  B += windows(412, 172, 508, 790, 8, 52, .22, WARM.concat(BLUE, BLUE), 2, 2.5);
+  /* the dark glass tower behind the brick one */
+  B += r(505, 0, 200, 190, '#0F1220') + windows(510, 0, 700, 180, 14, 14, .3, BLUE.concat(COOL), 2, 2.5);
+  /* the brick tower: setbacks at the top, dense warm windows */
+  B += '<path d="M498 800 L498 120 L520 120 L520 70 L560 70 L560 22 L640 22 L640 70 L684 70 L684 120 L704 120 L704 800 Z" fill="#3A2C26"/>';
+  B += r(498, 118, 206, 4, '#58463C') + r(520, 68, 164, 3, '#58463C');
+  B += windows(564, 30, 636, 66, 6, 4, .6, WARM, 2, 2.5) + windows(524, 76, 680, 116, 11, 4, .6, WARM, 2, 2.5);
+  B += windows(502, 126, 700, 796, 14, 64, .42, WARM, 2.2, 2.5);
+  /* the big modern grid tower: dark spandrels, lit floors, a brighter base */
+  B += r(697, 0, 460, 800, '#141823');
+  for (var f = 0; f < 40; f++) {
+    var fy = 4 + f * 19.6, litF = f < 7 ? .22 : (f > 27 ? .72 : .42);
+    B += r(697, fy + 13, 460, 6.6, '#1E2330');
+    var cols = 22;
+    for (var c = 0; c < cols; c++) {
+      if (rnd(0, 1) > litF) continue;
+      var tw2 = rnd(0, 1) < 0.03 && flick < 60; if (tw2) flick++;
+      B += r(700 + c * 20.8, fy, 19.6, 12.6, pick(f > 9 ? WARM.concat(WARM, COOL) : COOL.concat(WARM)),
+        tw2 ? ' class="s6tw" style="animation-delay:-' + rnd(0, 90).toFixed(1) + 's;animation-duration:' + rnd(70, 140).toFixed(0) + 's"' : '');
+    }
+  }
+  for (var m = 0; m <= 22; m++) B += r(697 + m * 20.8, 0, 1.6, 800, '#0E1119', ' opacity=".8"');
+  B += r(697, 730, 460, 70, '#E9D7AE') + windows(700, 734, 1154, 796, 18, 2, .9, ["#FFF0C8", "#F8E2AE"], 1, 2);
+  /* the dark tower on the right: deep granite piers, recessed lit windows */
+  B += r(1141, 0, 460, 800, '#0E1016');
+  B += windows(1160, 0, 1600, 712, 10, 30, .24, WARM.concat(COOL, ["#A9C4FF"]), 9, 4);
+  for (var pr = 0; pr < 11; pr++) B += r(1141 + pr * 44, 0, 14, 800, '#1A1C23');
+  B += r(1141, 712, 460, 90, '#2A2620') + r(1141, 716, 460, 70, 'url(#s6Lobby2)');
+  for (var pr2 = 0; pr2 < 11; pr2++) B += r(1141 + pr2 * 44, 712, 12, 90, '#15161B');
+  /* the far avenue, running to its vanishing point */
+  B += '<path d="M480 800 L1600 800 L1600 1000 L480 1000 Z" fill="#141519"/>';
+  B += '<path d="M600 796 L1600 1000 L1600 940 Z" fill="#1B1C21"/>';
+  B += '<path d="M600 796 L1250 1000 L1270 1000 Z" fill="#E8E2CF" opacity=".5"/>';
+  B += '<path d="M600 796 L940 1000 L955 1000 Z" fill="#E8E2CF" opacity=".35"/>';
+  B += r(480, 796, 1120, 3, '#2A2B31');
+  /* faraway lights where the avenue meets the horizon */
+  for (var fl = 0; fl < 14; fl++) B += '<circle cx="' + rnd(560, 660).toFixed(0) + '" cy="' + rnd(788, 800).toFixed(0) + '" r="' + rnd(1.2, 2.6).toFixed(1) + '" fill="' + pick(["#FF4A3A", "#FF6A4A", "#FFE9B0", "#FFFFFF"]) + '" opacity=".85"/>';
+  /* the lobby on the left: stone and glass, a lit office floor, the bright lobby */
+  B += r(0, 0, 330, 800, '#1A1D24');
+  B += r(0, 160, 330, 150, 'url(#s6Office)');
+  for (var ch = 0; ch < 9; ch++) B += r(14 + ch * 24, 262 + rnd(-2, 4), 12, 14, '#B8AE9C', ' rx="3"') ;
+  B += r(0, 300, 330, 140, '#9EA2A8') + r(0, 300, 330, 6, '#C7CACE');
+  B += r(0, 438, 330, 362, 'url(#s6Lobby)');
+  B += r(36, 0, 8, 800, '#C4C7CB') + r(132, 0, 8, 800, '#C4C7CB');
+  B += r(200, 0, 125, 800, 'url(#s6Pier)');
+  B += r(212, 438, 88, 362, 'url(#s6Column)');
+  /* the canopy over the side entrance */
+  B += '<path d="M300 612 L492 640 L490 664 L300 650 Z" fill="#2F3238"/><path d="M300 650 L490 664 L486 690 L300 690 Z" fill="url(#s6Canopy)"/>';
+  for (var cl = 0; cl < 5; cl++) B += r(318 + cl * 34, 672 - cl * 1.5, 22, 4, '#FFF8E6', ' opacity=".95"');
+  /* a traffic signal far up the avenue, and a lamp */
+  B += r(534, 756, 7, 22, '#0A0B0F', ' rx="2"') + '<circle class="s6sig r" cx="537.5" cy="762" r="2.6" fill="#FF3B2E"/><circle class="s6sig g" cx="537.5" cy="772" r="2.6" fill="#3BFF9A"/>';
+  B += '<line x1="511" y1="690" x2="511" y2="800" stroke="#0A0B0F" stroke-width="3"/><circle cx="511" cy="690" r="4" fill="#FFF3D6"/>';
+  /* the sky through the gap: a plane crossing, its light blinking */
+  B += '<g class="s6plane"><circle r="2.2" fill="#FF4A4A"/><circle cx="6" r="1.4" fill="#FFFFFF"/></g>';
+  var backDefs =
+    '<linearGradient id="s6Sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080A14"/><stop offset=".5" stop-color="#0E1222"/><stop offset=".8" stop-color="#1D1A2C"/><stop offset="1" stop-color="#2A2232"/></linearGradient>' +
+    '<linearGradient id="s6Office" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E8DCC4"/><stop offset=".6" stop-color="#D7C8AA"/><stop offset="1" stop-color="#8A8070"/></linearGradient>' +
+    '<linearGradient id="s6Lobby" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBEFCF"/><stop offset=".55" stop-color="#F1D99E"/><stop offset="1" stop-color="#C9A86A"/></linearGradient>' +
+    '<linearGradient id="s6Lobby2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3D2"/><stop offset="1" stop-color="#D9B878"/></linearGradient>' +
+    '<linearGradient id="s6Pier" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9CCD0"/><stop offset=".6" stop-color="#A9ADB3"/><stop offset="1" stop-color="#6E7279"/></linearGradient>' +
+    '<linearGradient id="s6Column" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F6F3EC"/><stop offset=".55" stop-color="#E4E0D6"/><stop offset="1" stop-color="#B8B3A8"/></linearGradient>' +
+    '<linearGradient id="s6Canopy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4EFE4"/><stop offset="1" stop-color="#BDB6A8"/></linearGradient>';
+  var back = svg("s6-back", B, backDefs);
+
+  /* ================= middle: traffic up the avenue, people behind the plinth */
+  var M = '';
+  var carRear = function (body, taxi) {
+    var s = '<ellipse cx="0" cy="2" rx="66" ry="7" fill="#000" opacity=".5"/>';
+    s += '<path d="M-60 0 L-60 -36 Q-58 -46 -46 -48 L-36 -70 Q-34 -76 -26 -76 L26 -76 Q34 -76 36 -70 L46 -48 Q58 -46 60 -36 L60 0 Z" fill="' + body + '"/>';
+    s += '<path d="M-31 -70 L31 -70 L40 -50 L-40 -50 Z" fill="#0C0E14"/>';
+    s += r(-56, -40, 18, 9, '#FF2A1E', ' rx="2"') + r(38, -40, 18, 9, '#FF2A1E', ' rx="2"');
+    s += '<circle cx="-47" cy="-36" r="16" fill="#FF3A2A" opacity=".35"/><circle cx="47" cy="-36" r="16" fill="#FF3A2A" opacity=".35"/>';
+    s += r(-14, -28, 28, 10, '#E9E4D4', ' rx="1.5"');
+    s += r(-58, -8, 116, 8, '#0B0C10');
+    if (taxi) s += r(-14, -86, 28, 10, '#F7F1DC', ' rx="2"');
+    return s;
+  };
+  var cars = [["#F3B21C", 1], ["#121418", 0], ["#E4E6EA", 0], ["#F3B21C", 1], ["#2A3346", 0]];
+  cars.forEach(function (c, i) {
+    M += '<g class="s6car" style="animation-delay:-' + (i * 3.1 + rnd(0, 1.2)).toFixed(2) + 's">' + carRear(c[0], c[1]) + '</g>';
+  });
+  /* cross traffic at the next corner: just headlights sliding across */
+  M += '<g class="s6x a"><circle r="1.6" fill="#FFF6D8"/><circle cx="4" r="1.6" fill="#FFF6D8"/></g>';
+  M += '<g class="s6x b"><circle r="1.4" fill="#FFF6D8"/><circle cx="3.6" r="1.4" fill="#FFF6D8"/></g>';
+  /* people walking past behind the plinth: heads and shoulders above it */
+  var person = function (coat) {
+    return '<g class="s6bob"><ellipse cx="0" cy="-30" rx="11" ry="20" fill="' + coat + '"/><circle cx="0" cy="-56" r="7" fill="#0C0D11"/>' +
+      '<path d="M-11 -32 Q-12 -42 -6 -48 L6 -48 Q12 -42 11 -32" fill="none" stroke="#F1D9A0" stroke-opacity=".35" stroke-width="1.6"/></g>';
+  };
+  [["#1A1C22", 46, -4], ["#2B2F3A", 58, -22], ["#3A2622", 52, -37]].forEach(function (p, i) {
+    M += '<g class="s6walk ' + (i % 2 ? "w2" : "w1") + '" style="animation-duration:' + p[1] + 's;animation-delay:' + p[2] + 's">' + person(p[0]) + '</g>';
+  });
+  var mid = svg("s6-mid", M);
+
+  /* ================= front: plaza, plinth, the bronze, the cart, the van, the lamp */
+  var F = '';
+  /* the street lamp on the right with its banner and sign */
+  F += r(986, 497, 6, 330, '#1A1C21') + '<path d="M989 500 Q1040 488 1098 494" fill="none" stroke="#1A1C21" stroke-width="5"/>';
+  F += r(1088, 492, 26, 9, '#2A2C31', ' rx="3"') + r(1092, 500, 18, 4, '#FFF6DE');
+  F += r(946, 582, 38, 120, '#2E5FB8') + '<path d="M946 600 L984 640 L984 660 L946 620 Z M946 650 L984 690 L984 702 L946 670 Z" fill="#EAF0FA"/>';
+  F += '<circle cx="1008" cy="555" r="15" fill="#F2F2F0"/><circle cx="1008" cy="555" r="11" fill="none" stroke="#C8302A" stroke-width="3"/>';
+  /* the food cart: striped umbrellas, a bright box, the vendor */
+  var umbrella = function (cx, cy, w, h) {
+    var s = '', n = 10;
+    for (var i = 0; i < n; i++) {
+      var a0 = Math.PI + i * Math.PI / n, a1 = Math.PI + (i + 1) * Math.PI / n;
+      s += '<path d="M' + cx + ' ' + (cy - h) + ' L' + (cx + Math.cos(a0) * w).toFixed(1) + ' ' + (cy + Math.sin(a0) * 4).toFixed(1) +
+        ' Q' + (cx + Math.cos((a0 + a1) / 2) * w * 1.04).toFixed(1) + ' ' + (cy + 9) + ' ' + (cx + Math.cos(a1) * w).toFixed(1) + ' ' + (cy + Math.sin(a1) * 4).toFixed(1) +
+        ' Z" fill="' + (i % 2 ? "#F6C83A" : "#D23A2E") + '"/>';
+    }
+    return s + '<line x1="' + cx + '" y1="' + (cy - h) + '" x2="' + cx + '" y2="' + (cy + 60) + '" stroke="#C9C9C9" stroke-width="2.5"/>';
+  };
+  F += '<ellipse cx="940" cy="800" rx="120" ry="60" fill="#FFE8A8" opacity=".22"/>';
+  F += r(872, 760, 140, 96, '#F4F1E6', ' rx="4"') + r(872, 760, 140, 12, '#D9D3C2');
+  F += r(880, 776, 38, 50, '#F6C83A') + r(924, 776, 38, 50, '#E8EEF8') + r(968, 776, 38, 50, '#F6C83A');
+  F += r(884, 782, 30, 4, '#B8302A') + r(884, 792, 26, 3, '#B8302A') + r(928, 784, 30, 18, '#7FA6D9') + r(972, 782, 30, 4, '#B8302A');
+  F += '<path d="M902 756 Q910 728 924 724 Q938 728 942 756 Z" fill="#14161C"/><circle cx="922" cy="716" r="9" fill="#14161C"/>';
+  F += umbrella(905, 730, 56, 26) + umbrella(990, 736, 46, 22);
+  /* a second cart, further up the block */
+  F += '<path d="M1040 782 Q1060 768 1080 782 Z M1080 784 Q1098 772 1116 784 Z" fill="#F6C83A"/><path d="M1052 778 Q1060 770 1068 778 Z" fill="#D23A2E"/>';
+  F += r(1046, 786, 64, 26, '#FFF3C8', ' opacity=".9"');
+  /* people at the cart */
+  F += '<g transform="translate(860 858)">' + person("#2A2E38").replace('class="s6bob"', '') + '</g>';
+  F += '<g transform="translate(1030 858) scale(.9)">' + person("#EDE9E0").replace('class="s6bob"', '') + '</g>';
+  /* the van, parked, hazards on */
+  F += '<ellipse cx="1394" cy="932" rx="170" ry="10" fill="#000" opacity=".55"/>';
+  F += '<path d="M1236 806 L1470 806 Q1500 808 1512 830 L1544 866 Q1554 878 1554 900 L1554 918 L1236 918 Z" fill="url(#s6Van)"/>';
+  F += '<path d="M1470 814 L1500 816 L1530 862 L1470 862 Z" fill="#141820"/>' + r(1392, 820, 66, 36, '#1A1E26', ' rx="3"');
+  F += r(1236, 870, 318, 3, '#B9BCC2') + r(1436, 870, 2, 46, '#B9BCC2');
+  F += '<circle cx="1290" cy="918" r="24" fill="#0C0C0E"/><circle cx="1290" cy="918" r="11" fill="#9CA0A6"/>';
+  F += '<circle cx="1490" cy="918" r="24" fill="#0C0C0E"/><circle cx="1490" cy="918" r="11" fill="#9CA0A6"/>';
+  F += r(1538, 878, 14, 10, '#FFF4D8', ' rx="2"') + '<circle class="s6haz" cx="1546" cy="896" r="5" fill="#FFB020"/><circle class="s6haz" cx="1240" cy="884" r="5" fill="#FFB020"/>';
+  F += '<path d="M1556 872 Q1600 868 1610 880 L1610 938 L1556 938 Z" fill="#C9CCD2"/><circle cx="1590" cy="938" r="18" fill="#0C0C0E"/>';
+  /* the plinth: dark granite, a lit top edge, the low step */
+  F += r(490, 852, 745, 8, '#3A3C44') + r(490, 860, 745, 70, 'url(#s6Granite)');
+  F += r(370, 928, 965, 56, '#17181C') + r(370, 928, 965, 4, '#2C2E35');
+  for (var gs = 0; gs < 12; gs++) F += r(490 + gs * 62, 860, 1.2, 70, '#2A2C33', ' opacity=".7"');
+  F += '<ellipse cx="716" cy="858" rx="150" ry="10" fill="#000" opacity=".45"/>';
+  /* the bronze: five weathered stones balanced on one another */
+  var stone = function (cx, cy, rx, ry, tilt, id) {
+    var pts = [], n = 14;
+    for (var i = 0; i < n; i++) {
+      var a = i / n * Math.PI * 2, k = rnd(.86, 1.08);
+      pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]);
+    }
+    var d = '';
+    for (var j = 0; j < n; j++) {
+      var p0 = pts[(j - 1 + n) % n], p1 = pts[j], p2 = pts[(j + 1) % n], p3 = pts[(j + 2) % n];
+      if (!j) d += 'M' + p1[0].toFixed(1) + ' ' + p1[1].toFixed(1);
+      d += ' C' + (p1[0] + (p2[0] - p0[0]) / 6).toFixed(1) + ' ' + (p1[1] + (p2[1] - p0[1]) / 6).toFixed(1) + ' ' +
+        (p2[0] - (p3[0] - p1[0]) / 6).toFixed(1) + ' ' + (p2[1] - (p3[1] - p1[1]) / 6).toFixed(1) + ' ' + p2[0].toFixed(1) + ' ' + p2[1].toFixed(1);
+    }
+    d += 'Z';
+    var s = '<g transform="rotate(' + tilt + ' ' + cx + ' ' + cy + ')">';
+    s += '<path d="' + d + '" fill="url(#s6Bronze)" stroke="#1C2A26" stroke-width="2"/>';
+    s += '<path d="' + d + '" fill="url(#s6Patina)"/>';
+    s += '<path d="' + d + '" fill="url(#s6Shade)"/>';
+    s += '<path d="' + d + '" fill="url(#s6RimL)"/><path d="' + d + '" fill="url(#s6RimR)"/>';
+    return s + '</g>';
+  };
+  F += stone(716, 800, 118, 60, -3);
+  F += '<ellipse cx="700" cy="742" rx="70" ry="12" fill="#000" opacity=".55"/>';
+  F += stone(700, 690, 76, 58, 8);
+  F += '<ellipse cx="722" cy="636" rx="80" ry="11" fill="#000" opacity=".5"/>';
+  F += stone(724, 586, 98, 54, -6);
+  F += '<ellipse cx="712" cy="536" rx="44" ry="9" fill="#000" opacity=".5"/>';
+  F += stone(710, 490, 56, 48, 10);
+  F += '<ellipse cx="718" cy="446" rx="28" ry="6" fill="#000" opacity=".5"/>';
+  F += stone(718, 414, 36, 33, -12);
+  /* the plaza paving in front, catching the lobby light */
+  F += r(0, 980, 1600, 20, '#202126') + '<ellipse cx="200" cy="990" rx="320" ry="14" fill="#F1D9A0" opacity=".08"/>';
+  /* the planter box */
+  F += r(0, 812, 506, 14, '#A3A6AC') + r(0, 826, 506, 160, 'url(#s6Planter)') + r(0, 984, 506, 16, '#2B2D33');
+  var frontDefs =
+    '<linearGradient id="s6Granite" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26272E"/><stop offset="1" stop-color="#121317"/></linearGradient>' +
+    '<linearGradient id="s6Van" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FAFBFC"/><stop offset=".6" stop-color="#DADDE2"/><stop offset="1" stop-color="#A9ADB4"/></linearGradient>' +
+    '<linearGradient id="s6Planter" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7C7F86"/><stop offset=".5" stop-color="#5F6168"/><stop offset="1" stop-color="#46484E"/></linearGradient>' +
+    '<linearGradient id="s6Bronze" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5E7E70"/><stop offset=".35" stop-color="#3F5D53"/><stop offset=".75" stop-color="#2C443D"/><stop offset="1" stop-color="#5F8676"/></linearGradient>' +
+    '<pattern id="s6Patina" width="90" height="70" patternUnits="userSpaceOnUse"><ellipse cx="20" cy="18" rx="16" ry="9" fill="#86B0A0" opacity=".35"/>' +
+      '<ellipse cx="62" cy="44" rx="20" ry="11" fill="#1A2A25" opacity=".45"/><path d="M40 0 Q44 30 38 70" stroke="#9CC4B4" stroke-opacity=".25" stroke-width="3" fill="none"/>' +
+      '<path d="M78 10 Q74 40 80 70" stroke="#14211D" stroke-opacity=".35" stroke-width="4" fill="none"/><ellipse cx="14" cy="56" rx="10" ry="6" fill="#A7CDBE" opacity=".25"/></pattern>' +
+    '<linearGradient id="s6RimL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F3D9A0" stop-opacity=".45"/><stop offset=".18" stop-color="#F3D9A0" stop-opacity="0"/></linearGradient>' +
+    '<linearGradient id="s6RimR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#DDEBFF" stop-opacity=".5"/><stop offset=".14" stop-color="#DDEBFF" stop-opacity="0"/></linearGradient>' +
+    '<linearGradient id="s6Shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C7E2D4" stop-opacity=".22"/><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></linearGradient>';
+  var front = svg("s6-front", F, frontDefs);
+
+  /* ================= planter shrubs (they sway a little) */
+  var P = '', leaf = function (cx, cy, rr, n) {
+    var s = '';
+    for (var i = 0; i < n; i++) {
+      var a = rnd(0, Math.PI * 2), d = Math.sqrt(rnd(0, 1)) * rr, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d * .8;
+      var lit = x < 220 ? rnd(0, 1) < .55 : rnd(0, 1) < .25;
+      s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + rnd(7, 13).toFixed(1) + '" ry="' + rnd(4, 7).toFixed(1) +
+        '" transform="rotate(' + rnd(0, 180).toFixed(0) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" fill="' + (lit ? pick(["#5C8A48", "#6E9A55", "#7FA864"]) : pick(["#1E3A26", "#264A2E", "#2F5A36", "#18301F"])) + '"/>';
+    }
+    return s;
+  };
+  P += '<g class="s6sway a">' + leaf(84, 718, 86, 170) + '</g>';
+  P += '<g class="s6sway b">' + leaf(322, 744, 100, 200) + leaf(420, 790, 50, 50) + '</g>';
+  P += '<g class="s6sway c">';
+  for (var tr = 0; tr < 22; tr++) {
+    var tx = rnd(160, 500), ty = rnd(812, 900);
+    P += '<path d="M' + tx.toFixed(0) + ' 814 Q' + (tx + rnd(-30, 30)).toFixed(0) + ' ' + (ty - 20).toFixed(0) + ' ' + (tx + rnd(-20, 30)).toFixed(0) + ' ' + ty.toFixed(0) + '" fill="none" stroke="#1F3A24" stroke-width="2"/>';
+    P += leaf(tx + rnd(-15, 15), ty, 14, 4);
+  }
+  P += '</g>';
+  for (var yf = 0; yf < 26; yf++) P += '<circle cx="' + rnd(0, 70).toFixed(0) + '" cy="' + rnd(784, 812).toFixed(0) + '" r="' + rnd(2.5, 4.5).toFixed(1) + '" fill="' + pick(["#F2C230", "#F7D44A", "#E8A820"]) + '"/>';
+  var plant = svg("s6-plant", P);
+
+  /* ================= light: halos, the lobby lamp, steam off the cart */
+  var L = '';
+  L += '<circle cx="252" cy="484" r="80" fill="url(#s6Halo)"/><circle cx="252" cy="484" r="11" fill="#FFFFFF"/>';
+  L += '<circle cx="1101" cy="500" r="90" fill="url(#s6Halo)" class="s6lamp"/>';
+  L += '<circle cx="511" cy="690" r="22" fill="url(#s6Halo)"/>';
+  L += '<ellipse cx="940" cy="770" rx="90" ry="40" fill="url(#s6Halo)" opacity=".7"/>';
+  L += '<ellipse cx="1078" cy="790" rx="50" ry="22" fill="url(#s6Halo)" opacity=".6"/>';
+  for (var st = 0; st < 4; st++) L += '<circle class="s6steam" cx="' + (930 + st * 9) + '" cy="752" r="16" fill="url(#s6Steam)" style="animation-delay:-' + (st * 1.6).toFixed(1) + 's"/>';
+  L += '<rect x="300" y="640" width="1000" height="200" fill="url(#s6Haze)"/>';
+  L += '<path d="M1101 504 L1010 860 L1200 860 Z" fill="url(#s6Cone)" opacity=".5"/>';
+  L += '<path d="M252 492 L150 800 L360 800 Z" fill="url(#s6Cone)" opacity=".35"/>';
+  L += '<rect x="0" y="0" width="1600" height="1000" fill="url(#s6Vig)"/>';
+  var lightDefs =
+    '<radialGradient id="s6Halo"><stop offset="0" stop-color="#FFF6DE" stop-opacity=".85"/><stop offset=".25" stop-color="#FFE7B0" stop-opacity=".35"/><stop offset="1" stop-color="#FFE7B0" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="s6Steam"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="s6Haze" cx=".35" cy=".8" r=".6"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".22"/><stop offset="1" stop-color="#FFD9A0" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="s6Cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6DE" stop-opacity=".45"/><stop offset="1" stop-color="#FFF6DE" stop-opacity="0"/></linearGradient>' +
+    '<radialGradient id="s6Vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#05060A" stop-opacity=".55"/></radialGradient>';
+  var light = svg("s6-light", L, lightDefs);
+
+  return back + mid + front + plant + light;
+}
+
 
 /* ---------- Above 42nd Street: the stage ----------
    Looking straight down past Grand Central's stone figures to the street.
