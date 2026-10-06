@@ -4345,6 +4345,17 @@ tr.work-out td{background:var(--go-bg)!important;opacity:0;transition:opacity .3
   .eod-check circle,.eod-check path{animation:none;stroke-dashoffset:0}
   .eod-card,.eod-card .eod-stats div,.wk-msg.calm .ic,.wk-eod.glow,.wk-tile.bump b{animation:none}
 }
+
+.wk-tile{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+button.wk-tile:active{transform:scale(.97)}
+.wk-tile.t-live{--ac-bg:var(--go-bg)} .wk-tile.t-next{--ac-bg:var(--code-bg)}
+html .work-hud button.wk-eod{align-self:center;margin-left:auto;padding:3px 10px;font:inherit;font-size:11.5px;font-weight:600;
+  background:transparent!important;color:var(--muted)!important;border:1px solid var(--line)!important;border-radius:999px;
+  box-shadow:none!important;opacity:.55;cursor:pointer;transition:opacity .15s,color .15s,border-color .15s;animation:none}
+html .work-hud button.wk-eod:hover,html .work-hud button.wk-eod:focus-visible{opacity:1;color:var(--text)!important;border-color:var(--muted)!important}
+html .work-hud button.wk-eod.ready{opacity:1;color:var(--go)!important;border-color:var(--go)!important}
+html .work-hud button.wk-reopen{border:0;background:transparent;color:var(--muted);font:inherit;font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0 2px}
+.wk-closed{font-size:12px;font-weight:600;gap:10px}
 </style>
 </head>
 <body>
@@ -5237,7 +5248,7 @@ var state = {
   user: null, orders: [], byId: {},
   scopeDate: todayKey(), weekStart: null, scope: "day",
   query: "", filter: "all", sortKey: "seq", sortDir: 1, flashId: null,
-  work: true, workWait: false, workDone: false, workPrev: { k: "seq", d: 1 },
+  work: true, workWait: false, workDone: false, workFocus: null, workPrev: { k: "seq", d: 1 },
   inlineId: null, inlineFields: null, inlineFocusKey: null,
   /* save bookkeeping — see persistOrders() */
   rev: 0, lastSaved: null, saveFailed: false, deleted: {}
@@ -8207,7 +8218,7 @@ function workIn(o, searching) {
   if (searching) return inScope(o);
   if (!inWorkScope(o)) return false;
   var b = workBucket(o);
-  if (b === "live" || b === "next") return true;
+  if (b === "live" || b === "next") return !state.workFocus || state.workFocus === b;
   return b === "wait" ? state.workWait : state.workDone;
 }
 function workRowClass(o) {
@@ -8248,26 +8259,25 @@ function renderWorkHud() {
   if (!state.work) { host.hidden = true; host.textContent = ""; syncKpiRibbonHeight(); return; }
   var c = workCounts();
   var active = c.live + c.next;
-  host.hidden = false;
-  host.textContent = "";
+  /* Built off to the side, then swapped in only if something actually
+     changed. Replacing the buttons on every render used to eat clicks: the
+     press landed on one button and the release on its replacement. */
+  var tmp = document.createElement("div");
 
-  function tile(key, label, n, toggle) {
-    var t = el(toggle ? "button" : "div", "wk-tile t-" + key + (workLast && workLast[key] !== n ? " bump" : ""));
-    if (toggle) {
-      t.type = "button";
-      t.setAttribute("data-work-toggle", key);
-      t.setAttribute("aria-pressed", (key === "wait" ? state.workWait : state.workDone) ? "true" : "false");
-      t.title = "Show or hide " + label.toLowerCase() + " orders in the list";
-    }
+  function tile(key, label, n, pressed, tip) {
+    var t = el("button", "wk-tile t-" + key + (workLast && workLast[key] !== n ? " bump" : ""));
+    t.type = "button";
+    t.setAttribute("data-work-toggle", key);
+    t.setAttribute("aria-pressed", pressed ? "true" : "false");
+    t.title = tip;
     t.appendChild(el("b", null, n));
     t.appendChild(el("span", null, label));
     return t;
   }
-  host.appendChild(tile("live", "In progress", c.live, false));
-  host.appendChild(tile("next", "Up next", c.next, false));
-  host.appendChild(tile("wait", "Waiting", c.wait, true));
-  host.appendChild(tile("done", "Done", c.done, true));
-  workLast = c;
+  tmp.appendChild(tile("live", "In progress", c.live, state.workFocus === "live", "Show only orders in progress"));
+  tmp.appendChild(tile("next", "Up next", c.next, state.workFocus === "next", "Show only orders not started yet"));
+  tmp.appendChild(tile("wait", "Waiting", c.wait, state.workWait, "Show or hide orders that are waiting"));
+  tmp.appendChild(tile("done", "Done", c.done, state.workDone, "Show or hide finished orders"));
 
   var msg = el("div", "wk-msg");
   var ic = el("div", "ic"), tx = el("div", "tx");
@@ -8287,7 +8297,7 @@ function renderWorkHud() {
     msg.className = "wk-msg clear";
     ic.innerHTML = wkSvg('<path d="M20 6L9 17l-5-5"/>');
     tx.appendChild(el("b", null, "All caught up"));
-    tx.appendChild(el("span", null, "Everything for the day is finished. Ready to close out."));
+    tx.appendChild(el("span", null, "Everything for the day is finished."));
   } else if (active === 0) {
     ic.innerHTML = wkSvg('<path d="M12 5v14M5 12h14"/>');
     tx.appendChild(el("b", null, "No orders yet"));
@@ -8306,22 +8316,35 @@ function renderWorkHud() {
     if (c.carry) tx.appendChild(el("span", null, c.carry + " carried over from earlier days"));
   }
   msg.appendChild(ic); msg.appendChild(tx);
-  host.appendChild(msg);
+  tmp.appendChild(msg);
 
+  /* Every previous day counts as closed. Only today (or a day still being
+     filled in) gets the Close out button. */
+  var past = state.scopeDate < todayKey();
   var closed = eodRead()[state.scopeDate];
-  if (closed) {
+  if (past || closed) {
     var cl = el("div", "wk-closed");
-    cl.appendChild(document.createTextNode("✓ Day closed " + prettyTime(pad2(new Date(closed.at).getHours()) + ":" + pad2(new Date(closed.at).getMinutes()) + ":00")));
-    var re = el("button", "btn ghost sm", "Reopen");
-    re.type = "button"; re.setAttribute("data-work-reopen", "1");
-    cl.appendChild(re);
-    host.appendChild(cl);
+    var when = closed && closed.at ? new Date(closed.at) : null;
+    cl.appendChild(document.createTextNode("✓ Day closed" + (when ? " " + prettyTime(pad2(when.getHours()) + ":" + pad2(when.getMinutes()) + ":00") : "")));
+    if (!past) {
+      var re = el("button", "wk-reopen", "Reopen");
+      re.type = "button"; re.setAttribute("data-work-reopen", "1");
+      cl.appendChild(re);
+    }
+    tmp.appendChild(cl);
   } else {
-    var eb = el("button", "btn wk-eod" + (active === 0 && c.wait === 0 && c.done > 0 ? " glow" : ""), "Close out day");
+    var eb = el("button", "wk-eod" + (active === 0 && c.wait === 0 && c.done > 0 ? " ready" : ""), "Close out day");
     eb.type = "button"; eb.setAttribute("data-work-eod", "1");
     eb.title = "Wrap up the day: finish or carry over what is left";
-    host.appendChild(eb);
+    tmp.appendChild(eb);
   }
+
+  var strip = function (s) { return s.replace(/ bump/g, ""); };
+  if (!host.hidden && strip(host.innerHTML) === strip(tmp.innerHTML)) { workLast = c; return; }
+  host.hidden = false;
+  host.textContent = "";
+  while (tmp.firstChild) host.appendChild(tmp.firstChild);
+  workLast = c;
   syncKpiRibbonHeight();
 }
 
@@ -8518,7 +8541,8 @@ function eodCelebrate(d) {
    8-digit order # + 2-digit proof # (1624880301.pdf). A proof only shows when
    the order's Proof is Yes. Paste the script's web-app URL here to bake it in,
    or use Tools > Google Drive proofs on each device. */
-var DRIVE_PROOF_URL = "https://script.google.com/d/1kioPwCls3alJXpFiEaGXxAvqpuDl3Zd5aaXAaDV-dM2wytEktTgy_GYe/?t=09196116";
+/* Paste the Web app URL (ends in /exec) plus ?t=YOURTOKEN between the quotes: */
+var DRIVE_PROOF_URL = "https://script.google.com/macros/s/AKfycbxINlH_zmjQLWpee6wnDSfCxRFlOdcGzmHdbr4aT7H0li_i2l5T_3ywUZg6BERJSD_2/exec?t=09196116";
 var driveIdx = { map: {}, at: 0, err: "" };
 function driveUrl() {
   try { return localStorage.getItem("caot_drive_url") || DRIVE_PROOF_URL || ""; }
@@ -8530,19 +8554,34 @@ function driveLoadCache() {
     if (c && c.map) driveIdx = { map: c.map, at: c.at || 0, err: "" };
   } catch (e) {}
 }
+var driveWarned = false;
 function driveRefresh(quiet) {
   var u = driveUrl();
   if (!u) return Promise.resolve(false);
-  return fetch(u, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+  function fail(msg) {
+    driveIdx.err = msg;
+    if (!quiet || !driveWarned) { driveWarned = true; toast(msg, null, 9000); }
+    return false;
+  }
+  /* The editor address (script.google.com/d/…) is not the web app. The web
+     app link is made by Deploy > New deployment and always ends in /exec. */
+  if (!/^https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[^/]+\/exec/.test(u)) {
+    return Promise.resolve(fail("That isn’t the web-app link. In Apps Script choose Deploy → New deployment → Web app, then copy the link that ends in /exec and add ?t=YOURTOKEN."));
+  }
+  return fetch(u, { cache: "no-store" }).then(function (r) { return r.text(); }).then(function (txt) {
+    var d;
+    try { d = JSON.parse(txt); }
+    catch (e) { throw new Error("Google sent back a sign-in page instead of data. Redeploy the web app with “Who has access” set to Anyone."); }
+    if (d && d.error === "denied") throw new Error("The token after ?t= doesn’t match TOKEN in the script.");
     if (!d || d.error || !d.orders) throw new Error(d && d.error ? "Drive script said: " + d.error : "Unexpected reply from the Drive script.");
     driveIdx = { map: d.orders, at: Date.now(), err: "" };
     try { localStorage.setItem("caot_drive_idx", JSON.stringify({ map: d.orders, at: driveIdx.at })); } catch (e) {}
     scheduleRender();
     return true;
   }).catch(function (err) {
-    driveIdx.err = (err && err.message) || "Could not reach the Drive script.";
-    if (!quiet) toast(driveIdx.err);
-    return false;
+    var m = err && err.message;
+    if (!m || /Failed to fetch|NetworkError|Load failed/i.test(m)) m = "Couldn’t reach the Drive script. Check the link ends in /exec and that access is set to Anyone.";
+    return fail(m);
   });
 }
 function driveKey(o) {
@@ -13368,9 +13407,12 @@ function wire() {
   $("workHud").addEventListener("click", function (e) {
     var t = e.target.closest("[data-work-toggle]");
     if (t) {
-      if (t.getAttribute("data-work-toggle") === "wait") state.workWait = !state.workWait;
-      else state.workDone = !state.workDone;
-      scheduleRender();
+      var k = t.getAttribute("data-work-toggle");
+      if (k === "wait") state.workWait = !state.workWait;
+      else if (k === "done") state.workDone = !state.workDone;
+      else state.workFocus = state.workFocus === k ? null : k;
+      /* Straight away, not on the next animation frame. */
+      renderTable(); renderFooter(); renderWorkHud();
       return;
     }
     if (e.target.closest("[data-work-eod]")) { openCloseOut(); return; }
@@ -13478,6 +13520,8 @@ window.__CAOT__ = {
   summarize: summarize, summaryText: summaryText, installBootstrap: installBootstrap,
   holdMinutes: holdMinutes, renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
   setPanel: setPanel, panelCollapsed: panelCollapsed,
+  scheduleRender: scheduleRender, render: render, driveRefresh: driveRefresh,
+  driveState: function () { return driveIdx; },
   isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
   startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
   BOOTSTRAP_ORDERS: BOOTSTRAP_ORDERS,
