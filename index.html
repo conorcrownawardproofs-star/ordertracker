@@ -4278,15 +4278,25 @@ html.is-working #chips{display:none}
 html.is-working .ledger-bar{flex-wrap:wrap}
 .work-hud{flex:0 0 100%;order:20;display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;padding:6px 0 2px}
 .work-hud[hidden]{display:none}
-.wk-tile{--ac:var(--muted);--ac-bg:var(--surface-2);display:flex;flex-direction:column;justify-content:center;min-width:96px;padding:7px 14px;border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;text-align:left}
-.wk-tile b{font-size:25px;line-height:1.05;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ac)}
-.wk-tile span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px}
-.wk-tile.t-live{--ac:var(--go)} .wk-tile.t-next{--ac:var(--code)} .wk-tile.t-wait{--ac:var(--hold)} .wk-tile.t-done{--ac:var(--muted)}
-button.wk-tile{cursor:pointer;transition:background .15s,border-color .15s}
-button.wk-tile:hover{background:var(--surface-2)}
-button.wk-tile[aria-pressed="true"]{background:var(--ac-bg);border-color:var(--ac)}
-.wk-tile.t-wait{--ac-bg:var(--hold-bg)} .wk-tile.t-done{--ac-bg:var(--go-bg)}
-.wk-tile.bump b{animation:wkBump .45s cubic-bezier(.2,1.6,.4,1)}
+.wk-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.wk-tab{--ac:var(--muted);--ac-bg:var(--surface-2);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:94px;padding:7px 14px 8px;
+  border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;cursor:pointer;position:relative;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .12s,border-color .12s,transform .08s,box-shadow .12s}
+.wk-tab b{font-size:23px;line-height:1.05;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ac)}
+.wk-tab span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);font-weight:600;margin-top:2px}
+.wk-tab:hover{background:var(--ac-bg);border-color:var(--ac)}
+.wk-tab:active{transform:scale(.97)}
+.wk-tab:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.wk-tab.on{background:var(--ac);border-color:var(--ac);box-shadow:0 2px 0 rgba(0,0,0,.14)}
+.wk-tab.on b,.wk-tab.on span{color:#fff}
+html[data-tone="dark"] .wk-tab.on b,html[data-tone="dark"] .wk-tab.on span{color:#0E1620}
+.wk-tab.t-active{--ac:var(--crown-2);--ac-bg:var(--code-bg);margin-right:10px}
+.wk-tab.t-active::after{content:"";position:absolute;right:-9px;top:20%;bottom:20%;width:1px;background:var(--line)}
+.wk-tab.t-live{--ac:var(--go);--ac-bg:var(--go-bg)}
+.wk-tab.t-next{--ac:var(--code);--ac-bg:var(--code-bg)}
+.wk-tab.t-wait{--ac:var(--hold);--ac-bg:var(--hold-bg)}
+.wk-tab.t-done{--ac:var(--brass);--ac-bg:var(--brass-soft)}
+.wk-tab.bump b{animation:wkBump .45s cubic-bezier(.2,1.6,.4,1)}
 @keyframes wkBump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
 .wk-msg{flex:1 1 280px;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2)}
 .wk-msg .ic{flex:0 0 auto;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--surface);color:var(--code)}
@@ -4300,34 +4310,101 @@ button.wk-tile[aria-pressed="true"]{background:var(--ac-bg);border-color:var(--a
 @keyframes wkBreathe{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.12);opacity:1}}
 .wk-waits{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .wk-waits i{font-style:normal;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface);border:1px solid var(--hold);color:var(--hold);white-space:nowrap}
-.wk-eod{align-self:center;margin-left:auto}
-.wk-eod.glow{animation:wkGlow 2s ease-in-out infinite}
-@keyframes wkGlow{0%,100%{box-shadow:0 0 0 0 rgba(22,97,72,.0)}50%{box-shadow:0 0 0 7px rgba(22,97,72,.22)}}
-.wk-closed{align-self:center;margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--go)}
-tr.row-wait td{opacity:.62}
-tr.row-wait:hover td{opacity:1}
-tr.row-done td{opacity:.55}
+html .work-hud button.wk-eod{align-self:center;margin-left:auto;padding:3px 10px;font:inherit;font-size:11.5px;font-weight:600;
+  background:transparent!important;color:var(--muted)!important;border:1px solid var(--line)!important;border-radius:999px;
+  box-shadow:none!important;opacity:.55;cursor:pointer;transition:opacity .15s,color .15s,border-color .15s;animation:none}
+html .work-hud button.wk-eod:hover,html .work-hud button.wk-eod:focus-visible{opacity:1;color:var(--text)!important;border-color:var(--muted)!important}
+html .work-hud button.wk-eod.ready{opacity:1;color:var(--go)!important;border-color:var(--go)!important}
+.wk-closed{align-self:center;margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:var(--go)}
+html .work-hud button.wk-reopen{border:0;background:transparent;color:var(--muted);font:inherit;font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0 2px}
+.wk-note{flex:0 0 100%;display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:8px;background:var(--brass-soft);border:1px solid var(--brass);font-size:12.5px;color:var(--text)}
+.wk-note span{flex:1;min-width:0}
+.wk-note button{border:0;background:transparent;color:var(--muted);font-size:18px;line-height:1;cursor:pointer}
+tr.row-wait td{opacity:.86}
+tr.row-done td:first-child{box-shadow:inset 3px 0 0 var(--go)}
 tr.row-carry td:first-child{box-shadow:inset 3px 0 0 var(--brass)}
 tr.work-out td{background:var(--go-bg)!important;opacity:0;transition:opacity .38s ease .14s,background .14s}
-.eod-modal{max-width:580px;max-height:86vh;overflow:auto}
+
+/* ---------- End-of-day walkthrough ---------- */
+.eod-wiz{max-width:680px;width:100%;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:92vh}
+.eod-wh{display:flex;align-items:center;gap:12px;padding:12px 18px 8px}
+.eod-step{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);flex:1}
+.eod-skip{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer}
+.eod-x{border:0;background:transparent;color:var(--muted);font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+.eod-prog{height:4px;background:var(--surface-2)}
+.eod-prog i{display:block;height:100%;background:var(--brass);transition:width .3s ease}
+.eod-stage{padding:14px 22px 8px;height:min(400px,60vh);overflow:auto}
+.eod-scr{animation:eodIn .28s ease both}
+.eod-scr.from-left{animation-name:eodInL}
+@keyframes eodIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes eodInL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.eod-kicker{margin:0 0 2px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
+.eod-scr h3{margin:0 0 12px;font-size:22px}
+.eod-scr .eod-note{margin:10px 0 0;font-size:13px;color:var(--text-2)}
+.eod-wf{display:flex;align-items:center;gap:10px;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface-2)}
+.eod-dots{display:flex;gap:7px;flex:1}
+.eod-dots button{width:9px;height:9px;padding:0;border-radius:50%;border:0;background:var(--line);cursor:pointer;transition:transform .15s,background .15s}
+.eod-dots button.seen{background:var(--muted)}
+.eod-dots button.on{background:var(--brass);transform:scale(1.35)}
+.eod-wf .btn.go{background:var(--go);color:#fff}
+html[data-tone="dark"] .eod-wf .btn.go{color:#0E1620}
 .eod-stats{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
-.eod-stats div{flex:1 1 90px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
-.eod-stats b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.eod-stats div{flex:1 1 110px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);text-align:center}
+.eod-stats b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
 .eod-stats span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.eod-warn{font-size:12.5px;color:var(--hold);background:var(--hold-bg);border-radius:8px;padding:7px 10px;margin:8px 0}
-.eod-list{margin:8px 0}
+.eod-bars{display:flex;align-items:flex-end;gap:6px;height:140px;margin:8px 0 6px}
+.eod-bar{flex:1;min-width:18px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;border:0;background:transparent;padding:0;cursor:pointer;font:inherit;color:var(--muted)}
+.eod-bar i{display:block;width:100%;height:0;border-radius:6px 6px 2px 2px;background:var(--code);min-height:3px;opacity:.55;transition:height .55s cubic-bezier(.2,1.2,.4,1),opacity .15s,background .15s}
+.eod-bar b{font-size:11px;color:var(--text-2)}
+.eod-bar span{font-size:10.5px}
+.eod-bar:hover i{opacity:.9}
+.eod-bar.top i{background:var(--go)}
+.eod-bar.sel i{opacity:1;background:var(--brass)}
+.eod-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.eod-chips i{font-style:normal;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--text)}
+.eod-awards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.eod-award{min-height:104px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);cursor:pointer;font:inherit;color:var(--text);padding:12px;text-align:center;transition:transform .1s,border-color .15s}
+.eod-award:hover{transform:translateY(-2px);border-color:var(--brass)}
+.eod-award .back{display:none}
+.eod-award.on{background:var(--brass-soft);border-color:var(--brass);cursor:default}
+.eod-award.on .front{display:none}
+.eod-award.on .back{display:block;animation:eodFlip .5s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes eodFlip{from{transform:rotateY(90deg) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.eod-award .em{display:block;font-size:32px;line-height:1.2}
+.eod-award b{display:block;font-size:14px;margin-top:2px}
+.eod-award span{display:block;font-size:12.5px;color:var(--text-2);margin-top:2px}
+.eod-hbars{display:grid;gap:6px;margin:8px 0}
+.eod-hrow{display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:0;cursor:pointer;font:inherit;color:var(--text);text-align:left}
+.eod-hrow em{font-style:normal;width:110px;flex:0 0 auto;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eod-hrow i{display:block;height:14px;border-radius:7px;background:var(--code);width:0;transition:width .55s cubic-bezier(.2,1.1,.4,1);opacity:.6}
+.eod-hrow.sel i,.eod-hrow:hover i{opacity:1}
+.eod-hrow b{font-size:12px;color:var(--text-2)}
+.eod-sec{margin:12px 0 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.eod-list{margin:4px 0}
 .eod-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
 .eod-item:last-child{border-bottom:0}
 .eod-item .nm{flex:1;min-width:0}
 .eod-item .nm b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .eod-item .nm span{font-size:11.5px;color:var(--muted)}
 .eod-item .sg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:0 0 auto}
-.eod-item .sg button{border:0;background:var(--surface);color:var(--text-2);font:inherit;font-size:12px;font-weight:600;padding:5px 10px;cursor:pointer}
+.eod-item .sg button,.eod-tog{border:0;background:var(--surface);color:var(--text-2);font:inherit;font-size:12px;font-weight:600;padding:5px 10px;cursor:pointer}
 .eod-item .sg button[aria-pressed="true"]{background:var(--crown-2);color:var(--crown-ink)}
 .eod-item .sg button:disabled{opacity:.4;cursor:not-allowed}
+.eod-tog{border:1px solid var(--line);border-radius:8px}
+.eod-tog[aria-pressed="true"]{background:var(--go);color:#fff;border-color:var(--go)}
+html[data-tone="dark"] .eod-tog[aria-pressed="true"]{color:#0E1620}
+.eod-tidy{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 0;color:var(--go);text-align:center}
+.eod-tidy svg{width:52px;height:52px}
+.eod-tidy b{font-size:16px;color:var(--text)}
+.eod-tidy span{font-size:13px;color:var(--text-2)}
+.eod-ta{width:100%;min-height:78px;resize:vertical;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text)}
+.eod-mood{display:flex;gap:6px;justify-content:center;margin:10px 0}
+.eod-mood button{font-size:30px;line-height:1;border:2px solid transparent;border-radius:14px;background:transparent;cursor:pointer;padding:6px 9px;filter:grayscale(.85);opacity:.7;transition:transform .15s,filter .15s,opacity .15s}
+.eod-mood button:hover{filter:none;opacity:1}
+.eod-mood button.on{filter:none;opacity:1;border-color:var(--brass);transform:scale(1.18)}
 .eod-fx{position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;background:rgba(6,14,28,.62);animation:fadeIn .2s}
 .eod-fx canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.eod-card{position:relative;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:28px 36px 24px;text-align:center;box-shadow:var(--shadow);max-width:92vw;animation:eodPop .55s cubic-bezier(.2,1.35,.4,1)}
+.eod-card{position:relative;min-width:min(470px,92vw);background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:28px 36px 24px;text-align:center;box-shadow:var(--shadow);max-width:92vw;animation:eodPop .55s cubic-bezier(.2,1.35,.4,1)}
 @keyframes eodPop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
 .eod-card h2{margin:10px 0 2px;font-size:24px}
 .eod-card p{margin:0;color:var(--text-2);font-size:13.5px}
@@ -4335,27 +4412,16 @@ tr.work-out td{background:var(--go-bg)!important;opacity:0;transition:opacity .3
 .eod-check circle{fill:none;stroke:var(--go);stroke-width:5;stroke-linecap:round;stroke-dasharray:226;stroke-dashoffset:226;animation:eodDraw .7s ease-out .15s forwards}
 .eod-check path{fill:none;stroke:var(--go);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:50;stroke-dashoffset:50;animation:eodDraw .4s ease-out .75s forwards}
 @keyframes eodDraw{to{stroke-dashoffset:0}}
-.eod-card{min-width:min(470px,92vw)}
 .eod-card .eod-stats{justify-content:center;flex-wrap:nowrap;margin:16px 0 10px}
-.eod-card .eod-stats div{text-align:center;animation:eodRise .5s ease-out both}
+.eod-card .eod-stats div{animation:eodRise .5s ease-out both}
 .eod-card .eod-stats div:nth-child(2){animation-delay:.12s}
 .eod-card .eod-stats div:nth-child(3){animation-delay:.24s}
 @keyframes eodRise{0%{transform:translateY(14px);opacity:0}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){
   .eod-check circle,.eod-check path{animation:none;stroke-dashoffset:0}
-  .eod-card,.eod-card .eod-stats div,.wk-msg.calm .ic,.wk-eod.glow,.wk-tile.bump b{animation:none}
+  .eod-card,.eod-card .eod-stats div,.wk-msg.calm .ic,.wk-tab.bump b,.eod-scr,.eod-award.on .back{animation:none}
+  .eod-bar i,.eod-hrow i,.eod-prog i{transition:none}
 }
-
-.wk-tile{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
-button.wk-tile:active{transform:scale(.97)}
-.wk-tile.t-live{--ac-bg:var(--go-bg)} .wk-tile.t-next{--ac-bg:var(--code-bg)}
-html .work-hud button.wk-eod{align-self:center;margin-left:auto;padding:3px 10px;font:inherit;font-size:11.5px;font-weight:600;
-  background:transparent!important;color:var(--muted)!important;border:1px solid var(--line)!important;border-radius:999px;
-  box-shadow:none!important;opacity:.55;cursor:pointer;transition:opacity .15s,color .15s,border-color .15s;animation:none}
-html .work-hud button.wk-eod:hover,html .work-hud button.wk-eod:focus-visible{opacity:1;color:var(--text)!important;border-color:var(--muted)!important}
-html .work-hud button.wk-eod.ready{opacity:1;color:var(--go)!important;border-color:var(--go)!important}
-html .work-hud button.wk-reopen{border:0;background:transparent;color:var(--muted);font:inherit;font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0 2px}
-.wk-closed{font-size:12px;font-weight:600;gap:10px}
 </style>
 </head>
 <body>
@@ -5248,7 +5314,7 @@ var state = {
   user: null, orders: [], byId: {},
   scopeDate: todayKey(), weekStart: null, scope: "day",
   query: "", filter: "all", sortKey: "seq", sortDir: 1, flashId: null,
-  work: true, workWait: false, workDone: false, workFocus: null, workPrev: { k: "seq", d: 1 },
+  work: true, workView: "active", workPrev: { k: "seq", d: 1 },
   inlineId: null, inlineFields: null, inlineFocusKey: null,
   /* save bookkeeping — see persistOrders() */
   rev: 0, lastSaved: null, saveFailed: false, deleted: {}
@@ -7215,7 +7281,7 @@ function renderTable() {
     var title, sub;
     if (!state.orders.length) { title = "No orders yet"; sub = "Add the first one from the row above."; }
     else if (!scopedCount) { title = "Nothing logged for " + prettyDate(state.scopeDate); sub = "Pick another day, or start an order above."; }
-    else if (state.work && !state.query.trim()) { title = "Nothing to work on right now"; sub = "Tap Waiting or Done above to see the rest of the day."; }
+    else if (state.work && !state.query.trim()) { var et = workEmptyText(); title = et[0]; sub = et[1]; }
     else { title = "No orders match"; sub = "Clear the search or pick a different filter."; }
     empty.appendChild(el("b", null, title));
     empty.appendChild(document.createTextNode(sub));
@@ -8150,24 +8216,33 @@ function attachProofPdf(orderId, file) {
   idbPutProof(rec.id, file).then(done).catch(function () { toast("Could not save that PDF."); });
 }
 /* ------------------------------------------------------- Working mode
-   The list shows only what needs doing (in progress + not started), newest
-   first. Orders on hold, or whose proof is out with the customer, are
-   "waiting": nothing to do but wait, so they sit behind a counter. Finished
-   orders sit behind a Done counter. Orders still open from earlier days (up to
-   a week back) carry over onto today. Close out day wraps the day up: finish
-   or carry what is left, then a small celebration. Closed days are remembered
-   on this device only (caot_eod_v1). */
+   The list is split by stage, one tab at a time:
+     Active       in progress + up next (the default, newest first)
+     In progress  started, not finished, not on hold
+     Up next      not started yet
+     Waiting      on hold (ILS, CEC, WEE, WLE...) or proof out with the customer
+     Done         finished today
+   Open orders from earlier days (up to a week back) carry onto today. Close
+   out day is a walkthrough of the day; every previous day counts as closed.
+   Closed days, notes and moods are remembered on this device (caot_eod_v1). */
 var WORK_KEY = "caot_work_v1", EOD_KEY = "caot_eod_v1";
+var WORK_VIEWS = ["active", "live", "next", "wait", "done"];
 function workLoad() {
-  var on = true;
+  var on = true, view = "active";
   try {
     var w = JSON.parse(localStorage.getItem(WORK_KEY) || "null");
-    if (w && typeof w.on === "boolean") on = w.on;
+    if (w) {
+      if (typeof w.on === "boolean") on = w.on;
+      /* The tab is remembered for the day, then starts fresh on Active. */
+      if (w.day === todayKey() && WORK_VIEWS.indexOf(w.view) !== -1) view = w.view;
+    }
   } catch (e) {}
-  state.work = on;
+  state.work = on; state.workView = view;
   if (on) { state.sortKey = "seq"; state.sortDir = -1; }
 }
-function workSave() { try { localStorage.setItem(WORK_KEY, JSON.stringify({ on: state.work })); } catch (e) {} }
+function workSave() {
+  try { localStorage.setItem(WORK_KEY, JSON.stringify({ on: state.work, view: state.workView, day: todayKey() })); } catch (e) {}
+}
 function setWork(on) {
   on = !!on;
   if (state.work === on) return;
@@ -8181,6 +8256,13 @@ function setWork(on) {
   state.work = on;
   workSave();
   scheduleRender();
+}
+function setWorkView(v) {
+  if (WORK_VIEWS.indexOf(v) === -1) return;
+  state.workView = v;
+  workSave();
+  /* Straight away, not on the next animation frame. */
+  renderTable(); renderFooter(); renderWorkHud();
 }
 function eodRead() { try { return JSON.parse(localStorage.getItem(EOD_KEY) || "{}") || {}; } catch (e) { return {}; } }
 function eodWrite(m) { try { localStorage.setItem(EOD_KEY, JSON.stringify(m)); } catch (e) {} }
@@ -8217,16 +8299,25 @@ function inWorkScope(o) { return inScope(o) || workCarry(o); }
 function workIn(o, searching) {
   if (searching) return inScope(o);
   if (!inWorkScope(o)) return false;
-  var b = workBucket(o);
-  if (b === "live" || b === "next") return !state.workFocus || state.workFocus === b;
-  return b === "wait" ? state.workWait : state.workDone;
+  var b = workBucket(o), v = state.workView;
+  if (v === "active") return b === "live" || b === "next";
+  return b === v;
+}
+function workEmptyText() {
+  switch (state.workView) {
+    case "live": return ["Nothing in progress", "Stamp Start on an order from Up next to begin."];
+    case "next": return ["Nothing left to start", "Every order has been started."];
+    case "wait": return ["Nothing is waiting", "No holds and no proofs out with customers."];
+    case "done": return ["Nothing finished yet", "Finished orders will land here."];
+    default: return ["Nothing to work on right now", "Check Waiting, or open Done to review the day."];
+  }
 }
 function workRowClass(o) {
   if (!state.work) return "";
   var b = workBucket(o);
   return (b === "wait" ? " row-wait" : b === "done" ? " row-done" : "") + (workCarry(o) ? " row-carry" : "");
 }
-/* When an order drops out of the Working list, flash it green and fade it
+/* When an order drops out of the current tab, flash it green and fade it
    instead of snapping it away. */
 function workSoftRender(id) {
   var o = byId(id);
@@ -8237,18 +8328,20 @@ function workSoftRender(id) {
   } else scheduleRender();
 }
 function workCounts() {
-  var c = { live: 0, next: 0, wait: 0, done: 0, carry: 0 };
+  var c = { live: 0, next: 0, wait: 0, done: 0, carry: 0, active: 0 };
   state.orders.forEach(function (o) {
     if (!inWorkScope(o)) return;
     c[workBucket(o)]++;
     if (workCarry(o)) c.carry++;
   });
+  c.active = c.live + c.next;
   return c;
 }
 var workLast = null;
 function wkSvg(d) {
   return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
 }
+function newestFirst(a, b) { return b.date.localeCompare(a.date) || b.seq - a.seq; }
 function renderWorkHud() {
   var host = $("workHud");
   if (!host) return;
@@ -8258,41 +8351,78 @@ function renderWorkHud() {
   });
   if (!state.work) { host.hidden = true; host.textContent = ""; syncKpiRibbonHeight(); return; }
   var c = workCounts();
-  var active = c.live + c.next;
-  /* Built off to the side, then swapped in only if something actually
-     changed. Replacing the buttons on every render used to eat clicks: the
-     press landed on one button and the release on its replacement. */
+  var active = c.active, view = state.workView;
+  /* Built off to the side, then swapped in only if something changed, so a
+     press and release always land on the same button. */
   var tmp = document.createElement("div");
 
-  function tile(key, label, n, pressed, tip) {
-    var t = el("button", "wk-tile t-" + key + (workLast && workLast[key] !== n ? " bump" : ""));
+  var tabs = el("div", "wk-tabs");
+  tabs.setAttribute("role", "tablist");
+  tabs.setAttribute("aria-label", "Order stage");
+  function tab(key, label, tip) {
+    var on = view === key;
+    var t = el("button", "wk-tab t-" + key + (on ? " on" : "") + (workLast && workLast[key] !== c[key] ? " bump" : ""));
     t.type = "button";
-    t.setAttribute("data-work-toggle", key);
-    t.setAttribute("aria-pressed", pressed ? "true" : "false");
+    t.setAttribute("role", "tab");
+    t.setAttribute("aria-selected", on ? "true" : "false");
+    t.tabIndex = on ? 0 : -1;
+    t.setAttribute("data-work-view", key);
     t.title = tip;
-    t.appendChild(el("b", null, n));
+    t.appendChild(el("b", null, c[key]));
     t.appendChild(el("span", null, label));
     return t;
   }
-  tmp.appendChild(tile("live", "In progress", c.live, state.workFocus === "live", "Show only orders in progress"));
-  tmp.appendChild(tile("next", "Up next", c.next, state.workFocus === "next", "Show only orders not started yet"));
-  tmp.appendChild(tile("wait", "Waiting", c.wait, state.workWait, "Show or hide orders that are waiting"));
-  tmp.appendChild(tile("done", "Done", c.done, state.workDone, "Show or hide finished orders"));
+  tabs.appendChild(tab("active", "Active", "Everything that still needs doing: in progress plus up next"));
+  tabs.appendChild(tab("live", "In progress", "Started and not finished"));
+  tabs.appendChild(tab("next", "Up next", "Not started yet"));
+  tabs.appendChild(tab("wait", "Waiting", "On hold, or a proof is out with the customer"));
+  tabs.appendChild(tab("done", "Done", "Finished orders"));
+  tmp.appendChild(tabs);
 
   var msg = el("div", "wk-msg");
   var ic = el("div", "ic"), tx = el("div", "tx");
-  if (active === 0 && c.wait > 0) {
-    msg.className = "wk-msg calm";
-    ic.innerHTML = wkSvg('<path d="M6 3h12M6 21h12M7 3v4a5 5 0 0 0 2 4l1 1-1 1a5 5 0 0 0-2 4v4M17 3v4a5 5 0 0 1-2 4l-1 1 1 1a5 5 0 0 1 2 4v4"/>');
-    tx.appendChild(el("b", null, "Nothing to do right now — just waiting"));
+  function waitChips() {
     var wl = el("div", "wk-waits");
     state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) === "wait"; })
-      .sort(function (a, b) { return b.date.localeCompare(a.date) || b.seq - a.seq; })
-      .slice(0, 6).forEach(function (o) {
+      .sort(newestFirst).slice(0, 6).forEach(function (o) {
         var mins = isHoldFlag(o) ? holdElapsed(o) : 0;
         wl.appendChild(el("i", null, "#" + o.seq + " · " + waitReason(o) + (mins ? " · " + durationText(mins) : "")));
       });
-    tx.appendChild(wl);
+    return wl;
+  }
+  var calmIcon = '<path d="M6 3h12M6 21h12M7 3v4a5 5 0 0 0 2 4l1 1-1 1a5 5 0 0 0-2 4v4M17 3v4a5 5 0 0 1-2 4l-1 1 1 1a5 5 0 0 1 2 4v4"/>';
+  if (view === "done") {
+    var dn = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) === "done"; });
+    if (dn.length) {
+      var ds = summarize(dn);
+      var timed = dn.map(function (o) { return { o: o, t: timeTaken(o) }; }).filter(function (x) { return x.t !== null && x.t > 0; })
+        .sort(function (a, b) { return a.t - b.t; });
+      msg.className = "wk-msg clear";
+      ic.innerHTML = wkSvg('<path d="M20 6L9 17l-5-5"/>');
+      tx.appendChild(el("b", null, dn.length + (dn.length === 1 ? " order" : " orders") + " finished" + (ds.qty ? " · " + ds.qty + " pcs" : "")));
+      tx.appendChild(el("span", null, (ds.medTaken !== null && ds.medTaken !== undefined ? "Median " + durationText(Math.round(ds.medTaken)) : "No times logged yet") +
+        (timed.length > 1 ? " · fastest #" + timed[0].o.seq + " in " + durationText(timed[0].t) : "")));
+    } else {
+      ic.innerHTML = wkSvg('<path d="M12 5v14M5 12h14"/>');
+      tx.appendChild(el("b", null, "Nothing finished yet"));
+      tx.appendChild(el("span", null, "Finished orders will land here."));
+    }
+  } else if (view === "wait" || (active === 0 && c.wait > 0 && view === "active")) {
+    if (c.wait > 0) {
+      msg.className = "wk-msg calm";
+      ic.innerHTML = wkSvg(calmIcon);
+      tx.appendChild(el("b", null, active === 0 ? "Nothing to do right now — just waiting" : "Waiting on " + c.wait + (c.wait === 1 ? " order" : " orders")));
+      tx.appendChild(waitChips());
+    } else {
+      ic.innerHTML = wkSvg('<path d="M20 6L9 17l-5-5"/>');
+      tx.appendChild(el("b", null, "Nothing is waiting"));
+      tx.appendChild(el("span", null, "No holds and no proofs out."));
+    }
+  } else if (active === 0 && c.wait > 0) {
+    msg.className = "wk-msg calm";
+    ic.innerHTML = wkSvg(calmIcon);
+    tx.appendChild(el("b", null, "Nothing to do right now — just waiting"));
+    tx.appendChild(waitChips());
   } else if (active === 0 && c.done > 0) {
     msg.className = "wk-msg clear";
     ic.innerHTML = wkSvg('<path d="M20 6L9 17l-5-5"/>');
@@ -8303,8 +8433,7 @@ function renderWorkHud() {
     tx.appendChild(el("b", null, "No orders yet"));
     tx.appendChild(el("span", null, "New orders will show up here, newest on top."));
   } else {
-    var nowO = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) === "live"; })
-      .sort(function (a, b) { return b.date.localeCompare(a.date) || b.seq - a.seq; })[0];
+    var nowO = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) === "live"; }).sort(newestFirst)[0];
     ic.innerHTML = wkSvg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>');
     if (nowO) {
       tx.appendChild(el("b", null, "Working on #" + nowO.seq + (nowO.orderId ? " · " + nowO.orderId : "")));
@@ -8318,8 +8447,7 @@ function renderWorkHud() {
   msg.appendChild(ic); msg.appendChild(tx);
   tmp.appendChild(msg);
 
-  /* Every previous day counts as closed. Only today (or a day still being
-     filled in) gets the Close out button. */
+  /* Every previous day counts as closed. Only today gets the Close out button. */
   var past = state.scopeDate < todayKey();
   var closed = eodRead()[state.scopeDate];
   if (past || closed) {
@@ -8335,8 +8463,22 @@ function renderWorkHud() {
   } else {
     var eb = el("button", "wk-eod" + (active === 0 && c.wait === 0 && c.done > 0 ? " ready" : ""), "Close out day");
     eb.type = "button"; eb.setAttribute("data-work-eod", "1");
-    eb.title = "Wrap up the day: finish or carry over what is left";
+    eb.title = "Review the day and wrap it up";
     tmp.appendChild(eb);
+  }
+
+  /* A note you left yourself when you closed the last day. */
+  if (state.scopeDate === todayKey()) {
+    var em = eodRead();
+    var pk = Object.keys(em).filter(function (k) { return k < state.scopeDate && em[k] && em[k].note && !em[k].seen; }).sort().pop();
+    if (pk) {
+      var nb = el("div", "wk-note");
+      nb.appendChild(el("span", null, "📝 From " + prettyDate(pk).split(",")[0] + ": " + em[pk].note));
+      var nx = el("button", null, "×");
+      nx.type = "button"; nx.setAttribute("data-work-note", pk); nx.setAttribute("aria-label", "Dismiss note");
+      nb.appendChild(nx);
+      tmp.appendChild(nb);
+    }
   }
 
   var strip = function (s) { return s.replace(/ bump/g, ""); };
@@ -8348,106 +8490,396 @@ function renderWorkHud() {
   syncKpiRibbonHeight();
 }
 
-/* ---- close out ---- */
+/* ---- end-of-day walkthrough ---- */
+function eodGather(day) {
+  var todays = state.orders.filter(function (o) { return o.date === day; });
+  var done = todays.filter(isDoneOrder);
+  var open = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) !== "done"; }).sort(newestFirst);
+  var s = summarize(done);
+  var timed = done.map(function (o) { return { o: o, t: timeTaken(o) }; })
+    .filter(function (x) { return x.t !== null && x.t > 0; }).sort(function (a, b) { return a.t - b.t; });
+  var byQty = done.filter(function (o) { return Number(o.qty) > 0; }).sort(function (a, b) { return Number(b.qty) - Number(a.qty); });
+  var byAmt = done.filter(function (o) { return Number(o.amount) > 0; }).sort(function (a, b) { return Number(b.amount) - Number(a.amount); });
+  var holds = todays.map(function (o) { return { o: o, m: holdElapsed(o) }; })
+    .filter(function (x) { return x.m > 0; }).sort(function (a, b) { return b.m - a.m; });
+  return { day: day, todays: todays, done: done, open: open, s: s, timed: timed, byQty: byQty, byAmt: byAmt, holds: holds };
+}
+function ordLabel(o) { return "#" + o.seq + (o.orderId ? " · " + o.orderId : ""); }
+function hourLabel(h) { return (h % 12 || 12) + " " + (h >= 12 ? "PM" : "AM"); }
+var EOD_MOODS = [["😩", "Rough"], ["😕", "Meh"], ["😐", "Okay"], ["🙂", "Good"], ["🤩", "Great"]];
+
 function openCloseOut() {
   var day = state.scopeDate;
-  var open = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) !== "done"; })
-    .sort(function (a, b) { return b.date.localeCompare(a.date) || b.seq - a.seq; });
-  var doneToday = state.orders.filter(function (o) { return o.date === day && isDoneOrder(o); });
-  var choice = {};
-  open.forEach(function (o) { choice[o.id] = "carry"; });
+  var d = eodGather(day);
+  var weekday = prettyDate(day).split(",")[0];
+  var pend = { saved: {}, choice: {}, note: "", mood: null };
+  d.open.forEach(function (o) { pend.choice[o.id] = "carry"; });
 
   var host = $("modalHost");
   host.textContent = "";
   var scrim = el("div", "scrim");
-  var box = el("div", "modal eod-modal");
-  box.appendChild(el("h3", null, "Close out · " + prettyDate(day)));
-  box.appendChild(el("p", "sub", open.length
-    ? "Decide what happens to each open order. Anything you carry over stays on your Working list tomorrow."
-    : "Everything is finished. Nice."));
+  var box = el("div", "modal eod-wiz");
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-label", "End of day review");
+  var head = el("div", "eod-wh");
+  var stepLbl = el("span", "eod-step");
+  var skip = el("button", "eod-skip", "Skip to finish"); skip.type = "button";
+  var xb = el("button", "eod-x", "×"); xb.type = "button"; xb.setAttribute("aria-label", "Close");
+  head.appendChild(stepLbl); head.appendChild(skip); head.appendChild(xb);
+  var prog = el("div", "eod-prog"), bar = el("i"); prog.appendChild(bar);
+  var stage = el("div", "eod-stage");
+  var foot = el("div", "eod-wf");
+  var dots = el("div", "eod-dots");
+  var back = el("button", "btn ghost sm", "Back"); back.type = "button";
+  var next = el("button", "btn sm", "Next"); next.type = "button";
+  foot.appendChild(dots); foot.appendChild(back); foot.appendChild(next);
+  box.appendChild(head); box.appendChild(prog); box.appendChild(stage); box.appendChild(foot);
+  scrim.appendChild(box);
+  host.appendChild(scrim);
 
-  var s = summarize(doneToday);
-  var stats = el("div", "eod-stats");
-  [[doneToday.length, "Finished"], [s.qty || 0, "Pieces"], [s.medTaken !== null && s.medTaken !== undefined ? durationText(Math.round(s.medTaken)) : "—", "Median time"]]
-    .forEach(function (p) { var d = el("div"); d.appendChild(el("b", null, p[0])); d.appendChild(el("span", null, p[1])); stats.appendChild(d); });
-  box.appendChild(stats);
-
-  var notDrive = doneToday.filter(function (o) { return o.savedToDrive === "FALSE"; });
-  if (notDrive.length) {
-    box.appendChild(el("div", "eod-warn", notDrive.length + " finished " + (notDrive.length === 1 ? "order isn’t" : "orders aren’t") +
-      " marked Saved to Drive: " + notDrive.slice(0, 8).map(function (o) { return "#" + o.seq; }).join(", ") + (notDrive.length > 8 ? "…" : "")));
+  var idx = 0, afters = [], seen = {};
+  function scr(kicker, title) {
+    var w = el("div", "eod-scr");
+    w.appendChild(el("p", "eod-kicker", kicker));
+    w.appendChild(el("h3", null, title));
+    return w;
+  }
+  function statTile(label, val) {
+    var t = el("div"); var n = el("b", null, typeof val === "number" ? "0" : val);
+    t.appendChild(n); t.appendChild(el("span", null, label));
+    if (typeof val === "number") afters.push(function () { eodCountUp(n, val, 900); });
+    return t;
+  }
+  function chips(list) {
+    var w = el("div", "eod-chips");
+    list.forEach(function (t) { w.appendChild(el("i", null, t)); });
+    return w;
+  }
+  function tidy(title, sub) {
+    var t = el("div", "eod-tidy");
+    t.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l3 3 5-6"/></svg>';
+    t.appendChild(el("b", null, title)); t.appendChild(el("span", null, sub));
+    return t;
   }
 
-  var list = el("div", "eod-list");
-  open.forEach(function (o) {
-    var row = el("div", "eod-item");
-    var nm = el("div", "nm");
-    nm.appendChild(el("b", null, "#" + o.seq + (o.orderId ? " · " + o.orderId : "") + (o.customer ? " · " + displayCustomer(o.customer).split("\n")[0] : "")));
-    var bk = workBucket(o);
-    nm.appendChild(el("span", null, (bk === "wait" ? "Waiting · " + waitReason(o) : bk === "live" ? "In progress" : "Not started") + (workCarry(o) ? " · from " + shortDate(o.date) : "")));
-    var sg = el("div", "sg");
-    var bCarry = el("button", null, "Carry over"), bFin = el("button", null, "Mark finished");
-    bCarry.type = bFin.type = "button";
-    var locked = isHoldFlag(o);
-    if (locked) { bFin.disabled = true; bFin.title = "End the hold first"; }
-    function paint() {
-      bCarry.setAttribute("aria-pressed", choice[o.id] === "carry" ? "true" : "false");
-      bFin.setAttribute("aria-pressed", choice[o.id] === "fin" ? "true" : "false");
+  /* 1 - the day at a glance */
+  function s1() {
+    var n = d.done.length;
+    var greet = n === 0 ? "A quiet one" : n < 4 ? "A steady day" : n < 9 ? "Solid work" : "Big day";
+    var w = scr(greet, "Let’s wrap up " + weekday);
+    var st = el("div", "eod-stats");
+    st.appendChild(statTile("Finished", n));
+    st.appendChild(statTile("Pieces", d.s.qty || 0));
+    st.appendChild(statTile("Median time", d.s.medTaken !== null && d.s.medTaken !== undefined ? durationText(Math.round(d.s.medTaken)) : "—"));
+    if (d.s.amount) st.appendChild(statTile("Value", money(d.s.amount)));
+    w.appendChild(st);
+    if (d.s.first !== null && d.s.last !== null) {
+      w.appendChild(el("p", "eod-note", "On the clock from " + clockFromMinutes(d.s.first) + " to " + clockFromMinutes(d.s.last) + "."));
     }
-    bCarry.addEventListener("click", function () { choice[o.id] = "carry"; paint(); });
-    bFin.addEventListener("click", function () { if (!locked) { choice[o.id] = "fin"; paint(); } });
-    paint();
-    sg.appendChild(bCarry); sg.appendChild(bFin);
-    row.appendChild(nm); row.appendChild(sg);
-    list.appendChild(row);
-  });
-  if (open.length) box.appendChild(list);
-
-  var actions = el("div", "photo-actions");
-  if (open.length > 1) {
-    var all = el("button", "btn quiet xs", "Finish all that can be");
-    all.type = "button";
-    all.addEventListener("click", function () {
-      open.forEach(function (o) { if (!isHoldFlag(o)) choice[o.id] = "fin"; });
-      Array.prototype.forEach.call(list.querySelectorAll(".eod-item"), function (row, i) {
-        var o = open[i], btns = row.querySelectorAll("button");
-        btns[0].setAttribute("aria-pressed", choice[o.id] === "carry" ? "true" : "false");
-        btns[1].setAttribute("aria-pressed", choice[o.id] === "fin" ? "true" : "false");
-      });
-    });
-    actions.appendChild(all);
+    w.appendChild(el("p", "eod-note", d.open.length
+      ? d.open.length + (d.open.length === 1 ? " order is" : " orders are") + " still open. We’ll sort those out in a minute."
+      : "Nothing is left open. Nice."));
+    return w;
   }
-  var cancel = el("button", "btn ghost", "Cancel"); cancel.type = "button";
-  cancel.addEventListener("click", function () { host.textContent = ""; });
-  var go = el("button", "btn", "Close out day"); go.type = "button";
-  go.addEventListener("click", function () {
-    var snap = [], carried = 0;
-    open.forEach(function (o) {
-      if (choice[o.id] !== "fin") { carried++; return; }
-      snap.push({ o: o, fin: o.fin, ct: o.completionTime, cd: o[STAMP_DATE_KEY.completionTime] });
+  /* 2 - hour by hour, tap a bar */
+  function s2() {
+    var w = scr("Your day", "Hour by hour");
+    var ks = Object.keys(d.s.buckets).map(Number);
+    if (!ks.length) { w.appendChild(el("p", "eod-note", "No finish times logged today, so there is nothing to chart yet.")); return w; }
+    var lo = Math.min.apply(null, ks), hi = Math.max.apply(null, ks);
+    while (hi - lo < 4) { if (lo > 7) lo--; if (hi - lo < 4) hi++; }
+    var max = 0, topH = lo;
+    for (var h = lo; h <= hi; h++) { var v = d.s.buckets[h] || 0; if (v > max) { max = v; topH = h; } }
+    var counts = ks.map(function (k) { return d.s.buckets[k]; });
+    var steady = counts.every(function (n) { return n === counts[0]; });
+    w.appendChild(el("p", "eod-note", (steady
+      ? "A steady pace: " + counts[0] + (counts[0] === 1 ? " order" : " orders") + " in every active hour."
+      : "Busiest hour: " + hourLabel(topH) + " with " + max + (max === 1 ? " order" : " orders") + ".") + " Tap a bar to see who finished then."));
+    var bars = el("div", "eod-bars");
+    var list = el("div", "eod-chips");
+    function pick(hh) {
+      Array.prototype.forEach.call(bars.children, function (b) { b.classList.toggle("sel", Number(b.getAttribute("data-h")) === hh); });
+      list.textContent = "";
+      var hit = d.done.filter(function (o) { var m = minutesOf(o.completionTime); return m !== null && Math.floor(m / 60) === hh; });
+      if (!hit.length) list.appendChild(el("i", null, "Nothing finished at " + hourLabel(hh)));
+      hit.forEach(function (o) { var t = timeTaken(o); list.appendChild(el("i", null, ordLabel(o) + (t ? " · " + durationText(t) : ""))); });
+    }
+    for (var hh = lo; hh <= hi; hh++) {
+      (function (hh) {
+        var cnt = d.s.buckets[hh] || 0;
+        var b = el("button", "eod-bar" + (hh === topH && !steady ? " top" : ""));
+        b.type = "button"; b.setAttribute("data-h", hh); b.title = hourLabel(hh) + ": " + cnt;
+        var i = el("i"); i.setAttribute("data-pct", max ? Math.round(cnt / max * 100) : 0);
+        b.appendChild(el("b", null, cnt || ""));
+        b.appendChild(i);
+        b.appendChild(el("span", null, (hh % 12 || 12) + (hh >= 12 ? "p" : "a")));
+        b.addEventListener("click", function () { pick(hh); });
+        bars.appendChild(b);
+      })(hh);
+    }
+    w.appendChild(bars); w.appendChild(list);
+    afters.push(function () {
+      setTimeout(function () { Array.prototype.forEach.call(bars.querySelectorAll("i"), function (i) { i.style.height = (Number(i.getAttribute("data-pct")) * 0.78) + "%"; }); }, 30);
+      pick(topH);
+    });
+    return w;
+  }
+  /* 3 - awards, tap to reveal */
+  function s3() {
+    var w = scr("Highlights", "Today’s awards");
+    var cards = [];
+    var fast = d.timed[0], slow = d.timed[d.timed.length - 1];
+    cards.push(["⚡", "Speed demon", fast ? ordLabel(fast.o) : null, fast ? "Finished in " + durationText(fast.t) : "No timed orders today"]);
+    cards.push(["🐢", "Marathon", d.timed.length > 1 ? ordLabel(slow.o) : null, d.timed.length > 1 ? "Took " + durationText(slow.t) : "Needs two or more timed orders"]);
+    var big = d.byQty[0];
+    cards.push(["📦", "Heavy lifter", big ? ordLabel(big) : (d.byAmt[0] ? ordLabel(d.byAmt[0]) : null),
+      big ? big.qty + " pieces" : (d.byAmt[0] ? money(d.byAmt[0].amount) : "No quantities logged")]);
+    var hold = d.holds[0];
+    cards.push(["⏳", "Patience award", hold ? ordLabel(hold.o) : null, hold ? "Held for " + durationText(hold.m) : "Nothing sat on hold today"]);
+    var grid = el("div", "eod-awards");
+    cards.forEach(function (c) {
+      var b = el("button", "eod-award");
+      b.type = "button";
+      var f = el("div", "front"); f.appendChild(el("span", "em", "🎁")); f.appendChild(el("b", null, c[1])); f.appendChild(el("span", null, "Tap to reveal"));
+      var k = el("div", "back"); k.appendChild(el("span", "em", c[0])); k.appendChild(el("b", null, c[1] + (c[2] ? "" : "")));
+      k.appendChild(el("span", null, c[2] ? c[2] : "")); k.appendChild(el("span", null, c[3]));
+      b.appendChild(f); b.appendChild(k);
+      b.addEventListener("click", function () { b.classList.add("on"); });
+      grid.appendChild(b);
+    });
+    w.appendChild(grid);
+    var all = el("button", "btn quiet xs", "Reveal all"); all.type = "button"; all.style.marginTop = "10px";
+    all.addEventListener("click", function () {
+      Array.prototype.forEach.call(grid.children, function (b, i) { setTimeout(function () { b.classList.add("on"); }, i * 140); });
+    });
+    w.appendChild(all);
+    return w;
+  }
+  /* 4 - mix, tap a row */
+  function s4() {
+    var w = scr("The mix", "What came through");
+    var sent = d.todays.filter(function (o) { return o.proof === "TRUE"; }).length;
+    var backN = d.todays.filter(function (o) { return o.proof === "TRUE" && isClock(o.proofRcvdTime); }).length;
+    var out = d.todays.filter(proofOut).length;
+    w.appendChild(chips(["Proofs sent: " + sent, "Proofs back: " + backN, "Still out: " + out,
+      "Median proof turnaround: " + (d.s.medTurn !== null && d.s.medTurn !== undefined ? durationText(Math.round(d.s.medTurn)) : "—")]));
+    var types = Object.keys(d.s.types).sort(function (a, b) { return d.s.types[b] - d.s.types[a]; });
+    w.appendChild(el("div", "eod-sec", "Order types"));
+    var list = el("div", "eod-chips");
+    if (!types.length) w.appendChild(el("p", "eod-note", "No order types were logged today."));
+    else {
+      var hb = el("div", "eod-hbars"), maxT = d.s.types[types[0]];
+      types.forEach(function (t) {
+        var r = el("button", "eod-hrow"); r.type = "button";
+        var i = el("i"); i.setAttribute("data-w", Math.round(d.s.types[t] / maxT * 100));
+        r.appendChild(el("em", null, t)); r.appendChild(i); r.appendChild(el("b", null, d.s.types[t]));
+        r.addEventListener("click", function () {
+          Array.prototype.forEach.call(hb.children, function (x) { x.classList.toggle("sel", x === r); });
+          list.textContent = "";
+          d.done.filter(function (o) { return o.otype === t; }).forEach(function (o) { list.appendChild(el("i", null, ordLabel(o))); });
+        });
+        hb.appendChild(r);
+      });
+      w.appendChild(hb); w.appendChild(list);
+      afters.push(function () { setTimeout(function () { Array.prototype.forEach.call(hb.querySelectorAll("i"), function (i) { i.style.width = (Number(i.getAttribute("data-w")) * 0.62) + "%"; }); }, 30); });
+    }
+    var mk = { NONE: 0, ETCH: 0, LOGO: 0, BOTH: 0 };
+    d.done.forEach(function (o) { mk[normMarking(o.marking)]++; });
+    w.appendChild(el("div", "eod-sec", "Marking"));
+    w.appendChild(chips(["Etch: " + mk.ETCH, "Logo: " + mk.LOGO, "Logo + Etch: " + mk.BOTH, "Plain: " + mk.NONE]));
+    return w;
+  }
+  /* 5 - loose ends you can fix right here */
+  function s5() {
+    var w = scr("Loose ends", "Anything slip through?");
+    var notDrive = d.done.filter(function (o) { return o.savedToDrive === "FALSE"; });
+    var out = d.todays.filter(proofOut);
+    var noEnd = d.todays.filter(function (o) { return o.fin === "TRUE" && !isClock(o.completionTime); });
+    if (!notDrive.length && !out.length && !noEnd.length) {
+      w.appendChild(tidy("Nothing loose", "Every finished order is saved and no proofs are dangling."));
+      return w;
+    }
+    if (notDrive.length) {
+      w.appendChild(el("div", "eod-sec", "Finished but not saved to Drive"));
+      var lst = el("div", "eod-list");
+      var togs = [];
+      notDrive.forEach(function (o) {
+        var row = el("div", "eod-item"), nm = el("div", "nm");
+        nm.appendChild(el("b", null, ordLabel(o) + (o.customer ? " · " + displayCustomer(o.customer).split("\n")[0] : "")));
+        var tg = el("button", "eod-tog", "Mark saved"); tg.type = "button";
+        function paint() { tg.setAttribute("aria-pressed", pend.saved[o.id] ? "true" : "false"); tg.textContent = pend.saved[o.id] ? "✓ Saved" : "Mark saved"; }
+        tg.addEventListener("click", function () { pend.saved[o.id] = !pend.saved[o.id]; paint(); });
+        paint(); togs.push(paint);
+        row.appendChild(nm); row.appendChild(tg); lst.appendChild(row);
+      });
+      w.appendChild(lst);
+      var ma = el("button", "btn quiet xs", "Mark all saved"); ma.type = "button";
+      ma.addEventListener("click", function () { notDrive.forEach(function (o) { pend.saved[o.id] = true; }); togs.forEach(function (f) { f(); }); });
+      w.appendChild(ma);
+    }
+    if (out.length) {
+      w.appendChild(el("div", "eod-sec", "Proofs still out with customers"));
+      w.appendChild(chips(out.map(function (o) { return ordLabel(o); })));
+    }
+    if (noEnd.length) {
+      w.appendChild(el("div", "eod-sec", "Marked finished with no end time"));
+      w.appendChild(chips(noEnd.map(function (o) { return ordLabel(o); })));
+    }
+    return w;
+  }
+  /* 6 - what to do with open orders */
+  function s6() {
+    var w = scr("Still open", "Finish or carry over");
+    if (!d.open.length) { w.appendChild(tidy("Nothing left open", "Every order is finished. Clean slate.")); return w; }
+    w.appendChild(el("p", "eod-note", "Anything you carry over stays on your Working list tomorrow."));
+    var list = el("div", "eod-list");
+    var paints = [];
+    d.open.forEach(function (o) {
+      var row = el("div", "eod-item"), nm = el("div", "nm");
+      nm.appendChild(el("b", null, ordLabel(o) + (o.customer ? " · " + displayCustomer(o.customer).split("\n")[0] : "")));
+      var bk = workBucket(o);
+      nm.appendChild(el("span", null, (bk === "wait" ? "Waiting · " + waitReason(o) : bk === "live" ? "In progress" : "Not started") + (workCarry(o) ? " · from " + shortDate(o.date) : "")));
+      var sg = el("div", "sg");
+      var bC = el("button", null, "Carry over"), bF = el("button", null, "Mark finished");
+      bC.type = bF.type = "button";
+      var locked = isHoldFlag(o);
+      if (locked) { bF.disabled = true; bF.title = "End the hold first"; }
+      function paint() {
+        bC.setAttribute("aria-pressed", pend.choice[o.id] === "carry" ? "true" : "false");
+        bF.setAttribute("aria-pressed", pend.choice[o.id] === "fin" ? "true" : "false");
+      }
+      bC.addEventListener("click", function () { pend.choice[o.id] = "carry"; paint(); });
+      bF.addEventListener("click", function () { if (!locked) { pend.choice[o.id] = "fin"; paint(); } });
+      paint(); paints.push(paint);
+      sg.appendChild(bC); sg.appendChild(bF);
+      row.appendChild(nm); row.appendChild(sg); list.appendChild(row);
+    });
+    w.appendChild(list);
+    if (d.open.length > 1) {
+      var all = el("button", "btn quiet xs", "Finish all that can be"); all.type = "button";
+      all.addEventListener("click", function () {
+        d.open.forEach(function (o) { if (!isHoldFlag(o)) pend.choice[o.id] = "fin"; });
+        paints.forEach(function (f) { f(); });
+      });
+      w.appendChild(all);
+    }
+    return w;
+  }
+  /* 7 - tomorrow */
+  function s7() {
+    var w = scr("Tomorrow", "What carries over");
+    var carry = d.open.filter(function (o) { return pend.choice[o.id] !== "fin"; });
+    if (!carry.length) w.appendChild(tidy("Nothing carries over", "Tomorrow starts completely fresh."));
+    else {
+      w.appendChild(el("p", "eod-note", carry.length + (carry.length === 1 ? " order comes" : " orders come") + " with you:"));
+      w.appendChild(chips(carry.map(function (o) {
+        var bk = workBucket(o);
+        return ordLabel(o) + (bk === "wait" ? " · " + waitReason(o) : bk === "live" ? " · in progress" : " · not started");
+      })));
+    }
+    w.appendChild(el("div", "eod-sec", "Leave yourself a note"));
+    var ta = el("textarea", "eod-ta");
+    ta.maxLength = 240; ta.placeholder = "Optional. It will be waiting for you tomorrow morning.";
+    ta.value = pend.note;
+    ta.addEventListener("input", function () { pend.note = ta.value; });
+    w.appendChild(ta);
+    return w;
+  }
+  /* 8 - mood and close */
+  function s8() {
+    var w = scr("Last step", "Ready to close " + weekday + "?");
+    var nFin = d.open.filter(function (o) { return pend.choice[o.id] === "fin"; }).length;
+    var nCar = d.open.length - nFin;
+    var nSave = Object.keys(pend.saved).filter(function (k) { return pend.saved[k]; }).length;
+    w.appendChild(chips([
+      (d.done.length + nFin) + " finished", nCar + " carried over",
+      nSave ? nSave + " marked saved to Drive" : "No Drive changes"
+    ]));
+    w.appendChild(el("div", "eod-sec", "How did today feel?"));
+    var row = el("div", "eod-mood");
+    EOD_MOODS.forEach(function (m, i) {
+      var b = el("button", pend.mood === i ? "on" : "", m[0]); b.type = "button"; b.title = m[1]; b.setAttribute("aria-label", m[1]);
+      b.addEventListener("click", function () {
+        pend.mood = pend.mood === i ? null : i;
+        Array.prototype.forEach.call(row.children, function (x, j) { x.classList.toggle("on", pend.mood === j); });
+      });
+      row.appendChild(b);
+    });
+    w.appendChild(row);
+    w.appendChild(el("p", "eod-note", "Closing saves your choices. You can reopen the day from the Working bar."));
+    return w;
+  }
+  var screens = [s1, s2, s3, s4, s5, s6, s7, s8];
+
+  function show(i, dir) {
+    idx = Math.max(0, Math.min(screens.length - 1, i));
+    seen[idx] = true;
+    afters = [];
+    var sc = screens[idx]();
+    if (dir < 0) sc.classList.add("from-left");
+    stage.textContent = "";
+    stage.appendChild(sc);
+    stage.scrollTop = 0;
+    stepLbl.textContent = "Step " + (idx + 1) + " of " + screens.length;
+    bar.style.width = ((idx + 1) / screens.length * 100) + "%";
+    dots.textContent = "";
+    screens.forEach(function (f, j) {
+      var b = el("button", j === idx ? "on" : seen[j] ? "seen" : "");
+      b.type = "button"; b.setAttribute("aria-label", "Go to step " + (j + 1));
+      b.addEventListener("click", function () { show(j, j < idx ? -1 : 1); });
+      dots.appendChild(b);
+    });
+    var last = idx === screens.length - 1;
+    back.disabled = idx === 0;
+    next.textContent = last ? "Close out day" : "Next";
+    next.className = "btn sm" + (last ? " go" : "");
+    skip.hidden = last;
+    afters.forEach(function (f) { f(); });
+  }
+  function closeWiz() { document.removeEventListener("keydown", onKey); host.textContent = ""; }
+  function onKey(e) {
+    if (!host.contains(scrim)) { document.removeEventListener("keydown", onKey); return; }
+    if (e.key === "Escape") { closeWiz(); return; }
+    if (e.target && /^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName)) return;
+    if (e.key === "ArrowRight") { if (idx < screens.length - 1) show(idx + 1, 1); }
+    else if (e.key === "ArrowLeft") { if (idx > 0) show(idx - 1, -1); }
+  }
+  function finish() {
+    var snap = [], carried = 0, nFin = 0;
+    function keep(o) { snap.push({ o: o, fin: o.fin, ct: o.completionTime, cd: o[STAMP_DATE_KEY.completionTime], sd: o.savedToDrive }); }
+    d.open.forEach(function (o) {
+      if (pend.choice[o.id] !== "fin") { carried++; return; }
+      keep(o);
       markOrderFinished(o, true);
       if (STAMP_DATE_KEY.completionTime) o[STAMP_DATE_KEY.completionTime] = stampDateToStore(todayKey(), o.date);
-      o.updatedAt = nowIso();
+      o.updatedAt = nowIso(); nFin++;
+    });
+    d.done.forEach(function (o) {
+      if (pend.saved[o.id] && o.savedToDrive !== "TRUE") { keep(o); o.savedToDrive = "TRUE"; o.updatedAt = nowIso(); }
     });
     if (!persistOrders()) {
-      snap.forEach(function (x) { x.o.fin = x.fin; x.o.completionTime = x.ct; if (STAMP_DATE_KEY.completionTime) x.o[STAMP_DATE_KEY.completionTime] = x.cd; });
+      snap.forEach(function (x) {
+        x.o.fin = x.fin; x.o.completionTime = x.ct; x.o.savedToDrive = x.sd;
+        if (STAMP_DATE_KEY.completionTime) x.o[STAMP_DATE_KEY.completionTime] = x.cd;
+      });
       scheduleRender(); saveFailedModal("close out"); return;
     }
     var m = eodRead();
-    m[day] = { at: nowIso(), carried: carried };
+    m[day] = { at: nowIso(), carried: carried, finished: d.done.length + nFin, note: pend.note.trim(), mood: pend.mood };
     eodWrite(m);
-    host.textContent = "";
-    state.workDone = false;
+    closeWiz();
+    state.workView = "done"; workSave();
     scheduleRender();
     var after = state.orders.filter(function (o) { return o.date === day && isDoneOrder(o); });
-    var s2 = summarize(after);
-    eodCelebrate({ day: day, finished: after.length, qty: s2.qty || 0, med: s2.medTaken, carried: carried });
-  });
-  actions.appendChild(cancel); actions.appendChild(go);
-  box.appendChild(actions);
-  scrim.addEventListener("click", function (e) { if (e.target === scrim) host.textContent = ""; });
-  scrim.appendChild(box);
-  host.appendChild(scrim);
+    var s2r = summarize(after);
+    eodCelebrate({ day: day, finished: after.length, qty: s2r.qty || 0, med: s2r.medTaken, carried: carried });
+  }
+  next.addEventListener("click", function () { if (idx === screens.length - 1) finish(); else show(idx + 1, 1); });
+  back.addEventListener("click", function () { if (idx > 0) show(idx - 1, -1); });
+  skip.addEventListener("click", function () { show(screens.length - 1, 1); });
+  xb.addEventListener("click", closeWiz);
+  document.addEventListener("keydown", onKey);
+  show(0, 1);
 }
 function reopenDay() {
   var m = eodRead();
@@ -8542,7 +8974,7 @@ function eodCelebrate(d) {
    the order's Proof is Yes. Paste the script's web-app URL here to bake it in,
    or use Tools > Google Drive proofs on each device. */
 /* Paste the Web app URL (ends in /exec) plus ?t=YOURTOKEN between the quotes: */
-var DRIVE_PROOF_URL = "https://script.google.com/macros/s/AKfycbxINlH_zmjQLWpee6wnDSfCxRFlOdcGzmHdbr4aT7H0li_i2l5T_3ywUZg6BERJSD_2/exec?t=09196116";
+var DRIVE_PROOF_URL = "";
 var driveIdx = { map: {}, at: 0, err: "" };
 function driveUrl() {
   try { return localStorage.getItem("caot_drive_url") || DRIVE_PROOF_URL || ""; }
@@ -13405,18 +13837,26 @@ function wire() {
     if (b) setWork(b.getAttribute("data-work") === "1");
   });
   $("workHud").addEventListener("click", function (e) {
-    var t = e.target.closest("[data-work-toggle]");
-    if (t) {
-      var k = t.getAttribute("data-work-toggle");
-      if (k === "wait") state.workWait = !state.workWait;
-      else if (k === "done") state.workDone = !state.workDone;
-      else state.workFocus = state.workFocus === k ? null : k;
-      /* Straight away, not on the next animation frame. */
-      renderTable(); renderFooter(); renderWorkHud();
+    var v = e.target.closest("[data-work-view]");
+    if (v) { setWorkView(v.getAttribute("data-work-view")); return; }
+    var nt = e.target.closest("[data-work-note]");
+    if (nt) {
+      var m = eodRead(), k = nt.getAttribute("data-work-note");
+      if (m[k]) { m[k].seen = true; eodWrite(m); }
+      renderWorkHud();
       return;
     }
     if (e.target.closest("[data-work-eod]")) { openCloseOut(); return; }
     if (e.target.closest("[data-work-reopen]")) reopenDay();
+  });
+  $("workHud").addEventListener("keydown", function (e) {
+    if (!e.target.closest("[data-work-view]") || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+    e.preventDefault();
+    var i = WORK_VIEWS.indexOf(state.workView) + (e.key === "ArrowRight" ? 1 : -1);
+    i = (i + WORK_VIEWS.length) % WORK_VIEWS.length;
+    setWorkView(WORK_VIEWS[i]);
+    var nt = document.querySelector('[data-work-view="' + WORK_VIEWS[i] + '"]');
+    if (nt) nt.focus();
   });
   setInterval(function () { if (state.work && !document.hidden) renderWorkHud(); }, 60000);
   driveLoadCache();
