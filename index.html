@@ -4645,6 +4645,15 @@ html[data-theme="roof51"] #stage{background:#060508}
 @keyframes rfSteam{0%{transform:translate(0,20%) scale(.4);opacity:0}25%{opacity:.75}100%{transform:translate(40%,-190%) scale(2.2);opacity:0}}
 #stage.st-roof51 .rf-gloss{background:linear-gradient(180deg,transparent 35%,#08090B 100%),repeating-linear-gradient(90deg,transparent 0 37px,rgba(255,226,160,.08) 37px 43px,transparent 43px 96px,rgba(255,255,255,.05) 96px 99px,transparent 99px 151px);animation:rfLed 4.6s ease-in-out infinite alternate}
 #stage.st-roof51 .rf-flame.c{animation-duration:1.02s;animation-delay:-.7s}
+#stage.st-roof51 .rf-tl{border-radius:50%;opacity:0;animation:rfTLr 20s steps(1) infinite}
+#stage.st-roof51 .rf-tl.r{background:radial-gradient(closest-side,#FFE0DA 0 24%,#FF3B30 48%,rgba(255,59,48,.4) 72%,transparent)}
+#stage.st-roof51 .rf-tl.y{background:radial-gradient(closest-side,#FFF6D0 0 24%,#FFC43A 48%,rgba(255,196,58,.4) 72%,transparent);animation-name:rfTLy}
+#stage.st-roof51 .rf-tl.g{background:radial-gradient(closest-side,#DCFFE8 0 24%,#34E07A 48%,rgba(52,224,122,.4) 72%,transparent);animation-name:rfTLg}
+@keyframes rfTLg{0%{opacity:1}45%{opacity:0}}
+@keyframes rfTLy{0%{opacity:0}45%{opacity:1}52%{opacity:0}}
+@keyframes rfTLr{0%{opacity:0}52%{opacity:1}}
+#stage.st-roof51 .rf-refl.gl{background:linear-gradient(100deg,transparent 22%,rgba(255,250,232,.75) 46%,rgba(255,250,232,.2) 60%,transparent 78%)}
+#stage.st-roof51 .rf-refl.gl.r{background:linear-gradient(100deg,transparent 22%,rgba(255,70,50,.7) 46%,rgba(255,70,50,.18) 60%,transparent 78%)}
 #stage.st-roof51 .rf-flag{background:linear-gradient(180deg,#8A1E24 0 38%,#E6C66A 38% 50%,#8A1E24 50%);clip-path:polygon(0 0,100% 12%,78% 50%,100% 88%,0 100%);transform-origin:0 50%;animation:rfFlag 2.8s ease-in-out infinite alternate}
 @keyframes rfFlag{0%{transform:skewY(-7deg) scaleX(.9)}50%{transform:skewY(4deg) scaleX(1)}100%{transform:skewY(9deg) scaleX(.86)}}
 #stage.st-roof51 .rf-glass{background:radial-gradient(ellipse 60% 70% at 50% 60%,rgba(255,196,120,.3),rgba(140,170,255,.1) 60%,transparent);animation:rfLed 7s ease-in-out infinite alternate}
@@ -12416,13 +12425,37 @@ function roofSceneArt() {
   /* lane dashes shrinking to the point, a crosswalk near us */
   for (i = 1; i < 11; i++) { var u = i / 10, t = u * u; sc += '<rect x="' + f1(VX + 2 * t - (.5 + 1.6 * t)) + '" y="' + f1(VY + 4 + t * 236) + '" width="' + f1(1 + 3.2 * t) + '" height="' + f1(3 + 17 * t) + '" fill="#D8D2C2" opacity=".5"/>'; }
   for (i = 0; i < 7; i++) sc += '<path d="M' + (612 + i * 14) + ' 1668 l-3 20 h9 l3 -20 Z" fill="#D8D2C2" opacity=".42"/>';
-  /* street lamps down both kerbs, closing on the vanishing point */
-  for (i = 1; i < 9; i++) { var lt2 = Math.pow(i / 9, 1.8), lyy = VY + lt2 * 250; [[655, 600], [661, 720]].forEach(function (k2) { var lxx = k2[0] + (k2[1] - k2[0]) * lt2; sc += '<circle cx="' + f1(lxx) + '" cy="' + f1(lyy - 3 - 16 * lt2) + '" r="' + f1(.9 + 2.4 * lt2) + '" fill="#FFE9B8"/><circle cx="' + f1(lxx) + '" cy="' + f1(lyy - 3 - 16 * lt2) + '" r="' + f1(2 + 4 * lt2) + '" fill="#FFD27A" opacity=".28"/>'; }); }
+  /* Street lamps: real posts standing on both kerbs, evenly spaced down the avenue. Even spacing
+     in the world means they bunch up toward the vanishing point, each one shorter than the last. */
+  function kerb(t, side) { return [side < 0 ? 655 + (604 - 655) * t : 661 + (716 - 661) * t, VY + t * 250]; }
+  for (i = 14; i >= 1; i--) {
+    var lt2 = 1 / (1 + i * .55);
+    [-1, 1].forEach(function (side) {
+      var g = kerb(lt2, side), hgt = 5 + 64 * lt2, hx = g[0] - side * (1.5 + 9 * lt2), hy = g[1] - hgt - 1.5 * lt2;
+      sc += '<ellipse cx="' + f1(hx) + '" cy="' + f1(g[1] + 1) + '" rx="' + f1(3 + 17 * lt2) + '" ry="' + f1(1 + 4.5 * lt2) + '" fill="#FFD9A0" opacity=".13"/>' +
+            '<path d="M' + f1(g[0]) + ' ' + f1(g[1]) + ' V' + f1(g[1] - hgt) + ' L' + f1(hx) + ' ' + f1(hy) + '" fill="none" stroke="#414656" stroke-width="' + f1(.6 + 2.2 * lt2) + '" stroke-linecap="round" stroke-linejoin="round"/>' +
+            '<circle cx="' + f1(hx) + '" cy="' + f1(hy + .6) + '" r="' + f1(3 + 13 * lt2) + '" fill="url(#rfVP)" opacity=".75"/>' +
+            '<ellipse cx="' + f1(hx) + '" cy="' + f1(hy + .6) + '" rx="' + f1(1 + 3.2 * lt2) + '" ry="' + f1(.7 + 1.8 * lt2) + '" fill="#FFF4D6"/>';
+    });
+  }
+  /* Traffic signals at each cross street: a mast on the right-hand kerb reaching over the road,
+     a three-lamp head on its end. The housings are painted here; the lamps themselves are live. */
+  var SIGL = [];
+  [.5, 1.5, 2.5, 3.5, 5.5, 7.5].forEach(function (n, idx) {
+    var t = 1 / (1 + n * .55), g = kerb(t, 1), hgt = 6 + 80 * t, ax = g[0] - (5 + 30 * t), r = .7 + 2.9 * t, gap = r * 2 + .5 + t;
+    var top = g[1] - hgt + 1 + 2 * t;
+    sc += '<path d="M' + f1(g[0]) + ' ' + f1(g[1]) + ' V' + f1(g[1] - hgt) + ' H' + f1(ax) + '" fill="none" stroke="#4A4F5E" stroke-width="' + f1(.7 + 2.4 * t) + '" stroke-linejoin="round" stroke-linecap="round"/>' +
+          '<rect x="' + f1(ax - r - 1 - t) + '" y="' + f1(top) + '" width="' + f1(2 * r + 2 + 2 * t) + '" height="' + f1(gap * 3 + 1 + t) + '" rx="' + f1(.6 + 1.6 * t) + '" fill="#090A0D" stroke="#3A3F4C" stroke-width="' + f1(.3 + .9 * t) + '"/>';
+    ["#3A1512", "#3A3012", "#123A1E"].forEach(function (c, k2) {
+      var cy = top + (.5 + t / 2) + r + k2 * gap;
+      sc += '<circle cx="' + f1(ax) + '" cy="' + f1(cy) + '" r="' + f1(r) + '" fill="' + c + '"/>';
+      SIGL.push([ax, cy, r, k2, idx]);
+    });
+  });
   /* neon and signs on the walls, and their colour lying on the wet road */
   sc += '<rect x="620" y="1484" width="7" height="62" rx="3" fill="#FF4FA3"/><rect x="616" y="1480" width="15" height="70" rx="6" fill="#FF4FA3" opacity=".22"/>' +
         '<rect x="706" y="1520" width="26" height="40" rx="5" fill="#3B5BFF" opacity=".7"/><rect x="711" y="1528" width="16" height="22" rx="3" fill="#B45CFF"/><rect x="714" y="1533" width="10" height="8" fill="#FFD24F"/>' +
-        '<rect x="574" y="1574" width="30" height="16" rx="3" fill="#39E08A" opacity=".8"/>' +
-        '<path d="M640 1552 L622 1716 H640 L650 1552 Z" fill="#FF4FA3" opacity=".16"/><path d="M684 1560 L706 1716 H690 L676 1560 Z" fill="#6A78FF" opacity=".16"/><path d="M618 1600 L604 1716 H622 Z" fill="#39E08A" opacity=".1"/>';
+        '<path d="M640 1552 L622 1716 H640 L650 1552 Z" fill="#FF4FA3" opacity=".16"/><path d="M684 1560 L706 1716 H690 L676 1560 Z" fill="#6A78FF" opacity=".16"/>';
   for (i = 0; i < 26; i++) sc += '<circle cx="' + f1(rr(724, 746)) + '" cy="' + f1(rr(1570, 1700)) + '" r="' + f1(rr(1.2, 2.6)) + '" fill="' + pick(["#FFE9B8", "#FFD27A", "#BFE0A0"]) + '" opacity="' + f1(rr(.4, .9)) + '"/>';
   /* parked cars along the right-hand kerb */
   for (i = 0; i < 5; i++) { var pt = Math.pow(.3 + i * .16, 1.6), pw2 = 3 + pt * 16; sc += '<rect x="' + f1(659.4 + (716 - 659.4) * pt - pw2) + '" y="' + f1(VY + pt * 250) + '" width="' + f1(pw2) + '" height="' + f1(3 + pt * 20) + '" rx="2" fill="' + pick(["#14161C", "#1C1F28", "#2A1A16"]) + '"/>'; }
@@ -12615,6 +12648,15 @@ function roofSceneArt() {
   /* passing cars mirrored in the dark glass of the low buildings beside the street: a pale glint for
      headlights, a red one for tail-lights, running along the row as the car goes by */
   var glass = visible.filter(function (w) { return (w[5] === 5 || w[5] === 4) && w[4] === 0 && w[1] > 1440; });
+  var litPanels = { "1,2": 1, "4,5": 1, "3,8": 1, "0,6": 1 };
+  for (var gc = 2; gc <= 5; gc++) for (var gr = 2; gr <= 9; gr++) {
+    if (litPanels[gc + "," + gr] || (gc + gr * 2) % 5 === 0) continue;
+    var gpx = GX0 + gc * 44, gpy = 990 + gr * 72, gtop = pl(gpx + 5, gpy + 5, GX0), gbot = pl(gpx + 39, gpy + 67, GX0) - 1;
+    if (gbot > LEDGE - 8 || (gpx + 39 > 448 && gbot > 1664)) continue;                  /* behind the counter or the speaker */
+    var goff = (562 - gpx) / 262 * 3.4 + (gr % 3) * .35;
+    live += '<i class="rf-refl gl" ' + at(gpx + 5, gtop, 34, gbot - gtop, ';animation-delay:' + f1(goff - 2.4) + 's') + '></i>';
+    if ((gc + gr) % 2 === 0) live += '<i class="rf-refl gl r" ' + at(gpx + 5, gtop, 34, gbot - gtop, ';animation-delay:' + f1(-goff - 3.2) + 's') + '></i>';
+  }
   glass.forEach(function (w, n) {
     var off = (w[0] - 742) / 860 * 4.2;
     if (n % 3 === 2) return;
@@ -12628,8 +12670,9 @@ function roofSceneArt() {
   var SX = 556, SYY = 1420, SW = 192, SH = 280;
   function inS(x, y, w, h) { return 'style="left:' + f1((x - SX) / SW * 100) + '%;top:' + f1((y - SYY) / SH * 100) + '%;width:' + f1(w / SW * 100) + '%;height:' + f1(h / SH * 100) + '%"'; }
   live += '<div class="rf-street" ' + at(SX, SYY, SW, SH) + '>' +
-    '<i class="rf-neon p" ' + inS(606, 1462, 34, 106) + '></i><i class="rf-neon b" ' + inS(690, 1500, 60, 80) + '></i><i class="rf-neon g" ' + inS(566, 1560, 46, 60) + '></i>' +
-    '<i class="rf-signal" ' + inS(645, 1447, 6, 6) + '></i>' +
+    '<i class="rf-neon p" ' + inS(606, 1462, 34, 106) + '></i><i class="rf-neon b" ' + inS(690, 1500, 60, 80) + '></i>' +
+    /* the signal lamps: green, yellow, red, each cross street a beat behind the one before it, so the green runs away down the avenue */
+    SIGL.map(function (L) { var rr2 = L[2] * 2.1; return '<i class="rf-tl ' + ["r", "y", "g"][L[3]] + '" ' + inS(L[0] - rr2, L[1] - rr2, rr2 * 2, rr2 * 2).replace(/"$/, ';animation-delay:-' + f1(20 - L[4] * 1.4) + 's"') + '></i>'; }).join("") +
     '<i class="rf-steam s" ' + inS(622, 1596, 34, 60) + '></i>' +
     '<i class="rf-wash" ' + inS(588, 1470, 150, 250) + '></i><i class="rf-wash r" ' + inS(588, 1470, 150, 250) + '></i>' +
     '<i class="rf-sweep" ' + inS(716, 1430, 32, 90) + '></i><i class="rf-sweep l" ' + inS(556, 1430, 40, 90) + '></i>' +
