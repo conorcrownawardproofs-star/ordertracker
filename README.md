@@ -1,40 +1,38 @@
-# 👑 Crown Order Tracker
+# Crown Order Tracker
 
-Trophies don't engrave themselves — but they *do* get tracked here. 🏆
-
-A single-page order log for the CA team: log it, stamp it, hold it, finish it, go home.
-
-## ✨ What it does
-
-- 📋 **Log orders** — order #, customer, type, PGroup, qty, amount, proof, and a running status log
-- ⏱️ **Stamp times** — start, finish, and proof-back, with time taken worked out for you
-- ⏸️ **Holds** — put an order on hold and the hold time comes straight off the clock
-- 🔀 **Sort anything** — click a column heading; click again to flip it
-- 📅 **Day by day** — step through the work week (Friday → Monday, weekends skipped)
-- 📊 **Summaries** — day and financial totals at a glance
-- 📤 **Export & backup** — CSV export, print, back up, restore
-- 🎨 **Themes** — nine of them, from sensible *Light* to *Crystal Castles*
-- 🎲 **Friday bingo** — because it's Friday
-
-## 🚀 Getting started
-
-1. Open `index.html` in your browser
-2. Create an account
-3. Start logging orders
-
-No build step, no install. It's one HTML file.
-
-## ⌨️ Shortcuts
-
-| Keys | Does |
-|---|---|
-| `Ctrl/Cmd + K` | Search |
-| `Ctrl/Cmd + Enter` | Save the order |
-| `Ctrl/Cmd + D` | Day summary |
-| `Alt + ←` / `Alt + →` | Previous / next working day |
-| `←` / `→` on a day tab | Previous / next working day |
-| `Esc` | Close / cancel |
+A zero-install, single-page order log and time tracker built to keep the CA team moving. Log orders, track turnaround times, and hit home on time.
 
 ---
 
-Made with ☕ and a lot of engraving...
+## ⚡ Key Features
+
+* **Full Order Logging** — Track order numbers, customers, types, PGroups, quantities, amounts, proof status, and live activity logs.
+* **Smart Time Tracking** — Auto-calculates turnaround times for start, finish, and proofing while automatically subtracting hold times off the clock.
+* **Workweek Navigation** — Smooth Monday–Friday navigation with automatic weekend skipping, plus instant daily productivity and financial summaries.
+* **Data & Customization** — Instant column sorting, CSV exports, local backup/restore, 9 visual themes (from *Sensible Light* to *Crystal Castles*), and a mandatory Friday bingo module.
+
+---
+
+## 🚀 Quick Start
+
+No build steps, no installation, no server dependencies. It's a single, self-contained HTML file.
+
+1. Open `index.html` in any browser.
+2. Create an account.
+3. Start logging orders.
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Shortcut | Action |
+| :--- | :--- |
+| `Cmd/Ctrl` + `K` | Quick search |
+| `Cmd/Ctrl` + `Enter` | Save current order |
+| `Cmd/Ctrl` + `D` | Open daily summary |
+| `Alt` + `←` / `→` | Previous / Next working day |
+| `Esc` | Close modal / Cancel |
+
+---
+
+*Made with ☕ and a lot of engraving.*
