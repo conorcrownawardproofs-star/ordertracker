@@ -3,9 +3,9 @@
 <script>
 /* Apply the saved theme before anything paints (no flash of the wrong colours). */
 try{(function(){var p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}"),t=p.theme||"light",r=document.documentElement;if(t==="nyc91g"||t==="nyc91t")t="nyc91";var 
-dark={dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
-glass={podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
-f={rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
+dark={blossom:1,dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
+glass={blossom:1,podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
+f={blossom:"Gilda+Display",rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
 r.setAttribute("data-theme",t);r.setAttribute("data-tone",dark[t]?"dark":"light");if(p.fx!==false)r.classList.add("fx");if(glass[t])r.classList.add("glass");
 if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fonts.googleapis.com/css2?family='+f[t]+'&display=swap">');})();}catch(e){}
 </script>
@@ -4435,6 +4435,111 @@ html[data-tone="dark"] .eod-tog[aria-pressed="true"]{color:#0E1620}
 .wk-tab.t-active.on{background:var(--crown-2);border-color:var(--crown-line,var(--crown-2))}
 .wk-tab.t-active.on b,.wk-tab.t-active.on span,
 html[data-tone="dark"] .wk-tab.t-active.on b,html[data-tone="dark"] .wk-tab.t-active.on span{color:var(--crown-ink,#fff)}
+/* quiet clock */
+.wkclock{font:600 13px/1 var(--mono,ui-monospace,monospace);font-variant-numeric:tabular-nums;color:var(--muted);letter-spacing:.02em;white-space:nowrap;padding:0 6px;opacity:.85;cursor:default;user-select:none}
+@media (max-width:760px){.wkclock{display:block;text-align:center;margin-bottom:4px}}
+@media print{.wkclock{display:none}}
+/* work tabs: text always uses the theme's own text colour, the accent only tints */
+.wk-tab b,.wk-tab span{color:var(--text)}
+.wk-tab span{color:var(--text-2)}
+.wk-tab{border-bottom:3px solid var(--ac)}
+.wk-tab.t-active{--ac:var(--crown-2)}
+.wk-tab:hover{background:var(--surface-2,var(--surface))}
+.wk-tab.on,.wk-tab.t-wait.on,.wk-tab.t-done.on{background:var(--surface);border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
+.wk-tab.on b,.wk-tab.on span,html[data-tone="dark"] .wk-tab.on b,html[data-tone="dark"] .wk-tab.on span{color:var(--text)}
+.wk-tab.t-active.on{background:var(--crown-2);border-color:var(--crown-line,var(--crown-2));box-shadow:0 2px 0 rgba(0,0,0,.14)}
+.wk-tab.t-active.on b,.wk-tab.t-active.on span,html[data-tone="dark"] .wk-tab.t-active.on b,html[data-tone="dark"] .wk-tab.t-active.on span{color:var(--crown-ink,#fff)}
+/* =====================================================================
+   MIDTOWN BLOSSOMS
+   White cherry blossom at night, Midtown across the East River.
+   Cobalt night sky, blossom cream, lamp amber, the cold blue of the lit
+   spires and one red railing lamp. Display type is Gilda Display.
+   ===================================================================== */
+html[data-theme="blossom"]{
+  --bl-petal:#FBF8EF; --bl-cream:#EBD9AE; --bl-lamp:#F3D9A0; --bl-spire:#6FC4FF; --bl-red:#FF5A46; --bl-bark:#C9A08A;
+  --bl-branch:linear-gradient(90deg,transparent,#FBF8EF 18%,#6FC4FF 50%,#FBF8EF 82%,transparent);
+  --crown:#060C20; --crown-2:#0C1838; --crown-line:#2B3E72; --crown-ink:#FBF8EF; --crown-dim:#B4C0DE;
+  --paper:#05070B; --surface:#0C1630; --surface-2:#142042; --line:rgba(190,210,255,.17);
+  --text:#F7F3E8; --text-2:#CBD1E2; --muted:#8D98B8;
+  --brass:#EBD9AE; --brass-lit:#FFF2CF; --brass-soft:rgba(235,217,174,.16);
+  --go:#A6DDBB; --go-bg:rgba(120,205,160,.17); --stop:#FF8576; --stop-bg:rgba(255,90,70,.22);
+  --hold:#F3C870; --hold-bg:rgba(243,200,112,.15); --code:#8CCBFF; --code-bg:rgba(111,196,255,.18);
+  --idle:#A4ACC4; --idle-bg:rgba(190,210,255,.08); --focus:#6FC4FF;
+  --row-a:rgba(11,20,46,.78); --row-b:rgba(15,26,58,.78);
+  --row-code-a:rgba(20,48,96,.72); --row-code-b:rgba(24,56,108,.72);
+  --row-go-a:rgba(20,52,46,.72); --row-go-b:rgba(24,60,52,.72);
+  --row-warn-a:rgba(70,56,24,.72); --row-warn-b:rgba(80,64,28,.72);
+  --row-hot-a:rgba(86,30,28,.72); --row-hot-b:rgba(98,34,30,.72); --row-hover:rgba(251,248,239,.07);
+  --btn-ink:#14100A; --accent-ink:#14100A; --code-ink:#071A30; --go-ink:#0C2218; --stop-ink:#2A0806;
+  --ghost-bg:rgba(190,210,255,.08); --ghost-bg-h:rgba(190,210,255,.16); --ghost-line:rgba(190,210,255,.28); --ghost-line-h:#FBF8EF;
+  --crest:#FBF8EF;
+  --display:'Gilda Display','Cormorant Garamond',Georgia,serif;
+  --hdr-bg:linear-gradient(180deg,rgba(10,20,52,.94),rgba(6,12,32,.94));
+  --shadow:0 1px 2px rgba(0,0,0,.55),0 16px 36px -18px rgba(0,0,0,.9);
+  --glass:rgba(8,15,36,.74); --glass-head:rgba(10,19,46,.94);
+}
+/* ---------- stage ---------- */
+html[data-theme="blossom"] #stage{background:#05070B}
+#stage.st-blossom .l{display:none}
+#stage.st-blossom .arts{will-change:transform}
+#stage.st-blossom .bl{top:0;left:0;width:max(100vw,100vh);margin-left:calc((100vw - max(100vw,100vh)) * .12);aspect-ratio:1600/2400}
+#stage.st-blossom:not(.pan) .bl{transform:translateY(-27%)}
+#stage.st-blossom .bl>*{position:absolute;display:block}
+#stage.st-blossom .bl-base{inset:0;width:100%;height:100%}
+#stage.st-blossom .bl-shim{background:repeating-linear-gradient(90deg,transparent 0 13px,rgba(255,226,170,.2) 13px 16px,transparent 16px 39px,rgba(130,200,255,.16) 39px 41px,transparent 41px 67px);
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent);mask-image:linear-gradient(180deg,#000,transparent);animation:blShim 3.4s ease-in-out infinite alternate}
+#stage.st-blossom .bl-shim.b{background-position:29px 0;animation-delay:-3.4s;animation-duration:4.6s}
+@keyframes blShim{from{opacity:.1}to{opacity:1}}
+#stage.st-blossom .bl-glow{border-radius:50%;background:radial-gradient(closest-side,rgba(120,200,255,.5),transparent);animation:blGlow 5s ease-in-out infinite alternate}
+#stage.st-blossom .bl-glow.w{background:radial-gradient(closest-side,rgba(255,255,255,.28),transparent);animation-duration:7.5s}
+@keyframes blGlow{from{opacity:.3}to{opacity:1}}
+#stage.st-blossom .bl-red{border-radius:50%;background:radial-gradient(closest-side,#FFE1D2 0 16%,#FF4A32 34%,rgba(255,60,40,.45) 62%,transparent);animation:blRed 4.6s ease-in-out infinite alternate}
+#stage.st-blossom .bl-red.b{animation-delay:-2.1s}
+@keyframes blRed{from{opacity:.55;transform:scale(.9)}to{opacity:1;transform:scale(1.3)}}
+#stage.st-blossom .bl-win{background:#FFE2A8;opacity:0;animation:blWin 23s steps(1) infinite}
+#stage.st-blossom .bl-win:nth-child(2n){animation-delay:-9s}
+#stage.st-blossom .bl-win:nth-child(3n){animation-duration:31s;animation-delay:-17s;background:#CFE4FF}
+#stage.st-blossom .bl-win:nth-child(5n){animation-duration:41s;animation-delay:-4s}
+@keyframes blWin{0%{opacity:0}35%{opacity:.95}80%{opacity:0}}
+#stage.st-blossom .bl-bike{animation:blBike 90s linear infinite}
+@keyframes blBike{0%{transform:translateX(520%);opacity:0}2%{opacity:1}55%{transform:translateX(2600%);opacity:1}56%,100%{transform:translateX(2600%);opacity:0}}
+#stage.st-blossom .bl-sway{transform-origin:50% 0;animation:blSway 6s ease-in-out infinite alternate}
+#stage.st-blossom .bl-sway.s1{animation-duration:7.4s;animation-delay:-2s}
+#stage.st-blossom .bl-sway.s2{animation-duration:5.3s;animation-delay:-3.5s}
+#stage.st-blossom .bl-sway.s3{animation-duration:8.1s;animation-delay:-1s}
+#stage.st-blossom .bl-sway.s4{animation-duration:6.6s;animation-delay:-4.4s}
+#stage.st-blossom .bl-sway.s5{animation-duration:7s;animation-delay:-5s}
+@keyframes blSway{from{transform:rotate(-2.6deg)}to{transform:rotate(2.8deg)}}
+#stage.st-blossom .parts i.petal{top:-24px;animation-name:blFall}
+#stage.st-blossom .parts i.petal b{background:linear-gradient(135deg,#FFFFFF,#F1E9D6);border-radius:75% 12% 75% 12%;opacity:.9;animation:blFlutter ease-in-out infinite alternate}
+#stage.st-blossom .parts i.petal.near b{opacity:.6;filter:blur(1.2px)}
+@keyframes blFall{from{transform:translate3d(0,-4vh,0)}to{transform:translate3d(var(--drift),108vh,0)}}
+@keyframes blFlutter{from{transform:translateX(-14px) rotate(-40deg) rotateX(10deg)}to{transform:translateX(14px) rotate(70deg) rotateX(68deg)}}
+html:not(.fx) #stage.st-blossom *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){#stage.st-blossom *{animation-play-state:paused!important}}
+/* ---------- chrome ---------- */
+html[data-theme="blossom"] .console{border-bottom:0}
+html[data-theme="blossom"] .console::after{top:auto;height:2px;background:var(--bl-branch);opacity:.85}
+html[data-theme="blossom"] .mark b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.01em;color:var(--bl-petal)}
+html[data-theme="blossom"] .mark span{font-family:var(--display);font-size:13px;letter-spacing:.08em;color:var(--bl-spire)}
+html[data-theme="blossom"] .modal h3,html[data-theme="blossom"] .entryhead h3,html[data-theme="blossom"] .auth-card h2{font-family:var(--display);font-weight:400;font-size:1.25em;letter-spacing:.01em}
+html[data-theme="blossom"] .stat b{font-family:var(--display);font-weight:400;font-size:28px;color:var(--bl-petal)}
+html[data-theme="blossom"] .stat.flag b{color:var(--hold)}
+html[data-theme="blossom"] .stat.good b{color:var(--go)}
+html[data-theme="blossom"] thead th{--sort-ink:var(--bl-spire)}
+html[data-theme="blossom"] .day[aria-current="true"]{color:var(--bl-petal);border-bottom-color:var(--bl-spire)}
+html[data-theme="blossom"] .day .cnt{background:var(--bl-petal);color:#14100A}
+html[data-theme="blossom"] .day.today b::after{background:var(--bl-red)}
+html[data-theme="blossom"] .chip[aria-pressed="true"]{background:var(--bl-petal);color:#14100A;border-color:var(--bl-petal)}
+html[data-theme="blossom"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]){background:linear-gradient(180deg,#FBF8EF,#E6DCC2);color:#14100A;border-color:#FBF8EF;box-shadow:0 0 0 1px rgba(0,0,0,.25),0 6px 18px -8px rgba(251,248,239,.5)}
+html[data-theme="blossom"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]):hover{background:#FFFFFF}
+html[data-theme="blossom"] .btn.ghost{color:var(--text)}
+html[data-theme="blossom"] .icon-btn.accent{background:var(--bl-spire);color:#071A30;border-color:var(--bl-spire);font-weight:700}
+html[data-theme="blossom"] .modal{border-color:rgba(190,210,255,.24);background:var(--bl-branch) top/100% 2px no-repeat,var(--surface)}
+html[data-theme="blossom"] .wk-tab.t-active{--ac:var(--bl-spire)}
+html[data-theme="blossom"] .wkclock{color:var(--bl-cream);opacity:.9}
+html[data-theme="blossom"] .auth-brand{background:linear-gradient(180deg,#0F2A66,#060C20)}
+html[data-theme="blossom"] .auth-brand h1{font-family:var(--display);font-weight:400;color:var(--bl-petal)}
 </style>
 </head>
 <body>
@@ -4622,6 +4727,7 @@ html[data-tone="dark"] .wk-tab.t-active.on b,html[data-tone="dark"] .wk-tab.t-ac
       <button class="wk wk2" id="weekNext2" title="Next week" aria-label="Next week">»</button>
     </div>
     <div class="right">
+      <span class="wkclock" id="wkClock" aria-label="Current time"></span>
       <button class="btn sm bingo-btn" id="btnBingo" type="button" hidden
               title="Friday bingo — opens a small window that floats on top of everything">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
@@ -6224,6 +6330,7 @@ function persistOrders() {
     });
   }
   reindex();
+  driveWatchScan();
   if (merged) {
     toast("Picked up " + merged + " change" + (merged === 1 ? "" : "s") +
           " made in another tab.", null, 6000);
@@ -8232,16 +8339,15 @@ function attachProofPdf(orderId, file) {
 }
 /* ------------------------------------------------------- Working mode
    The list is split by stage, one tab at a time:
-     Active       in progress + up next (the default, newest first)
+     Active       everything still to do (the default, newest first)
      In progress  started, not finished, not on hold
-     Up next      not started yet
      Waiting      on hold (ILS, CEC, WEE, WLE...) or proof out with the customer
      Done         finished today
    Open orders from earlier days (up to a week back) carry onto today. Close
    out day is a walkthrough of the day; every previous day counts as closed.
    Closed days, notes and moods are remembered on this device (caot_eod_v1). */
 var WORK_KEY = "caot_work_v1", EOD_KEY = "caot_eod_v1";
-var WORK_VIEWS = ["active", "live", "next", "wait", "done"];
+var WORK_VIEWS = ["active", "wait", "done"];
 function workLoad() {
   var on = true, view = "active";
   try {
@@ -8304,7 +8410,7 @@ function proofWaiting(o) { return !isDoneOrder(o) && !isHoldFlag(o) && (proofOut
 function workBucket(o) {
   if (isDoneOrder(o)) return "done";
   if (isHoldFlag(o) || proofWaiting(o)) return "wait";
-  return isLive(o) ? "live" : "next";
+  return "live";   /* started or not, it is still yours to work on */
 }
 function waitReason(o) {
   if (!isHoldFlag(o) && proofWaiting(o)) return proofOut(o) ? "Proof out" : "Send proof";
@@ -8328,13 +8434,11 @@ function workIn(o, searching) {
   if (searching) return inScope(o);
   if (!inWorkScope(o)) return false;
   var b = workBucket(o), v = state.workView;
-  if (v === "active") return b === "live" || b === "next";
+  if (v === "active") return b === "live";
   return b === v;
 }
 function workEmptyText() {
   switch (state.workView) {
-    case "live": return ["Nothing in progress", "Stamp Start on an order from Up next to begin."];
-    case "next": return ["Nothing left to start", "Every order has been started."];
     case "wait": return ["Nothing is waiting", "No holds and no proofs out with customers."];
     case "done": return ["Nothing finished yet", "Finished orders will land here."];
     default: return ["Nothing to work on right now", "Check Waiting, or open Done to review the day."];
@@ -8356,13 +8460,13 @@ function workSoftRender(id) {
   } else scheduleRender();
 }
 function workCounts() {
-  var c = { live: 0, next: 0, wait: 0, done: 0, carry: 0, active: 0 };
+  var c = { live: 0, wait: 0, done: 0, carry: 0, active: 0 };
   state.orders.forEach(function (o) {
     if (!inWorkScope(o)) return;
     c[workBucket(o)]++;
     if (workCarry(o)) c.carry++;
   });
-  c.active = c.live + c.next;
+  c.active = c.live;
   return c;
 }
 var workLast = null;
@@ -8400,9 +8504,7 @@ function renderWorkHud() {
     t.appendChild(el("span", null, label));
     return t;
   }
-  tabs.appendChild(tab("active", "Active", "Everything that still needs doing: in progress plus up next"));
-  tabs.appendChild(tab("live", "In progress", "Started and not finished"));
-  tabs.appendChild(tab("next", "Up next", "Not started yet"));
+  tabs.appendChild(tab("active", "Active", "Everything that still needs doing, started or not"));
   tabs.appendChild(tab("wait", "Waiting", "On hold, or finished and waiting on the proof"));
   tabs.appendChild(tab("done", "Done", "Finished orders"));
   tmp.appendChild(tabs);
@@ -8461,7 +8563,7 @@ function renderWorkHud() {
     tx.appendChild(el("b", null, "No orders yet"));
     tx.appendChild(el("span", null, "New orders will show up here, newest on top."));
   } else {
-    var nowO = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) === "live"; }).sort(newestFirst)[0];
+    var nowO = state.orders.filter(function (o) { return inWorkScope(o) && workBucket(o) === "live" && isLive(o); }).sort(newestFirst)[0];
     ic.innerHTML = wkSvg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>');
     if (nowO) {
       tx.appendChild(el("b", null, "Working on #" + nowO.seq + (nowO.orderId ? " · " + nowO.orderId : "")));
@@ -8766,7 +8868,7 @@ function openCloseOut() {
       var row = el("div", "eod-item"), nm = el("div", "nm");
       nm.appendChild(el("b", null, ordLabel(o) + (o.customer ? " · " + displayCustomer(o.customer).split("\n")[0] : "")));
       var bk = workBucket(o);
-      nm.appendChild(el("span", null, (bk === "wait" ? "Waiting · " + waitReason(o) : bk === "live" ? "In progress" : "Not started") + (workCarry(o) ? " · from " + shortDate(o.date) : "") + (bk !== "wait" && proofPending(o) ? " · proof not back yet" : "")));
+      nm.appendChild(el("span", null, (bk === "wait" ? "Waiting · " + waitReason(o) : bk === "live" && isLive(o) ? "In progress" : "Not started") + (workCarry(o) ? " · from " + shortDate(o.date) : "") + (bk !== "wait" && proofPending(o) ? " · proof not back yet" : "")));
       var sg = el("div", "sg");
       var bC = el("button", null, "Carry over"), bF = el("button", null, "Mark finished");
       bC.type = bF.type = "button";
@@ -8802,7 +8904,7 @@ function openCloseOut() {
       w.appendChild(el("p", "eod-note", carry.length + (carry.length === 1 ? " order comes" : " orders come") + " with you:"));
       w.appendChild(chips(carry.map(function (o) {
         var bk = workBucket(o);
-        return ordLabel(o) + (bk === "wait" ? " · " + waitReason(o) : bk === "live" ? " · in progress" : " · not started");
+        return ordLabel(o) + (bk === "wait" ? " · " + waitReason(o) : bk === "live" && isLive(o) ? " · in progress" : " · not started");
       })));
     }
     w.appendChild(el("div", "eod-sec", "Leave yourself a note"));
@@ -9015,7 +9117,7 @@ function driveLoadCache() {
   } catch (e) {}
 }
 var driveWarned = false;
-function driveRefresh(quiet) {
+function driveRefresh(quiet, fresh) {
   var u = driveUrl();
   if (!u) return Promise.resolve(false);
   function fail(msg) {
@@ -9028,7 +9130,7 @@ function driveRefresh(quiet) {
   if (!/^https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[^/]+\/exec/.test(u)) {
     return Promise.resolve(fail("That isn’t the web-app link. In Apps Script choose Deploy → New deployment → Web app, then copy the link that ends in /exec and add ?t=YOURTOKEN."));
   }
-  return fetch(u, { cache: "no-store" }).then(function (r) { return r.text(); }).then(function (txt) {
+  return fetch(fresh ? u + (u.indexOf("?") === -1 ? "?" : "&") + "fresh=" + Date.now() : u, { cache: "no-store" }).then(function (r) { return r.text(); }).then(function (txt) {
     var d;
     try { d = JSON.parse(txt); }
     catch (e) { throw new Error("Google sent back a sign-in page instead of data. Redeploy the web app with “Who has access” set to Anyone."); }
@@ -9085,6 +9187,58 @@ function proofThumbs(o) {
     wrap.appendChild(more);
   }
   return wrap;
+}
+/* ---- quiet wall clock in the week bar (time of day only; quitting time is in the tooltip) */
+var QUIT_MIN = 17 * 60 + 30;
+function clockTick() {
+  var c = $("wkClock");
+  if (!c) return;
+  var d = new Date(), h = d.getHours(), m = d.getMinutes();
+  var txt = (h % 12 || 12) + ":" + (m < 10 ? "0" : "") + m + " " + (h < 12 ? "AM" : "PM");
+  if (c.textContent !== txt) c.textContent = txt;
+  var left = QUIT_MIN - (h * 60 + m);
+  c.title = left > 0 ? "Quitting time 5:30 PM · " + (left >= 60 ? Math.floor(left / 60) + "h " : "") + (left % 60) + "m to go" : "Past quitting time (5:30 PM)";
+}
+function clockStart() {
+  clockTick();
+  setInterval(clockTick, 5000);
+}
+
+/* ---- re-check Drive about two minutes after a proof order changes
+   (new order with Proof = Yes, finished, or proof back), then once more if
+   its file still hasn't shown up. */
+var driveSigs = null, driveWatchTimer = 0, driveWatchIds = {}, driveWatchTries = 0;
+var DRIVE_RECHECK_MS = 120000;
+function driveSig(o) {
+  return (o.proof === "TRUE" ? 1 : 0) + "|" + (o.fin === "TRUE" ? 1 : 0) + "|" + (isClock(o.completionTime) ? 1 : 0) + "|" + (isClock(o.proofRcvdTime) ? 1 : 0);
+}
+function driveWatchScan() {
+  var first = !driveSigs;
+  if (first) driveSigs = {};
+  var hit = 0;
+  state.orders.forEach(function (o) {
+    var sg = driveSig(o), prev = driveSigs[o.id];
+    driveSigs[o.id] = sg;
+    if (first || prev === sg || o.proof !== "TRUE") return;
+    driveWatchIds[o.id] = 1; hit++;
+  });
+  if (hit && driveUrl()) driveWatchArm(DRIVE_RECHECK_MS, 0);
+}
+function driveWatchArm(ms, tries) {
+  if (driveWatchTimer) return;
+  driveWatchTries = tries;
+  driveWatchTimer = setTimeout(function () {
+    driveWatchTimer = 0;
+    driveRefresh(true, true).then(function () {
+      var missing = Object.keys(driveWatchIds).filter(function (id) {
+        var o = byId(id);
+        return o && o.proof === "TRUE" && !driveProofsFor(o).length;
+      });
+      driveWatchIds = {};
+      missing.forEach(function (id) { driveWatchIds[id] = 1; });
+      if (missing.length && driveWatchTries < 2) driveWatchArm(DRIVE_RECHECK_MS, driveWatchTries + 1);
+    });
+  }, ms);
 }
 function driveOpen(f) {
   window.open("https://drive.google.com/file/d/" + encodeURIComponent(f.id) + "/view", "_blank");
@@ -11595,6 +11749,7 @@ function enterApp(user) {
   buildChrome();
   clearForm();
   render();
+  driveSigs = null; driveWatchIds = {}; driveWatchScan();   /* baseline for the Drive re-check */
   restoreDraft(pendingDraft);
   if (!state.orders.length) {
     confirmModal("This device has no orders yet",
@@ -11659,6 +11814,8 @@ var THEMES = [
     font: "Marcellus", sw: ["#D3C4A6", "#A33520", "#F3B21C"] },
   { v: "sixth",     l: "52nd & Sixth", sub: "Night on the plaza, looking up the avenue", tone: "dark", group: "Midtown", stage: "sixth",
     font: "Instrument+Serif:ital@0;1", sw: ["#0E1222", "#F4C46A", "#D23A2E"] },
+  { v: "blossom",   l: "Midtown Blossoms", sub: "White cherry blossoms over the East River at night \u00b7 scroll to pan", tone: "dark", group: "Midtown", stage: "blossom",
+    font: "Gilda+Display", sw: ["#0F2A66", "#FBF8EF", "#6FC4FF"] },
   /* Game Day: the Stadium Night scene in Buffalo royal blue and red. No team marks. */
   { v: "bills",     l: "Buffalo Gameday",  sub: "Royal blue & red under the lights", tone: "dark", group: "Game Day", stage: "stadium", kit: "football",
     font: "Teko:wght@400;500;600", sw: ["#00338D", "#C60C30", "#FFFFFF"] },
@@ -11791,6 +11948,297 @@ var STAGE_ART = {
 };
 STAGE_ART.gct = gctSceneArt();
 STAGE_ART.sixth = sixthSceneArt();
+STAGE_ART.blossom = blossomSceneArt();
+
+/* ---------- Midtown Blossoms: the stage ----------
+   Night on the Queens waterfront, looking across the East River at Midtown
+   through a white cherry tree. The picture is taller than the screen, top to
+   bottom: blossom canopy, cobalt sky, the lit skyline, the river and its
+   railing, a dark lawn, the lamp-lit sidewalk. Scrolling pans it (see
+   nycPanRange). One big still SVG carries the scene; everything that moves
+   (hanging sprigs, lights, a cyclist, the river shimmer) is a small separate
+   element on top, so the still picture is never redrawn. Seeded, so it is the
+   same tree every load. */
+function blossomSceneArt() {
+  var seed = 1991;
+  function R() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+  function rr(a, b) { return a + R() * (b - a); }
+  function f1(n) { return (Math.round(n * 10) / 10).toString(); }
+  var W = 1600, H = 2400, WATER = 1290;
+  var s = [];
+
+  /* ---- flower shape: five rounded petals in one path ---- */
+  var pet = "";
+  for (var a = 0; a < 5; a++) {
+    var an = a * 72 * Math.PI / 180, c = Math.cos(an), sn = Math.sin(an);
+    var P = function (x, y) { return f1(x * c - y * sn) + " " + f1(x * sn + y * c); };
+    pet += "M0 0C" + P(-6, -4) + " " + P(-7, -12) + " " + P(0, -13) + "C" + P(7, -12) + " " + P(6, -4) + " 0 0Z";
+  }
+
+  /* ---- defs ---- */
+  s.push('<defs>' +
+    '<linearGradient id="blSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0A1640"/><stop offset=".45" stop-color="#0F2A66"/><stop offset=".82" stop-color="#16408C"/><stop offset="1" stop-color="#1B4B9A"/></linearGradient>' +
+    '<linearGradient id="blRiver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0C1838"/><stop offset="1" stop-color="#04070E"/></linearGradient>' +
+    '<linearGradient id="blLawn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05070B"/><stop offset=".35" stop-color="#15120E"/><stop offset="1" stop-color="#4A3B28"/></linearGradient>' +
+    '<linearGradient id="blWalk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9A187"/><stop offset=".5" stop-color="#C6BFA2"/><stop offset="1" stop-color="#ADA58A"/></linearGradient>' +
+    '<linearGradient id="blTrunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2A1C18"/><stop offset=".3" stop-color="#8C6253"/><stop offset=".58" stop-color="#C9A08A"/><stop offset=".82" stop-color="#8A5E4E"/><stop offset="1" stop-color="#3A2620"/></linearGradient>' +
+    '<linearGradient id="blOV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD4FF"/><stop offset=".3" stop-color="#2F8FE8"/><stop offset=".62" stop-color="#14305E"/><stop offset="1" stop-color="#0A1226"/></linearGradient>' +
+    '<radialGradient id="blLamp" cx=".42" cy=".3" r=".75"><stop offset="0" stop-color="#FFF4D2" stop-opacity=".5"/><stop offset=".5" stop-color="#F0DDAE" stop-opacity=".12"/><stop offset="1" stop-color="#05070B" stop-opacity=".55"/></radialGradient>' +
+    '<radialGradient id="blHalo"><stop offset="0" stop-color="#9AD6FF" stop-opacity=".55"/><stop offset="1" stop-color="#9AD6FF" stop-opacity="0"/></radialGradient>' +
+    '<filter id="blBlur" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="22"/></filter>' +
+    '<g id="blF"><path d="' + pet + '"/><circle r="2.1" fill="#B99A62"/></g>' +
+    '<path id="blP" d="' + pet + '"/>');
+  /* window patterns: one tile each, lit at random */
+  var WIN = ["#FFD9A0", "#FFE9C4", "#F5C27A", "#FFF3DC", "#E8B66A", "#CFE4FF"];
+  [[6, 9, 4, 5, .55], [8, 11, 5, 7, .46], [5, 7, 3, 4, .62], [10, 8, 7, 4, .5], [7, 16, 3, 13, .7]].forEach(function (p, k) {
+    var cw = p[0], ch = p[1], ww = p[2], wh = p[3], lit = p[4], tw = cw * 18, th = ch * 16, out = "";
+    for (var y = 0; y < th; y += ch) {
+      var rowDark = R() < .12;
+      for (var x = 0; x < tw; x += cw) {
+        if (rowDark || R() > lit) continue;
+        out += '<rect x="' + (x + 1) + '" y="' + (y + 1) + '" width="' + ww + '" height="' + wh + '" fill="' + WIN[Math.floor(R() * WIN.length)] + '" opacity="' + f1(rr(.55, 1)) + '"/>';
+      }
+    }
+    s.push('<pattern id="blW' + k + '" width="' + tw + '" height="' + th + '" patternUnits="userSpaceOnUse">' + out + '</pattern>');
+  });
+  /* hexagon pavers */
+  s.push('<pattern id="blHex" width="84" height="48" patternUnits="userSpaceOnUse"><path d="M0 24 L14 0 H42 L56 24 L42 48 H14 Z M56 24 H84 M42 0 L56 -24 M42 48 L56 72" fill="none" stroke="#8F8870" stroke-width="2.2"/></pattern>');
+  /* cobbles round the tree pit */
+  s.push('<pattern id="blCob" width="34" height="22" patternUnits="userSpaceOnUse"><rect width="34" height="22" fill="#6E6A5C"/><rect x="1" y="1" width="15" height="9" rx="2" fill="#8B8674"/><rect x="18" y="1" width="15" height="9" rx="2" fill="#7C7868"/><rect x="-7" y="12" width="15" height="9" rx="2" fill="#827D6C"/><rect x="10" y="12" width="15" height="9" rx="2" fill="#928D7A"/><rect x="27" y="12" width="15" height="9" rx="2" fill="#787463"/></pattern>');
+  s.push('</defs>');
+
+  /* ---- sky ---- */
+  s.push('<rect width="' + W + '" height="' + (WATER + 10) + '" fill="url(#blSky)"/>');
+  var cl = "";
+  for (var i = 0; i < 16; i++) {
+    var dark = i % 3 !== 0;
+    cl += '<ellipse cx="' + f1(rr(-80, W + 80)) + '" cy="' + f1(rr(120, 1020)) + '" rx="' + f1(rr(180, 460)) + '" ry="' + f1(rr(26, 70)) + '" fill="' + (dark ? "#060E2A" : "#2C63B8") + '" opacity="' + (dark ? f1(rr(.35, .6)) : f1(rr(.16, .3))) + '"/>';
+  }
+  s.push('<g filter="url(#blBlur)">' + cl + '</g>');
+  /* glow of the city on the low sky */
+  s.push('<rect y="' + (WATER - 260) + '" width="' + W + '" height="270" fill="#3F7FE0" opacity=".1"/>');
+
+  /* ---- skyline ---- */
+  function block(x, top, w, body, pat, op, roof) {
+    var o = '<rect x="' + f1(x) + '" y="' + f1(top) + '" width="' + f1(w) + '" height="' + f1(WATER - top + 4) + '" fill="' + body + '"/>' +
+            '<rect x="' + f1(x + 5) + '" y="' + f1(top + 8) + '" width="' + f1(w - 10) + '" height="' + f1(WATER - top - 14) + '" fill="url(#blW' + pat + ')" opacity="' + op + '"/>';
+    if (roof === 1) o += '<rect x="' + f1(x + w * .3) + '" y="' + f1(top - 14) + '" width="' + f1(w * .28) + '" height="14" fill="' + body + '"/>';
+    if (roof === 2) o += '<path d="M' + f1(x + w * .6) + ' ' + f1(top) + 'v-44" stroke="' + body + '" stroke-width="3"/>';
+    return o;
+  }
+  var far = "", near = "", x = -30;
+  while (x < W + 20) {
+    var w = rr(64, 140), top = rr(960, 1150);
+    far += block(x, top, w, "#0C1838", Math.floor(R() * 3), ".5", Math.floor(R() * 4));
+    x += w + rr(-8, 14);
+  }
+  s.push('<g>' + far + '</g>');
+
+  /* landmarks, between the far and near rows */
+  var lm = "";
+  /* the distant needle, small and blue */
+  lm += '<path d="M818 1290 V940 h8 v-26 h6 v-22 h8 v22 h6 v26 h8 V1290 Z" fill="#0B1430"/>' +
+        '<rect x="823" y="950" width="26" height="336" fill="url(#blW2)" opacity=".45"/>' +
+        '<path d="M836 892 V812" stroke="#6FC4FF" stroke-width="3.5" stroke-linecap="round"/><path d="M836 892 V812" stroke="#6FC4FF" stroke-width="11" stroke-linecap="round" opacity=".25"/>';
+  /* the tall tapered glass tower with the blue crown */
+  lm += '<path d="M936 1290 V842 L952 760 L972 700 L990 652 L1000 700 L1016 760 L1034 842 V1290 Z" fill="url(#blOV)"/>' +
+        '<path d="M952 760 L990 700 L1016 760 M944 820 L990 742 L1026 820 M972 700 L990 676 L1000 700" fill="none" stroke="#BFE6FF" stroke-width="2" opacity=".75"/>' +
+        '<rect x="941" y="900" width="88" height="386" fill="url(#blW1)" opacity=".85"/>' +
+        '<path d="M990 652 V566" stroke="#8FD4FF" stroke-width="4" stroke-linecap="round"/><path d="M990 652 V566" stroke="#8FD4FF" stroke-width="14" stroke-linecap="round" opacity=".22"/>' +
+        '<circle cx="990" cy="690" r="120" fill="url(#blHalo)"/>';
+  /* the art-deco crown: stacked sunburst arches, white-lit, with a needle */
+  var cx = 1094, cy = 900;
+  lm += '<path d="M1066 1290 V' + cy + ' H1122 V1290 Z" fill="#141B30"/><rect x="1070" y="' + (cy + 10) + '" width="48" height="376" fill="url(#blW2)" opacity=".7"/>';
+  for (var t = 0; t < 6; t++) {
+    var hw = 28 - t * 4.2, by = cy - t * 21, ry = 30 - t * 1.5;
+    lm += '<path d="M' + f1(cx - hw) + ' ' + by + ' A' + f1(hw) + ' ' + f1(ry) + ' 0 0 1 ' + f1(cx + hw) + ' ' + by + ' Z" fill="' + (t % 2 ? "#C9CFDC" : "#E9ECF2") + '"/>';
+    var n = Math.max(2, 5 - t);
+    for (var k = 0; k < n; k++) {
+      var tx = cx - hw * .72 + (n === 1 ? 0 : k * (hw * 1.44) / (n - 1)), th = 9 - t * .8;
+      lm += '<path d="M' + f1(tx - 3) + ' ' + f1(by - 3) + ' L' + f1(tx) + ' ' + f1(by - 3 - th) + ' L' + f1(tx + 3) + ' ' + f1(by - 3) + ' Z" fill="#FFFFFF"/>';
+    }
+  }
+  lm += '<path d="M' + cx + ' ' + (cy - 132) + ' V' + (cy - 190) + '" stroke="#E9ECF2" stroke-width="3" stroke-linecap="round"/>';
+  /* a glass tower with a cold white top band */
+  lm += '<path d="M1218 1290 V930 L1236 906 H1296 L1310 930 V1290 Z" fill="#0E1A36"/><rect x="1224" y="936" width="80" height="40" fill="#DDF0FF" opacity=".85"/><rect x="1224" y="986" width="80" height="300" fill="url(#blW0)" opacity=".8"/>';
+  s.push('<g>' + lm + '</g>');
+
+  x = -40;
+  while (x < W + 20) {
+    var bw = rr(92, 190), mid = x + bw / 2, btop;
+    if (mid > 760 && mid < 1340) btop = rr(1090, 1190);          /* keep the landmarks clear */
+    else if (mid > 380 && mid < 700) btop = rr(900, 1040);        /* the big dark blocks left of centre */
+    else if (mid < 130 || mid > 1480) btop = rr(860, 960);
+    else btop = rr(980, 1140);
+    near += block(x, btop, bw, "#070B17", mid > 1100 && mid < 1500 && R() < .5 ? 4 : Math.floor(R() * 4), ".95", Math.floor(R() * 5));
+    x += bw + rr(4, 26);
+  }
+  s.push('<g>' + near + '</g>');
+  /* the far shore: a low warm line of lights */
+  var shore = "";
+  for (i = 0; i < 150; i++) shore += '<rect x="' + f1(rr(0, W)) + '" y="' + f1(rr(WATER - 12, WATER - 2)) + '" width="' + f1(rr(2, 9)) + '" height="' + f1(rr(2, 4)) + '" fill="' + WIN[Math.floor(R() * 5)] + '" opacity="' + f1(rr(.5, 1)) + '"/>';
+  s.push('<rect y="' + (WATER - 16) + '" width="' + W + '" height="18" fill="#060912"/>' + shore);
+
+  /* ---- river ---- */
+  s.push('<rect y="' + WATER + '" width="' + W + '" height="120" fill="url(#blRiver)"/>');
+  var refl = "";
+  for (i = 0; i < 120; i++) {
+    var rx = rr(0, W), blue = Math.abs(rx - 990) < 30 || Math.abs(rx - 836) < 12;
+    refl += '<rect x="' + f1(rx) + '" y="' + f1(WATER + rr(2, 20)) + '" width="' + f1(rr(2, 6)) + '" height="' + f1(rr(14, 78)) + '" fill="' + (blue ? "#6FC4FF" : WIN[Math.floor(R() * 5)]) + '" opacity="' + f1(rr(.1, .34)) + '"/>';
+  }
+  s.push(refl);
+
+  /* ---- promenade: railing, lamps, people ---- */
+  var PY = WATER + 112;
+  s.push('<rect y="' + PY + '" width="' + W + '" height="60" fill="#05060A"/>');
+  var rail = '<path d="M0 ' + (PY - 26) + ' H' + W + ' M0 ' + (PY - 12) + ' H' + W + '" stroke="#0B0E16" stroke-width="3"/>';
+  for (x = 10; x < W; x += 46) rail += '<path d="M' + x + ' ' + (PY - 28) + ' V' + (PY + 2) + '" stroke="#0B0E16" stroke-width="3"/>';
+  s.push(rail);
+  function person(px, sc, sit) {
+    var h = (sit ? 34 : 62) * sc, w = 20 * sc, y0 = PY + 34;
+    return '<g fill="#030407"><circle cx="' + f1(px) + '" cy="' + f1(y0 - h - 9 * sc) + '" r="' + f1(8.5 * sc) + '"/><path d="M' + f1(px - w / 2) + ' ' + f1(y0) + ' V' + f1(y0 - h + 8) + ' Q' + f1(px) + ' ' + f1(y0 - h - 6) + ' ' + f1(px + w / 2) + ' ' + f1(y0 - h + 8) + ' V' + f1(y0) + ' Z"/></g>';
+  }
+  s.push(person(498, 1, 0) + person(772, .9, 0) + person(806, .85, 0) + person(884, 1.1, 1) + person(1162, 1, 1) + person(1398, .95, 0));
+
+  /* ---- lawn ---- */
+  var LY = PY + 56, SY = 1790;
+  s.push('<rect y="' + LY + '" width="' + W + '" height="' + (SY - LY) + '" fill="url(#blLawn)"/>');
+  var dap = "";
+  for (i = 0; i < 70; i++) dap += '<ellipse cx="' + f1(rr(0, W)) + '" cy="' + f1(rr(LY + 130, SY - 6)) + '" rx="' + f1(rr(30, 120)) + '" ry="' + f1(rr(6, 20)) + '" fill="#050608" opacity="' + f1(rr(.18, .42)) + '"/>';
+  for (i = 0; i < 40; i++) dap += '<ellipse cx="' + f1(rr(100, W)) + '" cy="' + f1(rr(LY + 190, SY - 6)) + '" rx="' + f1(rr(20, 70)) + '" ry="' + f1(rr(4, 10)) + '" fill="#8A734A" opacity="' + f1(rr(.1, .22)) + '"/>';
+  s.push(dap);
+
+  /* ---- sidewalk ---- */
+  s.push('<rect y="' + SY + '" width="' + W + '" height="' + (H - SY) + '" fill="url(#blWalk)"/>' +
+    '<rect y="' + SY + '" width="' + W + '" height="9" fill="#E9E2C8"/>' +
+    '<path d="M0 2070 H' + W + ' M1010 ' + (SY + 9) + ' L1400 2070 L1500 2240 M420 2070 L360 2240 M0 2240 H' + W + '" fill="none" stroke="#8E876F" stroke-width="3" opacity=".8"/>' +
+    '<path d="M330 ' + (SY + 62) + ' H950 L1020 ' + (SY + 132) + ' H330 Z" fill="url(#blCob)"/>' +
+    '<rect y="2240" width="' + W + '" height="160" fill="#B5AE93"/><rect y="2240" width="' + W + '" height="160" fill="url(#blHex)"/>' +
+    /* the trunk's shadow, thrown right by the lamp */
+    '<path d="M196 ' + (SY + 46) + ' C420 ' + (SY + 20) + ' 640 ' + (SY + 44) + ' 900 ' + (SY + 30) + ' L900 ' + (SY + 58) + ' C640 ' + (SY + 76) + ' 420 ' + (SY + 58) + ' 196 ' + (SY + 92) + ' Z" fill="#14120D" opacity=".5"/>');
+  var grit = "";
+  for (i = 0; i < 180; i++) grit += '<ellipse cx="' + f1(rr(0, W)) + '" cy="' + f1(rr(SY + 14, H - 6)) + '" rx="' + f1(rr(3, 6)) + '" ry="' + f1(rr(1.6, 3)) + '" fill="#FFFDF4" opacity="' + f1(rr(.45, .9)) + '"/>';
+  for (i = 0; i < 70; i++) grit += '<ellipse cx="' + f1(rr(0, W)) + '" cy="' + f1(rr(LY + 200, SY)) + '" rx="' + f1(rr(2.5, 5)) + '" ry="' + f1(rr(1.4, 2.6)) + '" fill="#F4EEDD" opacity="' + f1(rr(.3, .7)) + '"/>';
+  s.push(grit);
+  s.push('<rect y="' + LY + '" width="' + W + '" height="' + (H - LY) + '" fill="url(#blLamp)"/>');
+
+  /* ---- the tree ---- */
+  function spline(pts, n) {
+    var out = [];
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+      for (var j = 0; j < n; j++) {
+        var u = j / n, u2 = u * u, u3 = u2 * u;
+        out.push([
+          .5 * (2 * p1[0] + (-p0[0] + p2[0]) * u + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * u2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * u3),
+          .5 * (2 * p1[1] + (-p0[1] + p2[1]) * u + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * u2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * u3)
+        ]);
+      }
+    }
+    out.push(pts[pts.length - 1]);
+    return out;
+  }
+  var wood = "", lite = "", back = "", front = "";
+  var TONE = ["#FDFBF3", "#FDFBF3", "#F4EEDD", "#FFFFFF", "#E9DFC6"];
+  function flower(fx, fy, sc, shade) {
+    var u = '<use href="#' + (sc > 1.05 && !shade ? "blF" : "blP") + '" transform="translate(' + f1(fx) + ' ' + f1(fy) + ') rotate(' + Math.round(rr(0, 72)) + ') scale(' + f1(sc) + ')" fill="' + (shade ? (R() < .5 ? "#B8AC90" : "#CFC4A8") : TONE[Math.floor(R() * TONE.length)]) + '"/>';
+    if (shade) back += u; else front += u;
+  }
+  function cluster(cx, cy, n, rad) {
+    for (var k = 0; k < n; k++) {
+      var an = rr(0, 6.283), d = Math.sqrt(R()) * rad;
+      flower(cx + Math.cos(an) * d, cy + Math.sin(an) * d * .8, rr(.75, 1.45), R() < .22);
+    }
+  }
+  function limb(pts, w0, w1, bloomFrom) {
+    var p = spline(pts, 7), n = p.length - 1;
+    for (var i = 0; i < n; i++) {
+      var u = i / n, w = w0 + (w1 - w0) * u;
+      wood += '<path d="M' + f1(p[i][0]) + ' ' + f1(p[i][1]) + 'L' + f1(p[i + 1][0]) + ' ' + f1(p[i + 1][1]) + '" stroke-width="' + f1(w) + '"/>';
+      if (w > 7) lite += '<path d="M' + f1(p[i][0] + w * .12) + ' ' + f1(p[i][1] + w * .16) + 'L' + f1(p[i + 1][0] + w * .12) + ' ' + f1(p[i + 1][1] + w * .16) + '" stroke-width="' + f1(w * .42) + '"/>';
+      if (u < bloomFrom) continue;
+      if (R() < .75) cluster(p[i][0] + rr(-14, 14), p[i][1] + rr(-16, 10), 3 + Math.floor(R() * 4), 30);
+      if (R() < .62) {
+        /* a twig, mostly reaching up and out, sometimes drooping */
+        var dx = p[i + 1][0] - p[i][0], dy = p[i + 1][1] - p[i][1], base = Math.atan2(dy, dx);
+        var ang = base + (R() < .5 ? -1 : 1) * rr(.6, 1.35), len = rr(60, 170);
+        if (R() < .7 && Math.sin(ang) > 0) ang = -ang;
+        var ex = p[i][0] + Math.cos(ang) * len, ey = p[i][1] + Math.sin(ang) * len;
+        var mx = (p[i][0] + ex) / 2 + rr(-22, 22), my = (p[i][1] + ey) / 2 + rr(-22, 22);
+        wood += '<path d="M' + f1(p[i][0]) + ' ' + f1(p[i][1]) + 'Q' + f1(mx) + ' ' + f1(my) + ' ' + f1(ex) + ' ' + f1(ey) + '" stroke-width="' + f1(Math.max(2, w * .34)) + '"/>';
+        for (var q = 1; q <= 4; q++) {
+          var v = q / 4, qx = (1 - v) * (1 - v) * p[i][0] + 2 * (1 - v) * v * mx + v * v * ex, qy = (1 - v) * (1 - v) * p[i][1] + 2 * (1 - v) * v * my + v * v * ey;
+          cluster(qx, qy, 3 + Math.floor(R() * 4), 26);
+        }
+      }
+    }
+  }
+  var FORK = [196, 800];
+  limb([FORK, [150, 640], [70, 470], [-20, 330]], 46, 12, .3);
+  limb([FORK, [250, 600], [330, 400], [450, 190], [560, 20]], 52, 10, .28);
+  limb([[214, 770], [330, 640], [470, 560], [700, 480], [980, 430], [1250, 340], [1620, 250]], 58, 9, .2);
+  limb([[700, 480], [770, 360], [830, 220], [910, 40]], 24, 7, .15);
+  limb([[980, 430], [1130, 470], [1320, 530], [1620, 580]], 22, 7, .1);
+  limb([[330, 400], [470, 340], [640, 300], [830, 290]], 24, 7, .15);
+  limb([[450, 190], [620, 130], [820, 110], [1060, 60]], 20, 6, .1);
+  limb([[1250, 340], [1340, 220], [1470, 120], [1620, 60]], 20, 6, .1);
+  limb([[150, 640], [110, 720], [60, 760]], 14, 5, .2);
+  /* fill the canopy between the limbs, leaving ragged gaps of sky */
+  function edge(x) {
+    var e = 400 + 90 * Math.sin(x / 210 + .6) + 50 * Math.sin(x / 83);
+    if (x < 440) e += (440 - x) * .62;
+    if (x > 1120) e += (x - 1120) * .46;
+    return e;
+  }
+  for (i = 0; i < 300; i++) {
+    var gx = rr(-20, W + 20), gy = rr(-20, edge(gx));
+    if (Math.sin(gx * .013 + 1.7) * Math.sin(gy * .019 + .4) > .5) continue;
+    if (gy > edge(gx) - 110 && R() < .45) continue;
+    cluster(gx, gy, 3 + Math.floor(R() * 5), 34);
+  }
+  s.push('<g fill="none" stroke="#3A2A24" stroke-linecap="round">' + wood + '</g><g fill="none" stroke="#A07C68" stroke-linecap="round" opacity=".7">' + lite + '</g>');
+  /* trunk: from the roots up to the fork, with the bark's horizontal bands */
+  var TR = 'M96 ' + (SY + 120) + ' C150 ' + (SY + 70) + ' 128 1500 140 1250 C148 1050 150 900 150 800 L250 770 C252 900 254 1060 252 1250 C250 1500 250 ' + (SY + 60) + ' 320 ' + (SY + 124) + ' C250 ' + (SY + 112) + ' 160 ' + (SY + 112) + ' 96 ' + (SY + 120) + ' Z';
+  var bands = "";
+  for (i = 0; i < 150; i++) {
+    var yy = rr(790, SY + 110), x0 = rr(92, 250), ln = rr(18, 80);
+    bands += '<path d="M' + f1(x0) + ' ' + f1(yy) + ' q' + f1(ln / 2) + ' ' + f1(rr(-4, 4)) + ' ' + f1(ln) + ' 0" stroke="' + (R() < .6 ? "#3A2620" : "#E6C4AE") + '" stroke-width="' + f1(rr(1.6, 4.5)) + '" opacity="' + f1(rr(.35, .8)) + '"/>';
+  }
+  s.push('<clipPath id="blTC"><path d="' + TR + '"/></clipPath><path d="' + TR + '" fill="url(#blTrunk)"/><g clip-path="url(#blTC)" fill="none" stroke-linecap="round">' + bands + '</g>' +
+    '<path d="M96 ' + (SY + 120) + ' C60 ' + (SY + 128) + ' 30 ' + (SY + 140) + ' 4 ' + (SY + 146) + ' M300 ' + (SY + 118) + ' C340 ' + (SY + 132) + ' 372 ' + (SY + 134) + ' 404 ' + (SY + 146) + ' M190 ' + (SY + 112) + ' C196 ' + (SY + 140) + ' 220 ' + (SY + 150) + ' 250 ' + (SY + 158) + '" fill="none" stroke="#6B4B40" stroke-width="12" stroke-linecap="round"/>');
+  s.push('<g>' + back + '</g><g>' + front + '</g>');
+
+  var base = '<svg class="bl-base" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + s.join("") + '</svg>';
+
+  /* ---- the small things that move, each its own element ---- */
+  function at(x, y, w, h) { return 'style="left:' + f1(x / W * 100) + '%;top:' + f1(y / H * 100) + '%;width:' + f1(w / W * 100) + '%;height:' + f1(h / H * 100) + '%"'; }
+  var live = "";
+  /* river shimmer */
+  live += '<i class="bl-shim" ' + at(0, WATER + 6, W, 96) + '></i><i class="bl-shim b" ' + at(0, WATER + 6, W, 96) + '></i>';
+  /* spire and crown glow */
+  live += '<i class="bl-glow" ' + at(990 - 90, 566 - 40, 180, 240) + '></i><i class="bl-glow w" ' + at(1094 - 70, 760 - 60, 140, 200) + '></i>';
+  /* red lamps on the railing, in pairs */
+  [690, 706, 792, 808, 958, 974].forEach(function (lx, k) { live += '<i class="bl-red' + (k % 2 ? " b" : "") + '" ' + at(lx - 9, PY - 46, 18, 18) + '></i>'; });
+  /* a few windows that switch on and off */
+  for (i = 0; i < 16; i++) {
+    live += '<i class="bl-win" ' + at(rr(20, W - 20), rr(1010, WATER - 30), 6, 8) + ' data-d="' + i + '"></i>';
+  }
+  /* cyclist along the promenade */
+  live += '<svg class="bl-bike" viewBox="0 0 60 44" ' + at(0, PY - 20, 66, 48) + '><g fill="none" stroke="#020305" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="32" r="10"/><circle cx="46" cy="32" r="10"/><path d="M12 32 L24 16 H40 L46 32 M24 16 L30 32 L40 16 M38 12 H44"/></g><g fill="#020305"><circle cx="27" cy="2" r="4.5"/><path d="M22 8 Q30 4 40 13 L37 16 Q30 11 27 17 Z"/></g></svg>';
+  /* hanging sprigs that sway */
+  function sprig(k) {
+    var o = '<path d="M60 0 Q' + (58 + rr(-10, 10)) + ' 70 ' + (60 + rr(-18, 18)) + ' 150" fill="none" stroke="#3A2A24" stroke-width="4" stroke-linecap="round"/>';
+    for (var q = 0; q < 26; q++) {
+      var yy = rr(18, 168), xx = 60 + rr(-34, 34) * (.45 + yy / 300);
+      o += '<use href="#blP" transform="translate(' + f1(xx) + ' ' + f1(yy) + ') rotate(' + Math.round(rr(0, 72)) + ') scale(' + f1(rr(.75, 1.4)) + ')" fill="' + (R() < .2 ? "#CFC4A8" : TONE[Math.floor(R() * TONE.length)]) + '"/>';
+    }
+    return '<svg class="bl-sway s' + k + '" viewBox="0 0 120 190" preserveAspectRatio="none" ' + at([690, 420, 1010, 1330, 1500, 90][k] - 60, [470, 550, 430, 530, 570, 700][k], 120, 190) + '>' + o + '</svg>';
+  }
+  for (i = 0; i < 6; i++) live += sprig(i);
+
+  return '<div class="bl">' + base + live + '</div>';
+}
+
 
 /* ---------- 52nd & Sixth: the stage ----------
    Night, eye level, standing on the plaza at the northwest corner of 52nd St
@@ -12327,6 +12775,20 @@ function stageParticles(kind, box) {
       p.it.style.animationDuration = d + "s";
       p.it.style.animationDelay = -rnd(0, d) + "s";
     }
+  } else if (kind === "blossom") {
+    /* loose petals drifting down past the lens, a few big soft ones close up */
+    for (i = 0; i < (small ? 14 : 30); i++) {
+      var near = i % 8 === 0;
+      p = add("petal" + (near ? " near" : "")); d = near ? rnd(8, 12) : rnd(12, 24);
+      p.it.style.left = rnd(-8, 100) + "%";
+      p.it.style.animationDuration = d + "s";
+      p.it.style.animationDelay = -rnd(0, d) + "s";
+      p.it.style.setProperty("--drift", rnd(-30, 170) + "px");
+      var pw = near ? rnd(15, 22) : rnd(7, 12);
+      p.b.style.width = pw + "px"; p.b.style.height = (pw * 0.72) + "px";
+      p.b.style.animationDuration = rnd(2.2, 4.8) + "s";
+      p.b.style.animationDelay = -rnd(0, 4) + "s";
+    }
   } else if (kind === "snow") {
     /* three depths: fine distant flakes, mid flakes, and a few big soft ones close to the lens */
     for (i = 0; i < (small ? 46 : 110); i++) {
@@ -12420,7 +12882,7 @@ function setStage(t) {
     ["f3", "f2", "f1"].forEach(function (c) { st.appendChild(el("i", "nyx nyx-fog " + c)); });
   }
   if (t.variant === "rain") st.appendChild(el("i", "nyx nyx-flash"));
-  if (t.stage === "nyc") nycPanSetup(st); else nycPan.st = null;
+  if (t.stage === "nyc" || t.stage === "blossom") nycPanSetup(st); else nycPan.st = null;
 }
 
 /* ---------- NYC panorama pan (desktop) ----------
@@ -12432,6 +12894,13 @@ function setStage(t) {
 var nycPan = { st: null, arts: null, cur: null, raf: 0, last: 0, pos: null };
 function nycPanRange() {
   var H = window.innerHeight;
+  if (nycPan.st && nycPan.st.classList.contains("st-blossom")) {
+    /* the blossom scene is one tall picture: pan from its top to its bottom,
+       resting (when the page can't scroll) where the skyline sits under the canopy */
+    var pic = nycPan.arts && nycPan.arts.firstElementChild;
+    var mx = Math.max(0, (pic ? pic.offsetHeight : H) - H);
+    return { T: mx * 0.3, max: mx };
+  }
   return { T: 0.18 * H, max: 0.18 * H + H * 400 / 900 };
 }
 function nycPageMax() {
@@ -13914,6 +14383,7 @@ function wire() {
     if (nt) nt.focus();
   });
   setInterval(function () { if (state.work && !document.hidden) renderWorkHud(); }, 60000);
+  clockStart();
   driveLoadCache();
   driveRefresh(true);
   setInterval(function () { driveRefresh(true); }, 300000);
@@ -14016,7 +14486,7 @@ window.__CAOT__ = {
   holdMinutes: holdMinutes, renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
   setPanel: setPanel, panelCollapsed: panelCollapsed,
   scheduleRender: scheduleRender, render: render, driveRefresh: driveRefresh,
-  buildProofEmail: buildProofEmail, workBucket: workBucket, waitReason: waitReason,
+  buildProofEmail: buildProofEmail, workBucket: workBucket, waitReason: waitReason, state: state, persistOrders: persistOrders, clockTick: clockTick,
   driveState: function () { return driveIdx; },
   isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
   startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
