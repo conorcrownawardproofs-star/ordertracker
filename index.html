@@ -5,7 +5,7 @@
 try{(function(){var p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}"),t=p.theme||"light",r=document.documentElement;if(t==="nyc91g"||t==="nyc91t")t="nyc91";var 
 dark={roof51:1,blossom:1,dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
 glass={roof51:1,blossom:1,podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
-f={roof51:"Poiret+One",blossom:"Gilda+Display",rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
+f={blossom:"Gilda+Display",rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
 r.setAttribute("data-theme",t);r.setAttribute("data-tone",dark[t]?"dark":"light");if(p.fx!==false)r.classList.add("fx");if(glass[t])r.classList.add("glass");
 if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fonts.googleapis.com/css2?family='+f[t]+'&display=swap">');})();}catch(e){}
 </script>
@@ -4569,7 +4569,7 @@ html[data-theme="roof51"]{
   --btn-ink:#1A0705; --accent-ink:#1A0705; --code-ink:#0A1630; --go-ink:#0C2212; --stop-ink:#2A0606;
   --ghost-bg:rgba(244,220,198,.07); --ghost-bg-h:rgba(244,220,198,.14); --ghost-line:rgba(244,220,198,.26); --ghost-line-h:#FF9A70;
   --crest:#FF7A4A;
-  --display:'Poiret One','Josefin Sans',Futura,sans-serif;
+  --display:var(--sans);
   --hdr-bg:linear-gradient(180deg,rgba(24,18,20,.95),rgba(10,9,11,.95));
   --shadow:0 1px 2px rgba(0,0,0,.6),0 16px 36px -18px rgba(0,0,0,.95);
   --glass:rgba(14,11,13,.72); --glass-head:rgba(20,15,17,.94);
@@ -4604,8 +4604,8 @@ html[data-theme="roof51"] #stage{background:#060508}
 #stage.st-roof51 .rf-car.up{background:radial-gradient(ellipse 22% 50% at 25% 50%,#FF8A7A 0 30%,rgba(255,60,44,.6) 62%,transparent 100%),radial-gradient(ellipse 22% 50% at 75% 50%,#FF8A7A 0 30%,rgba(255,60,44,.6) 62%,transparent 100%);animation:rfCarUp 12s linear infinite;animation-delay:-3s}
 #stage.st-roof51 .rf-car.up::after{background:linear-gradient(180deg,rgba(255,60,44,.5),rgba(255,60,44,.1) 55%,transparent)}
 #stage.st-roof51 .rf-car.up.u2{animation-duration:15s;animation-delay:-10s}
-@keyframes rfCarDown{0%{transform:translate(0,0) scale(.28);opacity:0}8%{opacity:.95}88%{opacity:.95}100%{transform:translate(215%,3560%) scale(1.45);opacity:0}}
-@keyframes rfCarUp{0%{transform:translate(-160%,3560%) scale(1.45);opacity:0}10%{opacity:.95}90%{opacity:.9}100%{transform:translate(0,0) scale(.28);opacity:0}}
+@keyframes rfCarDown{0%{transform:translate(0,0) scale(.1);opacity:0}8%{opacity:.95}88%{opacity:.95}100%{transform:translate(200%,3600%) scale(1.45);opacity:0}}
+@keyframes rfCarUp{0%{transform:translate(-165%,3600%) scale(1.45);opacity:0}10%{opacity:.95}90%{opacity:.9}100%{transform:translate(0,0) scale(.1);opacity:0}}
 /* headlights washing over the wet road and up the canyon walls as each car comes through */
 #stage.st-roof51 .rf-wash{background:radial-gradient(ellipse 50% 34% at 55% 50%,rgba(255,244,214,.34),transparent 70%);opacity:0;animation:rfWash 9s linear infinite}
 #stage.st-roof51 .rf-wash.r{background:radial-gradient(ellipse 50% 34% at 40% 50%,rgba(255,60,44,.3),transparent 70%);animation:rfWashUp 12s linear infinite;animation-delay:-3s}
@@ -4620,7 +4620,19 @@ html[data-theme="roof51"] #stage{background:#060508}
 #stage.st-roof51 .rf-bulb{border-radius:50%;background:radial-gradient(closest-side,#FFF8E2 0 16%,rgba(255,214,140,.75) 34%,rgba(255,190,100,.2) 62%,transparent);animation:rfBulb ease-in-out infinite alternate}
 @keyframes rfBulb{from{opacity:.5;transform:scale(.85)}to{opacity:1;transform:scale(1.15)}}
 #stage.st-roof51 .rf-win.c{background:#D6E8FF}
-#stage.st-roof51 .rf-win.off{background:#1B1D24}
+#stage.st-roof51 .rf-win{box-shadow:0 0 5px 1px rgba(255,214,140,.45)}
+#stage.st-roof51 .rf-win.lit{opacity:1;animation-name:rfWinLit}
+@keyframes rfWinLit{0%{opacity:1}58%{opacity:0}82%{opacity:1}}
+#stage.st-roof51 .rf-refl{background:linear-gradient(112deg,transparent 18%,rgba(255,250,232,.95) 44%,rgba(255,250,232,.25) 62%,transparent 82%);opacity:0;animation:rfRefl 9s linear infinite}
+#stage.st-roof51 .rf-refl.r{background:linear-gradient(112deg,transparent 18%,rgba(255,70,50,.85) 44%,rgba(255,70,50,.2) 62%,transparent 82%);animation-duration:12s}
+@keyframes rfRefl{0%,100%{opacity:0}1.5%{opacity:.25}3%{opacity:.95}4%{opacity:.35}5%{opacity:.8}6.5%{opacity:0}}
+#stage.st-roof51 .rf-ember{border-radius:50%;background:radial-gradient(closest-side,#FFE2B0 0 14%,#FF6A2A 34%,rgba(255,90,30,.35) 60%,transparent);animation:rfEmber 3.4s ease-in-out infinite}
+@keyframes rfEmber{0%,100%{opacity:.35;transform:scale(.7)}40%{opacity:1;transform:scale(1.15)}60%{opacity:.75;transform:scale(.95)}}
+#stage.st-roof51 .rf-smoke{border-radius:50%;background:radial-gradient(ellipse 34% 50% at 50% 60%,rgba(236,236,244,.5),rgba(236,236,244,.16) 60%,transparent);filter:blur(2.5px);transform-origin:50% 100%;opacity:0;animation:rfSmoke 7s ease-out infinite}
+#stage.st-roof51 .rf-smoke.b{animation-name:rfSmokeB;animation-duration:8.5s;animation-delay:-2.8s}
+#stage.st-roof51 .rf-smoke.c{animation-duration:9.5s;animation-delay:-5.6s}
+@keyframes rfSmoke{0%{transform:translate(0,6%) scale(.25,.3) rotate(0deg);opacity:0}12%{opacity:.7}45%{transform:translate(28%,-90%) scale(.8,1) rotate(10deg);opacity:.5}100%{transform:translate(-40%,-260%) scale(2.2,1.9) rotate(-14deg);opacity:0}}
+@keyframes rfSmokeB{0%{transform:translate(0,6%) scale(.25,.3) rotate(0deg);opacity:0}12%{opacity:.6}50%{transform:translate(-30%,-110%) scale(.9,1.1) rotate(-12deg);opacity:.45}100%{transform:translate(50%,-280%) scale(2.4,2) rotate(16deg);opacity:0}}
 #stage.st-roof51 .rf-glint{background:linear-gradient(90deg,transparent 46%,#FFF 49% 51%,transparent 54%),linear-gradient(0deg,transparent 46%,#FFF 49% 51%,transparent 54%),radial-gradient(closest-side,#FFF8DC 0 14%,rgba(255,236,180,.5) 30%,transparent 60%);opacity:0;animation:rfGlint ease-in-out infinite}
 @keyframes rfGlint{0%,72%{opacity:0;transform:scale(.2) rotate(0deg)}82%{opacity:1;transform:scale(1) rotate(20deg)}92%,100%{opacity:0;transform:scale(.2) rotate(40deg)}}
 #stage.st-roof51 .rf-beacon{border-radius:50%;background:radial-gradient(closest-side,#FFD0C8 0 20%,#FF2A1A 45%,rgba(255,42,26,.35) 70%,transparent);animation:rfBeacon 2.6s ease-in-out infinite}
@@ -4654,10 +4666,10 @@ html:not(.fx) #stage.st-roof51 *{animation-play-state:paused!important}
 html[data-theme="roof51"] .entrybar,html[data-theme="roof51"] .ledger-bar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(14,11,13,.86)}
 html[data-theme="roof51"] .console{border-bottom:0}
 html[data-theme="roof51"] .console::after{top:auto;height:3px;background:var(--rf-strip);box-shadow:0 2px 14px rgba(255,106,61,.55)}
-html[data-theme="roof51"] .mark b{font-family:var(--display);font-weight:400;font-size:23px;letter-spacing:.06em;color:var(--rf-spire)}
-html[data-theme="roof51"] .mark span{font-family:var(--display);font-size:13px;letter-spacing:.14em;color:var(--rf-ember-lit)}
-html[data-theme="roof51"] .modal h3,html[data-theme="roof51"] .entryhead h3,html[data-theme="roof51"] .auth-card h2{font-family:var(--display);font-weight:400;font-size:1.3em;letter-spacing:.05em}
-html[data-theme="roof51"] .stat b{font-family:var(--display);font-weight:400;font-size:30px;color:var(--rf-spire)}
+html[data-theme="roof51"] .mark b{font-family:var(--sans);font-weight:700;color:var(--rf-spire)}
+html[data-theme="roof51"] .mark span{font-family:var(--sans);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:11px;color:var(--rf-ember-lit)}
+html[data-theme="roof51"] .modal h3,html[data-theme="roof51"] .entryhead h3,html[data-theme="roof51"] .auth-card h2{font-family:var(--sans);font-weight:700}
+html[data-theme="roof51"] .stat b{font-family:var(--sans);font-weight:700;font-variant-numeric:tabular-nums;color:var(--rf-spire)}
 html[data-theme="roof51"] .stat.flag b{color:var(--rf-amber)}
 html[data-theme="roof51"] .stat.good b{color:var(--go)}
 html[data-theme="roof51"] thead th{--sort-ink:var(--rf-ember)}
@@ -4674,7 +4686,25 @@ html[data-theme="roof51"] .wk-tab.t-active{--ac:var(--rf-ember)}
 html[data-theme="roof51"] .wk-tab.t-active.on{background:linear-gradient(180deg,#2A1612,#1A0E0C);border-color:var(--rf-ember)}
 html[data-theme="roof51"] .wkclock{color:var(--rf-amber);opacity:.9}
 html[data-theme="roof51"] .auth-brand{background:linear-gradient(180deg,#1D1719,#0A090B 60%,#4A130B)}
-html[data-theme="roof51"] .auth-brand h1{font-family:var(--display);font-weight:400;letter-spacing:.05em;color:var(--rf-spire)}
+html[data-theme="roof51"] .auth-brand h1{font-family:var(--sans);font-weight:700;color:var(--rf-spire)}
+
+/* switching between Active / Waiting / Done */
+@keyframes wkRowR{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+@keyframes wkRowL{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+@keyframes wkTabPop{0%{transform:scale(.92)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
+#tbody.wk-in-r tr,#emptyState.wk-in-r,#workHud.wk-in-r .wk-msg{animation:wkRowR .36s cubic-bezier(.2,.85,.25,1) both}
+#tbody.wk-in-l tr,#emptyState.wk-in-l,#workHud.wk-in-l .wk-msg{animation:wkRowL .36s cubic-bezier(.2,.85,.25,1) both}
+#workHud.wk-in-r .wk-tab.on,#workHud.wk-in-l .wk-tab.on{animation:wkTabPop .34s cubic-bezier(.2,.9,.3,1.2)}
+#workHud.wk-in-r .wk-tab.on b,#workHud.wk-in-l .wk-tab.on b{animation:wkBump .45s cubic-bezier(.2,1.6,.4,1)}
+#tbody.wk-in-r tr:nth-child(2),#tbody.wk-in-l tr:nth-child(2){animation-delay:.035s}
+#tbody.wk-in-r tr:nth-child(3),#tbody.wk-in-l tr:nth-child(3){animation-delay:.07s}
+#tbody.wk-in-r tr:nth-child(4),#tbody.wk-in-l tr:nth-child(4){animation-delay:.105s}
+#tbody.wk-in-r tr:nth-child(5),#tbody.wk-in-l tr:nth-child(5){animation-delay:.14s}
+#tbody.wk-in-r tr:nth-child(6),#tbody.wk-in-l tr:nth-child(6){animation-delay:.175s}
+#tbody.wk-in-r tr:nth-child(7),#tbody.wk-in-l tr:nth-child(7){animation-delay:.21s}
+#tbody.wk-in-r tr:nth-child(8),#tbody.wk-in-l tr:nth-child(8){animation-delay:.245s}
+#tbody.wk-in-r tr:nth-child(n+9),#tbody.wk-in-l tr:nth-child(n+9){animation-delay:.28s}
+@media (prefers-reduced-motion:reduce){#tbody tr,#emptyState,#workHud .wk-msg,#workHud .wk-tab{animation:none!important}}
 </style>
 </head>
 <body>
@@ -8515,10 +8545,24 @@ function setWork(on) {
 }
 function setWorkView(v) {
   if (WORK_VIEWS.indexOf(v) === -1) return;
+  var from = WORK_VIEWS.indexOf(state.workView), to = WORK_VIEWS.indexOf(v);
   state.workView = v;
   workSave();
   /* Straight away, not on the next animation frame. */
   renderTable(); renderFooter(); renderWorkHud();
+  if (from !== to) workSwitchAnim(to > from ? 1 : -1);
+}
+/* Rows slide in from the side you are heading toward (Active < Waiting < Done),
+   one after another; the message panel and the chosen tab follow. */
+var workAnimT = 0;
+function workSwitchAnim(dir) {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var els = [$("tbody"), $("workHud"), $("emptyState")].filter(Boolean);
+  els.forEach(function (e) { e.classList.remove("wk-in-r", "wk-in-l"); });
+  void document.body.offsetWidth;                       /* restart the animation if you click quickly */
+  els.forEach(function (e) { e.classList.add(dir > 0 ? "wk-in-r" : "wk-in-l"); });
+  clearTimeout(workAnimT);
+  workAnimT = setTimeout(function () { els.forEach(function (e) { e.classList.remove("wk-in-r", "wk-in-l"); }); }, 760);
 }
 function eodRead() { try { return JSON.parse(localStorage.getItem(EOD_KEY) || "{}") || {}; } catch (e) { return {}; } }
 function eodWrite(m) { try { localStorage.setItem(EOD_KEY, JSON.stringify(m)); } catch (e) {} }
@@ -11952,7 +11996,7 @@ var THEMES = [
   { v: "blossom",   l: "Midtown Blossoms", sub: "White cherry blossoms over the East River at night \u00b7 scroll to pan", tone: "dark", group: "Midtown", stage: "blossom",
     font: "Gilda+Display", sw: ["#0F2A66", "#FBF8EF", "#6FC4FF"] },
   { v: "roof51",    l: "Rooftop on 51st", sub: "Ember-lit rooftop bar, white spires between the towers \u00b7 scroll to pan", tone: "dark", group: "Midtown", stage: "roof51",
-    font: "Poiret+One", sw: ["#0A090B", "#FF6A3D", "#F1EEE4"] },
+    sw: ["#0A090B", "#FF6A3D", "#F1EEE4"] },
   /* Game Day: the Stadium Night scene in Buffalo royal blue and red. No team marks. */
   { v: "bills",     l: "Buffalo Gameday",  sub: "Royal blue & red under the lights", tone: "dark", group: "Game Day", stage: "stadium", kit: "football",
     font: "Teko:wght@400;500;600", sw: ["#00338D", "#C60C30", "#FFFFFF"] },
@@ -12180,6 +12224,7 @@ function roofSceneArt() {
     '<radialGradient id="rfSkyGlow" cx=".5" cy="1" r=".9"><stop offset="0" stop-color="#7A3A5E" stop-opacity=".55"/><stop offset=".5" stop-color="#3A2A5A" stop-opacity=".25"/><stop offset="1" stop-color="#3A2A5A" stop-opacity="0"/></radialGradient>' +
     '<linearGradient id="rfNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05060E" stop-opacity=".0"/><stop offset="1" stop-color="#05060E" stop-opacity=".5"/></linearGradient>' +
     '<linearGradient id="rfFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0C0F" stop-opacity="0"/><stop offset=".55" stop-color="#0A0B0D" stop-opacity=".85"/><stop offset="1" stop-color="#070708" stop-opacity="1"/></linearGradient>' +
+    '<radialGradient id="rfVP"><stop offset="0" stop-color="#FFE2B0" stop-opacity=".85"/><stop offset=".3" stop-color="#FFB86A" stop-opacity=".35"/><stop offset="1" stop-color="#FFB86A" stop-opacity="0"/></radialGradient>' +
     '<filter id="rfSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>' +
     '<path id="rfF" d="' + pet + '"/>' +
     '</defs>');
@@ -12201,12 +12246,13 @@ function roofSceneArt() {
   function pr(x, y0, xr) { return HY - (HY - y0) * (1 - (xr - x) / DV); }   /* right-hand walls: y0 is the height at their near (right) edge xr */
   function pl(x, y0, xl) { return HY - (HY - y0) * (1 - (x - xl) / DV); }   /* left-hand walls: y0 is the height at their near (left) edge xl */
   /* every real window is remembered here so the lights that switch on and off sit exactly on a window */
-  var WINS = [];
+  var WINS = [], lastLit = false;
   function pane(x, y, w, h, isLit, darkFill, k) {
-    var o = "";
-    if (isLit) o = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.6, 1)) + '"/>';
+    var o = "", fl = isLit && k !== 2 && R() < .06;
+    lastLit = isLit && !fl;
+    if (lastLit) o = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.6, 1)) + '"/>';
     else if (darkFill) o = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h) + '" fill="' + darkFill + '"/>';
-    WINS.push([x, y, w, h, isLit ? 1 : 0, k || 0]);
+    WINS.push([x, y, w, h, fl ? 2 : isLit ? 1 : 0, k || 0]);
     return o;
   }
   /* mode: 0 = facing us, "r" = right-hand wall (near edge xr), "l" = left-hand wall (near edge xl) */
@@ -12218,7 +12264,7 @@ function roofSceneArt() {
         var yt = mode === "r" ? pr(x, y, xn) : mode === "l" ? pl(x, y, xn) : y;
         var yb = mode === "r" ? pr(x, y + wh, xn) : mode === "l" ? pl(x, y + wh, xn) : y + wh;
         var on = R() < rowLit, p = pane(x, yt, ww, yb - yt, on, dark, k);
-        o += p; if (on) lit2 += p;
+        o += p; if (lastLit) lit2 += p;
       }
     }
     /* a soft bloom under the lit panes, so the windows glow instead of sitting flat */
@@ -12227,7 +12273,7 @@ function roofSceneArt() {
   var FEST = [];
 
   /* ---- far towers in the gap: square-on to us ---- */
-  s.push('<rect x="548" y="890" width="200" height="560" fill="#15110E"/>' + grid(556, 902, 742, 1440, 10, 13, 7, 8, .72, 0, 0, "", 1));
+  s.push('<rect x="548" y="890" width="88" height="576" fill="#15110E"/>' + grid(556, 902, 632, 1440, 10, 13, 7, 8, .72, 0, 0, "", 1));
   s.push('<rect x="876" y="930" width="130" height="500" fill="#12141C"/><path d="M876 930 H1006" stroke="#2A2D38" stroke-width="3"/>' + grid(884, 944, 1000, 1290, 12, 16, 8, 9, .2, 0, 0, "", 1));
   s.push('<rect x="748" y="1040" width="60" height="400" fill="#0E0F14"/>' + grid(752, 1050, 806, 1120, 9, 14, 6, 8, .3, 0, 0, "", 1));
 
@@ -12318,28 +12364,39 @@ function roofSceneArt() {
     '<rect x="762" y="1296" width="246" height="130" fill="#CFCABC"/><path d="M762 1296 H1008" stroke="#F6F3EA" stroke-width="4"/>' +
     [786, 826, 866, 906, 946, 986].map(function (ax) { return '<path d="M' + (ax - 8) + ' 1400 V1338 Q' + ax + ' 1318 ' + (ax + 8) + ' 1338 V1400 Z" fill="#55524C"/>'; }).join(""));
 
-  /* ---- street canyon: seen from above, the avenue runs away between the buildings ---- */
-  var sc = '<rect x="556" y="1420" width="192" height="300" fill="#04050A"/>';
-  /* what closes the far end of the street: stacked distant frontages */
-  for (i = 0; i < 40; i++) sc += '<rect x="' + f1(rr(600, 720)) + '" y="' + f1(rr(1424, 1466)) + '" width="' + f1(rr(3, 7)) + '" height="' + f1(rr(3, 6)) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.3, .8)) + '"/>';
-  /* side walls of the canyon, storefronts glowing at their feet */
-  sc += '<path d="M556 1420 H600 L640 1470 L588 1720 H556 Z" fill="#0B0D13"/><path d="M748 1420 H716 L676 1470 L734 1720 H748 Z" fill="#0A0B10"/>';
+  /* ---- the avenue: it runs straight away from us and meets the horizon at one point, VP.
+     Nothing stands across the end of it: the buildings line its two sides, each one
+     smaller than the last, and the sky shows down the middle. ---- */
+  var VX = 658, VY = 1462, sc = "";
+  [[636, 647, 1120, "#10121A"], [647, 653, 1270, "#0D0F16"], [653, 656.4, 1372, "#0B0C12"],
+   [706, 748, 1004, "#12141C"], [686, 706, 1150, "#10121A"], [672, 686, 1284, "#0D0F16"], [664, 672, 1372, "#0B0C12"], [659.8, 664, 1424, "#0A0B10"]].forEach(function (b) {
+    sc += '<rect x="' + b[0] + '" y="' + b[2] + '" width="' + f1(b[1] - b[0]) + '" height="' + (VY - b[2] + 2) + '" fill="' + b[3] + '"/>';
+    var bw = b[1] - b[0], cw = bw > 30 ? 7 : bw > 12 ? 5 : 3.4;
+    for (var by3 = b[2] + 8; by3 < VY - 8; by3 += cw * 1.5) for (var bx3 = b[0] + 1.5; bx3 + cw * .6 < b[1] - .5; bx3 += cw)
+      if (R() < .42) sc += '<rect x="' + f1(bx3) + '" y="' + f1(by3) + '" width="' + f1(cw * .6) + '" height="' + f1(cw * .8) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.45, .95)) + '"/>';
+  });
+  /* the glow where the avenue's lights pile up at the vanishing point */
+  sc += '<circle cx="' + VX + '" cy="' + (VY - 8) + '" r="46" fill="url(#rfVP)"/>';
+  /* everything below eye level: ground, the foot of each wall, kerbs, the wet road */
+  sc += '<rect x="556" y="' + (VY - 4) + '" width="192" height="266" fill="#04050A"/>' +
+        '<path d="M556 ' + (VY - 4) + ' L655 ' + VY + ' L588 1724 H556 Z" fill="#0B0D13"/><path d="M748 ' + (VY - 4) + ' L661 ' + VY + ' L734 1724 H748 Z" fill="#0A0B10"/>' +
+        '<path d="M655 ' + VY + ' H661 L734 1724 H588 Z" fill="#12141C"/><path d="M656.6 ' + VY + ' H659.4 L716 1724 H604 Z" fill="#07080D"/>';
   for (i = 0; i < 9; i++) { var wy = 1500 + i * 24; sc += '<rect x="' + f1(562 + i * .4) + '" y="' + wy + '" width="' + f1(8 + i * .9) + '" height="' + f1(7 + i * .6) + '" fill="' + (R() < .55 ? pick(WARM) : "#1A1C24") + '" opacity=".8"/>'; }
   sc += '<path d="M560 1676 H594 L590 1716 H560 Z" fill="#FFD9A0" opacity=".6"/><path d="M572 1676 V1716 M584 1676 V1716" stroke="#2A2118" stroke-width="2"/>' +
         '<path d="M726 1660 L734 1716 H748 V1660 Z" fill="#9AD0FF" opacity=".3"/>';
-  /* sidewalks and the wet roadway, converging */
-  sc += '<path d="M640 1470 H676 L734 1720 H588 Z" fill="#101219"/><path d="M646 1470 H670 L716 1720 H604 Z" fill="#07080D"/>';
-  /* lane dashes, a crosswalk near us */
-  for (i = 0; i < 9; i++) { var u = i / 9, ly2 = 1480 + u * u * 230, lw2 = 1 + u * 3; sc += '<rect x="' + f1(658 - lw2 / 2 + u * 2) + '" y="' + f1(ly2) + '" width="' + f1(lw2) + '" height="' + f1(6 + u * 16) + '" fill="#D8D2C2" opacity=".5"/>'; }
+  /* lane dashes shrinking to the point, a crosswalk near us */
+  for (i = 1; i < 11; i++) { var u = i / 10, t = u * u; sc += '<rect x="' + f1(VX + 2 * t - (.5 + 1.6 * t)) + '" y="' + f1(VY + 4 + t * 236) + '" width="' + f1(1 + 3.2 * t) + '" height="' + f1(3 + 17 * t) + '" fill="#D8D2C2" opacity=".5"/>'; }
   for (i = 0; i < 7; i++) sc += '<path d="M' + (612 + i * 14) + ' 1668 l-3 20 h9 l3 -20 Z" fill="#D8D2C2" opacity=".42"/>';
-  /* neon and signs, and their colour lying on the wet road */
-  sc += '<rect x="620" y="1462" width="7" height="70" rx="3" fill="#FF4FA3"/><rect x="616" y="1458" width="15" height="78" rx="6" fill="#FF4FA3" opacity=".22"/>' +
+  /* street lamps down both kerbs, closing on the vanishing point */
+  for (i = 1; i < 9; i++) { var lt2 = Math.pow(i / 9, 1.8), lyy = VY + lt2 * 250; [[655, 600], [661, 720]].forEach(function (k2) { var lxx = k2[0] + (k2[1] - k2[0]) * lt2; sc += '<circle cx="' + f1(lxx) + '" cy="' + f1(lyy - 3 - 16 * lt2) + '" r="' + f1(.9 + 2.4 * lt2) + '" fill="#FFE9B8"/><circle cx="' + f1(lxx) + '" cy="' + f1(lyy - 3 - 16 * lt2) + '" r="' + f1(2 + 4 * lt2) + '" fill="#FFD27A" opacity=".28"/>'; }); }
+  /* neon and signs on the walls, and their colour lying on the wet road */
+  sc += '<rect x="620" y="1484" width="7" height="62" rx="3" fill="#FF4FA3"/><rect x="616" y="1480" width="15" height="70" rx="6" fill="#FF4FA3" opacity=".22"/>' +
         '<rect x="706" y="1520" width="26" height="40" rx="5" fill="#3B5BFF" opacity=".7"/><rect x="711" y="1528" width="16" height="22" rx="3" fill="#B45CFF"/><rect x="714" y="1533" width="10" height="8" fill="#FFD24F"/>' +
         '<rect x="574" y="1574" width="30" height="16" rx="3" fill="#39E08A" opacity=".8"/>' +
-        '<path d="M636 1540 L622 1716 H640 L648 1540 Z" fill="#FF4FA3" opacity=".16"/><path d="M688 1560 L706 1716 H690 L680 1560 Z" fill="#6A78FF" opacity=".16"/><path d="M612 1600 L604 1716 H622 Z" fill="#39E08A" opacity=".1"/>';
-  for (i = 0; i < 26; i++) sc += '<circle cx="' + f1(rr(722, 746)) + '" cy="' + f1(rr(1560, 1700)) + '" r="' + f1(rr(1.2, 2.6)) + '" fill="' + pick(["#FFE9B8", "#FFD27A", "#BFE0A0"]) + '" opacity="' + f1(rr(.4, .9)) + '"/>';
-  /* parked cars along the kerb */
-  for (i = 0; i < 5; i++) { var pu = .25 + i * .16, py2 = 1470 + pu * 250; sc += '<rect x="' + f1(676 + pu * 44 - (6 + pu * 12)) + '" y="' + f1(py2) + '" width="' + f1(6 + pu * 12) + '" height="' + f1(8 + pu * 14) + '" rx="2" fill="' + pick(["#14161C", "#1C1F28", "#2A1A16"]) + '"/>'; }
+        '<path d="M640 1552 L622 1716 H640 L650 1552 Z" fill="#FF4FA3" opacity=".16"/><path d="M684 1560 L706 1716 H690 L676 1560 Z" fill="#6A78FF" opacity=".16"/><path d="M618 1600 L604 1716 H622 Z" fill="#39E08A" opacity=".1"/>';
+  for (i = 0; i < 26; i++) sc += '<circle cx="' + f1(rr(724, 746)) + '" cy="' + f1(rr(1570, 1700)) + '" r="' + f1(rr(1.2, 2.6)) + '" fill="' + pick(["#FFE9B8", "#FFD27A", "#BFE0A0"]) + '" opacity="' + f1(rr(.4, .9)) + '"/>';
+  /* parked cars along the right-hand kerb */
+  for (i = 0; i < 5; i++) { var pt = Math.pow(.3 + i * .16, 1.6), pw2 = 3 + pt * 16; sc += '<rect x="' + f1(659.4 + (716 - 659.4) * pt - pw2) + '" y="' + f1(VY + pt * 250) + '" width="' + f1(pw2) + '" height="' + f1(3 + pt * 20) + '" rx="2" fill="' + pick(["#14161C", "#1C1F28", "#2A1A16"]) + '"/>'; }
   s.push(sc);
 
   /* ---- the low wing with the bright row of windows, garden along its roof edge (right-hand wall) ---- */
@@ -12351,7 +12408,7 @@ function roofSceneArt() {
     for (var r = 0; r < 5; r++) {
       var y0 = wTop + 26 + r * 62, hh = r === 0 ? 40 : 30, on3 = R() < (r === 0 ? .86 : r === 3 ? .5 : .16);
       var p3 = pane(x, pr(x, y0, WXR), 16, pr(x, y0 + hh, WXR) - pr(x, y0, WXR), on3, "#24262D", 5);
-      lwAll += p3; if (on3) lwLit += p3;
+      lwAll += p3; if (lastLit) lwLit += p3;
     }
   }
   lw += '<g filter="url(#rfBloom)" opacity=".7">' + lwLit + '</g>' + lwAll;
@@ -12411,6 +12468,16 @@ function roofSceneArt() {
           '<rect x="' + (v[0] - 14) + '" y="' + (v[1] - 28) + '" width="28" height="30" rx="5" fill="#3A1E12" stroke="#8A5632" stroke-width="2"/>' +
           '<rect x="' + (v[0] - 10) + '" y="' + (v[1] - 22) + '" width="20" height="20" rx="3" fill="#FFB24A" opacity=".5"/>';
   });
+  /* a lone cigar left burning in a glass ashtray */
+  ct += '<ellipse cx="872" cy="1822" rx="70" ry="9" fill="#000" opacity=".5"/>' +
+        '<ellipse cx="866" cy="1810" rx="56" ry="14" fill="#14161B" stroke="#7C8594" stroke-width="2.4"/><ellipse cx="866" cy="1807" rx="43" ry="9" fill="#08090C" stroke="#3A404B" stroke-width="1.6"/>' +
+        '<path d="M822 1804 q10 -7 22 -8 M896 1798 q10 2 16 8" fill="none" stroke="#C9D2E0" stroke-width="2" opacity=".5"/>' +
+        '<ellipse cx="856" cy="1809" rx="16" ry="3.4" fill="#8E8A82" opacity=".7"/>' +
+        '<path d="M842 1805 L908 1787" stroke="#3E2413" stroke-width="13" stroke-linecap="round"/><path d="M842 1805 L906 1787.6" stroke="#6E4526" stroke-width="10" stroke-linecap="round"/>' +
+        '<path d="M846 1801 L900 1786.4" stroke="#8A5A32" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>' +
+        '<path d="M856 1801.2 L863 1799.3" stroke="#D4AF4A" stroke-width="11"/><path d="M857.5 1800.8 L861.5 1799.7" stroke="#8A1E14" stroke-width="5"/>' +
+        '<path d="M904 1788.1 L915 1785.1" stroke="#B4B0A8" stroke-width="10" stroke-linecap="round"/><path d="M906 1787.6 l3 -.8 M911 1786.2 l2 -.5" stroke="#6E6A64" stroke-width="10" opacity=".5"/>' +
+        '<path d="M901.5 1788.8 L904.5 1788" stroke="#FF6A2A" stroke-width="10.5"/>';
   /* a coupe and a rocks glass someone left, and a folded menu card */
   ct += '<g fill="none" stroke="#DCE3EE" stroke-width="2.4" stroke-linecap="round" opacity=".8"><path d="M1168 1716 Q1206 1766 1244 1716 M1206 1750 V1808 M1184 1810 H1228"/></g>' +
         '<path d="M1174 1722 Q1206 1758 1238 1722 Z" fill="#FF8A4A" opacity=".75"/><path d="M1168 1716 H1244" stroke="#F4F7FB" stroke-width="2" opacity=".9"/>' +
@@ -12454,7 +12521,8 @@ function roofSceneArt() {
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + s.join("") + '</svg>';
 
   /* ---- the lights that move ---- */
-  function at(x, y, w, h, extra) { return 'style="left:' + f1(x / W * 100) + '%;top:' + f1(y / H * 100) + '%;width:' + f1(w / W * 100) + '%;height:' + f1(h / H * 100) + '%' + (extra || "") + '"'; }
+  function f3(n) { return (Math.round(n * 1000) / 1000).toString(); }
+  function at(x, y, w, h, extra) { return 'style="left:' + f3(x / W * 100) + '%;top:' + f3(y / H * 100) + '%;width:' + f3(w / W * 100) + '%;height:' + f3(h / H * 100) + '%' + (extra || "") + '"'; }
   function tm(cls, x, y, w, h, lo, hi) { var d = rr(lo, hi); return '<i class="' + cls + '" ' + at(x, y, w, h, ';animation-duration:' + f1(d) + 's;animation-delay:-' + f1(rr(0, d)) + 's') + '></i>'; }
   var live = "";
   live += '<i class="rf-led" ' + at(0, BAR + 6, W, 400) + '></i>';
@@ -12481,26 +12549,42 @@ function roofSceneArt() {
     if (k === 2) return false;                                                          /* big slanted panes: left to the glints */                                  /* behind the glass box */
     return true;
   });
-  function pickWin() { return visible[Math.floor(R() * visible.length)]; }
-  for (i = 0; i < 40; i++) { var w = pickWin(); live += tm("rf-win" + (w[4] ? " off" : (i % 5 === 0 ? " c" : "")), w[0], w[1], w[2], w[3], 13, 43); }
+  /* each light is a hair bigger than its pane so it always covers it completely */
+  function onPane(cls, w, lo, hi) { return tm(cls, w[0] - .6, w[1] - .6, w[2] + 1.2, w[3] + 1.2, lo, hi); }
+  var darks = visible.filter(function (w) { return w[4] === 0; });
+  for (i = 0; i < 24; i++) { var dw = darks[Math.floor(R() * darks.length)]; live += onPane("rf-win" + (i % 5 === 0 ? " c" : ""), dw, 13, 43); }
+  /* lit windows that go dark now and then: the pane underneath is painted dark, the light itself is this element */
+  visible.filter(function (w) { return w[4] === 2; }).forEach(function (w) { live += onPane("rf-win lit", w, 16, 46); });
   /* glints: a lit window catching the eye for an instant */
-  var lits = WINS.filter(function (w) { return w[4] && (visible.indexOf(w) !== -1 || (w[5] === 2 && w[1] > 600)); });
+  var lits = WINS.filter(function (w) { return w[4] === 1 && (visible.indexOf(w) !== -1 || (w[5] === 2 && w[1] > 600)); });
   for (i = 0; i < 20; i++) { var g = lits[Math.floor(R() * lits.length)]; live += tm("rf-glint", g[0] + g[2] / 2 - 11, g[1] + g[3] / 2 - 11, 22, 22, 5, 14); }
+  /* passing cars mirrored in the dark glass of the low buildings beside the street: a pale glint for
+     headlights, a red one for tail-lights, running along the row as the car goes by */
+  var glass = visible.filter(function (w) { return (w[5] === 5 || w[5] === 4) && w[4] === 0 && w[1] > 1440; });
+  glass.forEach(function (w, n) {
+    var off = (w[0] - 742) / 860 * 4.2;
+    if (n % 3 === 2) return;
+    live += '<i class="rf-refl" ' + at(w[0], w[1], w[2], w[3], ';animation-delay:' + f1(off - 2.4) + 's') + '></i>';
+    if (n % 2 === 0) live += '<i class="rf-refl r" ' + at(w[0], w[1], w[2], w[3], ';animation-delay:' + f1(-off - 3.2) + 's') + '></i>';
+  });
   /* red beacons on the tower tops */
-  live += '<i class="rf-beacon" ' + at(642, 876, 12, 12) + '></i><i class="rf-beacon b" ' + at(900, 918, 12, 12) + '></i>';
+  live += '<i class="rf-beacon" ' + at(586, 876, 12, 12) + '></i><i class="rf-beacon b" ' + at(900, 918, 12, 12) + '></i>';
   /* the street: neon, a signal, cars both ways with their light on the wet road and the walls */
   /* everything in the street sits in one box clipped to the gap between the buildings, so nothing spills onto the counter */
   var SX = 556, SYY = 1420, SW = 192, SH = 280;
   function inS(x, y, w, h) { return 'style="left:' + f1((x - SX) / SW * 100) + '%;top:' + f1((y - SYY) / SH * 100) + '%;width:' + f1(w / SW * 100) + '%;height:' + f1(h / SH * 100) + '%"'; }
   live += '<div class="rf-street" ' + at(SX, SYY, SW, SH) + '>' +
-    '<i class="rf-neon p" ' + inS(608, 1440, 34, 110) + '></i><i class="rf-neon b" ' + inS(690, 1500, 60, 80) + '></i><i class="rf-neon g" ' + inS(566, 1560, 46, 60) + '></i>' +
-    '<i class="rf-signal" ' + inS(655, 1452, 7, 7) + '></i>' +
+    '<i class="rf-neon p" ' + inS(606, 1462, 34, 106) + '></i><i class="rf-neon b" ' + inS(690, 1500, 60, 80) + '></i><i class="rf-neon g" ' + inS(566, 1560, 46, 60) + '></i>' +
+    '<i class="rf-signal" ' + inS(645, 1447, 6, 6) + '></i>' +
     '<i class="rf-wash" ' + inS(588, 1470, 150, 250) + '></i><i class="rf-wash r" ' + inS(588, 1470, 150, 250) + '></i>' +
     '<i class="rf-sweep" ' + inS(716, 1430, 32, 90) + '></i><i class="rf-sweep l" ' + inS(556, 1430, 40, 90) + '></i>' +
-    '<i class="rf-car" ' + inS(664, 1462, 16, 7) + '></i><i class="rf-car d2" ' + inS(664, 1462, 16, 7) + '></i><i class="rf-car d3" ' + inS(664, 1462, 16, 7) + '></i>' +
-    '<i class="rf-car up" ' + inS(636, 1462, 16, 7) + '></i><i class="rf-car up u2" ' + inS(636, 1462, 16, 7) + '></i></div>';
+    '<i class="rf-car" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car d2" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car d3" ' + inS(650, 1460, 16, 7) + '></i>' +
+    '<i class="rf-car up" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car up u2" ' + inS(650, 1460, 16, 7) + '></i></div>';
   live += '<div class="rf-sky" ' + at(530, 640, 462, 200) + '><i class="rf-plane"></i></div>';
   live += '<i class="rf-flame" ' + at(714, 1736, 16, 30) + '></i><i class="rf-flame b" ' + at(1003, 1748, 14, 28) + '></i><i class="rf-flame c" ' + at(1412, 1740, 16, 30) + '></i>';
+  /* the cigar: its ember breathing, and three threads of smoke curling up */
+  live += '<i class="rf-ember" ' + at(890, 1775, 26, 26) + '></i>' +
+          '<i class="rf-smoke" ' + at(900, 1706, 22, 80) + '></i><i class="rf-smoke b" ' + at(902, 1706, 22, 80) + '></i><i class="rf-smoke c" ' + at(898, 1706, 22, 80) + '></i>';
   /* counter-top reflections shimmering */
   live += '<i class="rf-gloss" ' + at(260, LEDGE + 4, W - 260, 150) + '></i>';
   for (i = 0; i < 3; i++) {
