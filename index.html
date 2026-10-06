@@ -8267,19 +8267,32 @@ function setWorkView(v) {
 function eodRead() { try { return JSON.parse(localStorage.getItem(EOD_KEY) || "{}") || {}; } catch (e) { return {}; } }
 function eodWrite(m) { try { localStorage.setItem(EOD_KEY, JSON.stringify(m)); } catch (e) {} }
 
-function isDoneOrder(o) { return o.fin === "TRUE" || isClock(o.completionTime); }
+/* Checked as finished (Fin = Yes, or an end time stamped). */
+function isFinishedFlag(o) { return o.fin === "TRUE" || isClock(o.completionTime); }
+function statusBlob(o) { return String(o.status || "") + "\n" + statusTextFromLog(o.statusLog); }
+/* The proof still has to come back: one is needed and there is no Back time
+   (or an APPROVED note in the status). */
+function proofPending(o) {
+  return o.proof === "TRUE" && !noProofNeeded(o) && !isClock(o.proofRcvdTime) && !/APPROV/i.test(statusBlob(o));
+}
+/* Done means finished AND, where a proof applies, the proof is sent and back.
+   Ticking Finished early does not make an order Done. */
+function isDoneOrder(o) { return isFinishedFlag(o) && !proofPending(o); }
 /* A proof has gone out and the customer has not answered yet. */
 function proofOut(o) {
-  if (o.proof !== "TRUE" || noProofNeeded(o) || isClock(o.proofRcvdTime) || isDoneOrder(o)) return false;
-  var txt = String(o.status || "") + "\n" + statusTextFromLog(o.statusLog);
-  return /PROOF[^\n]*SENT|SENT!/i.test(txt) && !/APPROV/i.test(txt);
+  if (!proofPending(o) || isDoneOrder(o)) return false;
+  return /PROOF[^\n]*SENT|SENT!/i.test(statusBlob(o));
 }
+/* Nothing left for you to do but wait: on hold, proof out, or finished with
+   the proof still to send or come back. */
+function proofWaiting(o) { return !isDoneOrder(o) && !isHoldFlag(o) && (proofOut(o) || (isFinishedFlag(o) && proofPending(o))); }
 function workBucket(o) {
   if (isDoneOrder(o)) return "done";
-  if (isHoldFlag(o) || proofOut(o)) return "wait";
+  if (isHoldFlag(o) || proofWaiting(o)) return "wait";
   return isLive(o) ? "live" : "next";
 }
 function waitReason(o) {
+  if (!isHoldFlag(o) && proofWaiting(o)) return proofOut(o) ? "Proof out" : "Send proof";
   if (isHoldFlag(o)) {
     if (!hasManualHold(o)) {
       var lw = holdLogWindow(o);
@@ -8375,7 +8388,7 @@ function renderWorkHud() {
   tabs.appendChild(tab("active", "Active", "Everything that still needs doing: in progress plus up next"));
   tabs.appendChild(tab("live", "In progress", "Started and not finished"));
   tabs.appendChild(tab("next", "Up next", "Not started yet"));
-  tabs.appendChild(tab("wait", "Waiting", "On hold, or a proof is out with the customer"));
+  tabs.appendChild(tab("wait", "Waiting", "On hold, or finished and waiting on the proof"));
   tabs.appendChild(tab("done", "Done", "Finished orders"));
   tmp.appendChild(tabs);
 
@@ -8660,7 +8673,7 @@ function openCloseOut() {
     var w = scr("The mix", "What came through");
     var sent = d.todays.filter(function (o) { return o.proof === "TRUE"; }).length;
     var backN = d.todays.filter(function (o) { return o.proof === "TRUE" && isClock(o.proofRcvdTime); }).length;
-    var out = d.todays.filter(proofOut).length;
+    var out = d.todays.filter(proofWaiting).length;
     w.appendChild(chips(["Proofs sent: " + sent, "Proofs back: " + backN, "Still out: " + out,
       "Median proof turnaround: " + (d.s.medTurn !== null && d.s.medTurn !== undefined ? durationText(Math.round(d.s.medTurn)) : "—")]));
     var types = Object.keys(d.s.types).sort(function (a, b) { return d.s.types[b] - d.s.types[a]; });
@@ -8693,7 +8706,7 @@ function openCloseOut() {
   function s5() {
     var w = scr("Loose ends", "Anything slip through?");
     var notDrive = d.done.filter(function (o) { return o.savedToDrive === "FALSE"; });
-    var out = d.todays.filter(proofOut);
+    var out = d.todays.filter(proofWaiting);
     var noEnd = d.todays.filter(function (o) { return o.fin === "TRUE" && !isClock(o.completionTime); });
     if (!notDrive.length && !out.length && !noEnd.length) {
       w.appendChild(tidy("Nothing loose", "Every finished order is saved and no proofs are dangling."));
@@ -8718,8 +8731,8 @@ function openCloseOut() {
       w.appendChild(ma);
     }
     if (out.length) {
-      w.appendChild(el("div", "eod-sec", "Proofs still out with customers"));
-      w.appendChild(chips(out.map(function (o) { return ordLabel(o); })));
+      w.appendChild(el("div", "eod-sec", "Waiting on a proof"));
+      w.appendChild(chips(out.map(function (o) { return ordLabel(o) + " · " + waitReason(o); })));
     }
     if (noEnd.length) {
       w.appendChild(el("div", "eod-sec", "Marked finished with no end time"));
@@ -8738,12 +8751,12 @@ function openCloseOut() {
       var row = el("div", "eod-item"), nm = el("div", "nm");
       nm.appendChild(el("b", null, ordLabel(o) + (o.customer ? " · " + displayCustomer(o.customer).split("\n")[0] : "")));
       var bk = workBucket(o);
-      nm.appendChild(el("span", null, (bk === "wait" ? "Waiting · " + waitReason(o) : bk === "live" ? "In progress" : "Not started") + (workCarry(o) ? " · from " + shortDate(o.date) : "")));
+      nm.appendChild(el("span", null, (bk === "wait" ? "Waiting · " + waitReason(o) : bk === "live" ? "In progress" : "Not started") + (workCarry(o) ? " · from " + shortDate(o.date) : "") + (bk !== "wait" && proofPending(o) ? " · proof not back yet" : "")));
       var sg = el("div", "sg");
       var bC = el("button", null, "Carry over"), bF = el("button", null, "Mark finished");
       bC.type = bF.type = "button";
-      var locked = isHoldFlag(o);
-      if (locked) { bF.disabled = true; bF.title = "End the hold first"; }
+      var locked = isHoldFlag(o) || isFinishedFlag(o);
+      if (locked) { bF.disabled = true; bF.title = isHoldFlag(o) ? "End the hold first" : "Already finished — waiting on its proof"; }
       function paint() {
         bC.setAttribute("aria-pressed", pend.choice[o.id] === "carry" ? "true" : "false");
         bF.setAttribute("aria-pressed", pend.choice[o.id] === "fin" ? "true" : "false");
@@ -8758,7 +8771,7 @@ function openCloseOut() {
     if (d.open.length > 1) {
       var all = el("button", "btn quiet xs", "Finish all that can be"); all.type = "button";
       all.addEventListener("click", function () {
-        d.open.forEach(function (o) { if (!isHoldFlag(o)) pend.choice[o.id] = "fin"; });
+        d.open.forEach(function (o) { if (!isHoldFlag(o) && !isFinishedFlag(o)) pend.choice[o.id] = "fin"; });
         paints.forEach(function (f) { f(); });
       });
       w.appendChild(all);
@@ -8974,7 +8987,7 @@ function eodCelebrate(d) {
    the order's Proof is Yes. Paste the script's web-app URL here to bake it in,
    or use Tools > Google Drive proofs on each device. */
 /* Paste the Web app URL (ends in /exec) plus ?t=YOURTOKEN between the quotes: */
-var DRIVE_PROOF_URL = "";
+var DRIVE_PROOF_URL = "https://script.google.com/macros/s/AKfycbxINlH_zmjQLWpee6wnDSfCxRFlOdcGzmHdbr4aT7H0li_i2l5T_3ywUZg6BERJSD_2/exec?t=09196116";
 var driveIdx = { map: {}, at: 0, err: "" };
 function driveUrl() {
   try { return localStorage.getItem("caot_drive_url") || DRIVE_PROOF_URL || ""; }
@@ -10721,14 +10734,8 @@ function detectProofType(o) {
 }
 function buildProofEmail(kind, info, repeat) {
   var parts = [];
-  /* Customer-facing proof email: quantity/dates first, followed by the
-     standard Crown Awards copy. The picker fields remain available for
-     convenience but are intentionally not inserted into the body. */
-  var details = [];
-  if (info.qty !== "" && info.qty != null) details.push("Award Quantity: " + info.qty);
-  if (info.eventDate) details.push("Event date: " + prettyDate(info.eventDate));
-  if (info.reqShipDate) details.push("Requested ship date: " + prettyDate(info.reqShipDate));
-  if (details.length) parts.push(details.join("\n"));
+  /* Customer-facing proof email: the standard Crown Awards copy only. No
+     quantity or dates go in the body. */
   parts.push(repeat ? EP_OPENING.replace("your business", "your repeat business") : EP_OPENING);
   parts.push(EP_REVIEW);
   /* This line is Standard Proof only. */
@@ -13961,6 +13968,7 @@ window.__CAOT__ = {
   holdMinutes: holdMinutes, renderFooter: renderFooter, ENTRY_SPAN: ENTRY_SPAN, rowBand: rowBand,
   setPanel: setPanel, panelCollapsed: panelCollapsed,
   scheduleRender: scheduleRender, render: render, driveRefresh: driveRefresh,
+  buildProofEmail: buildProofEmail, workBucket: workBucket, waitReason: waitReason,
   driveState: function () { return driveIdx; },
   isLive: isLive, activeColumns: activeColumns, COLUMNS: COLUMNS, saveInline: saveInline,
   startInline: startInline, stampNow: stampNow, spanMinutes: spanMinutes,
