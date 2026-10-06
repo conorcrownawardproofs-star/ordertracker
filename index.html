@@ -4422,6 +4422,19 @@ html[data-tone="dark"] .eod-tog[aria-pressed="true"]{color:#0E1620}
   .eod-card,.eod-card .eod-stats div,.wk-msg.calm .ic,.wk-tab.bump b,.eod-scr,.eod-award.on .back{animation:none}
   .eod-bar i,.eod-hrow i,.eod-prog i{transition:none}
 }
+/* proof thumbnails + Active tab contrast */
+.pthumbs{display:flex;gap:8px;align-items:flex-end;margin-top:8px;flex-wrap:wrap;font-weight:400}
+.pthumb{position:relative;width:62px;height:80px;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--surface-2,#eee) center/cover no-repeat;overflow:hidden;cursor:zoom-in;box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .12s,box-shadow .12s}
+.pthumb:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 5px 14px rgba(0,0,0,.28);z-index:3}
+.pthumb:focus-visible{outline:2px solid var(--crown-2);outline-offset:2px}
+.pthumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center;background:#fff}
+.pthumb .pt-n{position:absolute;left:3px;bottom:3px;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.66);color:#fff;font:700 10px/1.4 var(--mono,monospace)}
+.pthumb.nopreview::before{content:"PDF";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 13px/1 var(--mono,monospace);letter-spacing:.06em;color:var(--text-2);background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(127,127,127,.12) 6px 12px)}
+.pthumb-more{font:600 11px/1.2 var(--mono,monospace);color:var(--muted);padding-bottom:4px}
+@media print{.pthumbs{display:none}}
+.wk-tab.t-active.on{background:var(--crown-2);border-color:var(--crown-line,var(--crown-2))}
+.wk-tab.t-active.on b,.wk-tab.t-active.on span,
+html[data-tone="dark"] .wk-tab.t-active.on b,html[data-tone="dark"] .wk-tab.t-active.on span{color:var(--crown-ink,#fff)}
 </style>
 </head>
 <body>
@@ -7376,6 +7389,8 @@ function readRow(o, cols) {
           td.appendChild(pe);
           td.title = (o.customer || "") + (o.proofEmail ? "\nProof email: " + o.proofEmail : "");
         }
+        var strip = proofThumbs(o);
+        if (strip) td.appendChild(strip);
         break;
       case "placedDate": td = el("td", "tm", o.placedDate ? shortDate(o.placedDate) : "—"); break;
       case "reqShipDate": td = el("td", "tm", o.reqShipDate ? shortDate(o.reqShipDate) : "—"); break;
@@ -9021,7 +9036,7 @@ function driveRefresh(quiet) {
     if (!d || d.error || !d.orders) throw new Error(d && d.error ? "Drive script said: " + d.error : "Unexpected reply from the Drive script.");
     driveIdx = { map: d.orders, at: Date.now(), err: "" };
     try { localStorage.setItem("caot_drive_idx", JSON.stringify({ map: d.orders, at: driveIdx.at })); } catch (e) {}
-    scheduleRender();
+    if (state.user) scheduleRender();   /* nothing to redraw until someone is signed in */
     return true;
   }).catch(function (err) {
     var m = err && err.message;
@@ -9037,6 +9052,39 @@ function driveProofsFor(o) {
   if (!o || o.proof !== "TRUE") return [];
   var k = driveKey(o);
   return (k && driveIdx.map[k]) || [];
+}
+/* A strip of small previews of the order's Drive proofs, shown under the customer.
+   Uses Drive's own thumbnail (works while signed into the Google account that owns
+   the files). If a thumbnail can't load it falls back to a plain PDF tile. */
+function proofThumbs(o) {
+  var list = driveProofsFor(o);
+  if (!list.length) return null;
+  var wrap = el("div", "pthumbs");
+  var MAX = 2;
+  list.slice(0, MAX).forEach(function (f) {
+    var b = el("button", "pthumb");
+    b.type = "button";
+    b.setAttribute("data-proof-id", f.id);
+    b.title = "Open proof " + (f.name || "") + " in Google Drive";
+    b.setAttribute("aria-label", "Open proof " + (f.name || ""));
+    var img = new Image();
+    img.alt = "";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.referrerPolicy = "no-referrer";
+    img.src = "https://drive.google.com/thumbnail?id=" + encodeURIComponent(f.id) + "&sz=w400";
+    img.onerror = function () { b.className += " nopreview"; if (img.parentNode) img.parentNode.removeChild(img); };
+    b.appendChild(img);
+    b.appendChild(el("span", "pt-n", "#" + (f.n < 10 ? "0" : "") + f.n));
+    b.addEventListener("click", function (ev) { ev.stopPropagation(); driveOpen(f); });
+    wrap.appendChild(b);
+  });
+  if (list.length > MAX) {
+    var more = el("span", "pthumb-more", "+" + (list.length - MAX) + " more");
+    more.title = "Use the PDF button to see all " + list.length + " proofs";
+    wrap.appendChild(more);
+  }
+  return wrap;
 }
 function driveOpen(f) {
   window.open("https://drive.google.com/file/d/" + encodeURIComponent(f.id) + "/view", "_blank");
