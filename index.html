@@ -3,9 +3,9 @@
 <script>
 /* Apply the saved theme before anything paints (no flash of the wrong colours). */
 try{(function(){var p=JSON.parse(localStorage.getItem("caot_prefs_v1")||"{}"),t=p.theme||"light",r=document.documentElement;if(t==="nyc91g"||t==="nyc91t")t="nyc91";var 
-dark={blossom:1,dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
-glass={blossom:1,podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
-f={blossom:"Gilda+Display",rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
+dark={roof51:1,blossom:1,dark:1,rose:1,arizona:1,castles:1,trophy:1,abyss:1,blueprint:1,stadium:1,arcade:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
+glass={roof51:1,blossom:1,podium:1,blueprint:1,stadium:1,arcade:1,marble:1,autumn:1,terminal:1,bills:1,billsnow:1,nyc91:1,nyc91s:1,nyc91f:1,nyc91w:1,nyc91r:1,nyc91m:1,nyc91d:1,gct:1,sixth:1,jets:1,giants:1,yankees:1},
+f={roof51:"Poiret+One",blossom:"Gilda+Display",rose:"Cormorant+Garamond:ital,wght@1,500;1,600",arizona:"Righteous",castles:"Permanent+Marker&family=VT323",trophy:"Cinzel:wght@600;700",moss:"Fraunces:opsz,wght@9..144,500;9..144,600",ink:"DM+Serif+Display",podium:"Barlow+Condensed:wght@500;600;700",blueprint:"Architects+Daughter",stadium:"Teko:wght@400;500;600",arcade:"Press+Start+2P",marble:"Playfair+Display:wght@500;600;700",autumn:"Lora:ital,wght@0,500;0,600;1,500;1,600",bills:"Teko:wght@400;500;600",billsnow:"Teko:wght@400;500;600",nyc91:"Permanent+Marker&family=Monoton",nyc91s:"Permanent+Marker&family=Monoton",nyc91f:"Permanent+Marker&family=Monoton",nyc91w:"Permanent+Marker&family=Monoton",nyc91r:"Permanent+Marker&family=Monoton",nyc91m:"Permanent+Marker&family=Monoton",nyc91d:"Permanent+Marker&family=Monoton",gct:"Marcellus",sixth:"Instrument+Serif:ital@0;1",jets:"Teko:wght@400;500;600",giants:"Teko:wght@400;500;600",yankees:"Teko:wght@400;500;600&family=Playfair+Display:wght@600;700"};
 r.setAttribute("data-theme",t);r.setAttribute("data-tone",dark[t]?"dark":"light");if(p.fx!==false)r.classList.add("fx");if(glass[t])r.classList.add("glass");
 if(f[t])document.write('<link id="font-'+t+'" rel="stylesheet" href="https://fonts.googleapis.com/css2?family='+f[t]+'&display=swap">');})();}catch(e){}
 </script>
@@ -4485,10 +4485,12 @@ html[data-theme="blossom"] #stage{background:#05070B}
 #stage.st-blossom .bl{top:0;left:0;width:max(100vw,100vh);margin-left:calc((100vw - max(100vw,100vh)) * .12);aspect-ratio:1600/2400}
 #stage.st-blossom:not(.pan) .bl{transform:translateY(-27%)}
 #stage.st-blossom .bl>*{position:absolute;display:block}
-#stage.st-blossom .bl-base{inset:0;width:100%;height:100%}
-#stage.st-blossom .bl-shim{background:repeating-linear-gradient(90deg,transparent 0 13px,rgba(255,226,170,.2) 13px 16px,transparent 16px 39px,rgba(130,200,255,.16) 39px 41px,transparent 41px 67px);
-  -webkit-mask-image:linear-gradient(180deg,#000,transparent);mask-image:linear-gradient(180deg,#000,transparent);animation:blShim 3.4s ease-in-out infinite alternate}
-#stage.st-blossom .bl-shim.b{background-position:29px 0;animation-delay:-3.4s;animation-duration:4.6s}
+#stage.st-blossom .bl-base{inset:0;width:100%;height:100%;opacity:0;transition:opacity .5s ease}
+#stage.st-blossom .bl-base.ready{opacity:1}
+#stage.st-blossom .bl-defs{width:0;height:0}
+#stage.st-blossom .bl-shim{background:linear-gradient(180deg,transparent 10%,#05080F 96%),repeating-linear-gradient(90deg,transparent 0 13px,rgba(255,226,170,.2) 13px 16px,transparent 16px 39px,rgba(130,200,255,.16) 39px 41px,transparent 41px 67px);
+  animation:blShim 3.4s ease-in-out infinite alternate}
+#stage.st-blossom .bl-shim.b{background-position:0 0,29px 0;animation-delay:-3.4s;animation-duration:4.6s}
 @keyframes blShim{from{opacity:.1}to{opacity:1}}
 #stage.st-blossom .bl-glow{border-radius:50%;background:radial-gradient(closest-side,rgba(120,200,255,.5),transparent);animation:blGlow 5s ease-in-out infinite alternate}
 #stage.st-blossom .bl-glow.w{background:radial-gradient(closest-side,rgba(255,255,255,.28),transparent);animation-duration:7.5s}
@@ -4518,6 +4520,9 @@ html[data-theme="blossom"] #stage{background:#05070B}
 html:not(.fx) #stage.st-blossom *{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){#stage.st-blossom *{animation-play-state:paused!important}}
 /* ---------- chrome ---------- */
+/* the two biggest panels use a plain tint instead of a live blur: re-blurring
+   that much screen every frame, behind falling petals, was most of the lag */
+html[data-theme="blossom"] .entrybar,html[data-theme="blossom"] .ledger-bar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,15,36,.86)}
 html[data-theme="blossom"] .console{border-bottom:0}
 html[data-theme="blossom"] .console::after{top:auto;height:2px;background:var(--bl-branch);opacity:.85}
 html[data-theme="blossom"] .mark b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.01em;color:var(--bl-petal)}
@@ -4540,6 +4545,101 @@ html[data-theme="blossom"] .wk-tab.t-active{--ac:var(--bl-spire)}
 html[data-theme="blossom"] .wkclock{color:var(--bl-cream);opacity:.9}
 html[data-theme="blossom"] .auth-brand{background:linear-gradient(180deg,#0F2A66,#060C20)}
 html[data-theme="blossom"] .auth-brand h1{font-family:var(--display);font-weight:400;color:var(--bl-petal)}
+/* =====================================================================
+   ROOFTOP ON 51ST
+   A rooftop bar at night: the ember-orange glow under the bar ledge,
+   floodlit white stone, warm office windows, limestone, a little neon
+   from the street. Display type is Poiret One.
+   ===================================================================== */
+html[data-theme="roof51"]{
+  --rf-ember:#FF6A3D; --rf-ember-lit:#FF9A70; --rf-stone:#D6CDBA; --rf-spire:#F6F3EA; --rf-amber:#FFD27A; --rf-pink:#FF5FAE; --rf-blue:#8FB8FF;
+  --rf-strip:linear-gradient(90deg,#FFD9BC,#FF7A45 30%,#C93A1E 70%,transparent);
+  --crown:#0A090B; --crown-2:#151113; --crown-line:#3D2E29; --crown-ink:#F6F1E8; --crown-dim:#BFB4A6;
+  --paper:#060508; --surface:#141012; --surface-2:#1D1719; --line:rgba(244,220,198,.15);
+  --text:#F6F1E8; --text-2:#D3C9BD; --muted:#9A8E83;
+  --brass:#FF7A4A; --brass-lit:#FFA078; --brass-soft:rgba(255,106,61,.17);
+  --go:#A9D8AE; --go-bg:rgba(130,200,140,.16); --stop:#FF7474; --stop-bg:rgba(255,80,80,.2);
+  --hold:#FFD27A; --hold-bg:rgba(255,210,122,.15); --code:#9DC0FF; --code-bg:rgba(120,165,255,.18);
+  --idle:#ABA197; --idle-bg:rgba(244,220,198,.08); --focus:#FF9A70;
+  --row-a:rgba(18,14,16,.8); --row-b:rgba(24,18,20,.8);
+  --row-code-a:rgba(24,34,66,.72); --row-code-b:rgba(28,40,76,.72);
+  --row-go-a:rgba(22,46,30,.72); --row-go-b:rgba(26,52,34,.72);
+  --row-warn-a:rgba(70,54,22,.72); --row-warn-b:rgba(80,62,26,.72);
+  --row-hot-a:rgba(88,28,22,.72); --row-hot-b:rgba(100,32,25,.72); --row-hover:rgba(255,122,74,.08);
+  --btn-ink:#1A0705; --accent-ink:#1A0705; --code-ink:#0A1630; --go-ink:#0C2212; --stop-ink:#2A0606;
+  --ghost-bg:rgba(244,220,198,.07); --ghost-bg-h:rgba(244,220,198,.14); --ghost-line:rgba(244,220,198,.26); --ghost-line-h:#FF9A70;
+  --crest:#FF7A4A;
+  --display:'Poiret One','Josefin Sans',Futura,sans-serif;
+  --hdr-bg:linear-gradient(180deg,rgba(24,18,20,.95),rgba(10,9,11,.95));
+  --shadow:0 1px 2px rgba(0,0,0,.6),0 16px 36px -18px rgba(0,0,0,.95);
+  --glass:rgba(14,11,13,.72); --glass-head:rgba(20,15,17,.94);
+}
+/* ---------- stage ---------- */
+html[data-theme="roof51"] #stage{background:#060508}
+#stage.st-roof51 .l{display:none}
+#stage.st-roof51 .arts{will-change:transform}
+#stage.st-roof51 .rf{top:0;left:0;width:max(100vw,100vh);margin-left:calc((100vw - max(100vw,100vh)) * .5);aspect-ratio:1600/2400}
+#stage.st-roof51:not(.pan) .rf{transform:translateY(-34%)}
+#stage.st-roof51 .rf>*{position:absolute;display:block}
+#stage.st-roof51 .rf-base{inset:0;width:100%;height:100%;opacity:0;transition:opacity .5s ease}
+#stage.st-roof51 .rf-base.ready{opacity:1}
+#stage.st-roof51 .rf-defs{width:0;height:0}
+#stage.st-roof51 .rf-led{background:radial-gradient(ellipse 60% 80% at 38% 0%,rgba(255,170,110,.55),rgba(255,106,61,.2) 45%,transparent 72%);animation:rfLed 5.5s ease-in-out infinite alternate}
+@keyframes rfLed{from{opacity:.25}to{opacity:1}}
+#stage.st-roof51 .rf-flood{background:radial-gradient(closest-side,rgba(255,255,255,.2),transparent);animation:rfLed 9s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-fairy{border-radius:50%;background:radial-gradient(closest-side,#FFF6DC 0 30%,rgba(255,214,140,.7) 45%,transparent);animation:rfTwinkle ease-in-out infinite alternate}
+@keyframes rfTwinkle{from{opacity:.15;transform:scale(.7)}to{opacity:1;transform:scale(1.5)}}
+#stage.st-roof51 .rf-win{background:#FFE2A0;opacity:0;animation:rfWin steps(1) infinite}
+@keyframes rfWin{0%{opacity:0}40%{opacity:.95}85%{opacity:0}}
+#stage.st-roof51 .rf-neon{border-radius:30%;animation:rfNeon 3.2s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-neon.p{background:radial-gradient(closest-side,rgba(255,95,174,.85),transparent);animation:rfFlick 7s steps(1) infinite}
+#stage.st-roof51 .rf-neon.b{background:radial-gradient(closest-side,rgba(120,120,255,.7),rgba(180,92,255,.35) 60%,transparent)}
+@keyframes rfNeon{from{opacity:.35}to{opacity:1}}
+@keyframes rfFlick{0%,100%{opacity:1}46%{opacity:1}47%{opacity:.25}49%{opacity:1}51%{opacity:.4}53%{opacity:1}80%{opacity:.75}}
+#stage.st-roof51 .rf-car{border-radius:50%;background:#FFF4D6;box-shadow:0 0 6px 2px rgba(255,240,200,.7);opacity:0;animation:rfCar 9s linear infinite}
+#stage.st-roof51 .rf-car.c2{background:#FF4A3A;box-shadow:0 0 6px 2px rgba(255,74,58,.7);animation-duration:12s;animation-delay:-5s;animation-direction:reverse}
+#stage.st-roof51 .rf-car.c3{animation-duration:14s;animation-delay:-9s}
+@keyframes rfCar{0%{transform:translate(0,0) scale(.35);opacity:0}10%{opacity:.9}90%{opacity:.9}100%{transform:translate(-60%,3600%) scale(1.5);opacity:0}}
+#stage.st-roof51 .rf-plane{border-radius:50%;background:#fff;animation:rfPlane 80s linear infinite,rfBlink 1.3s steps(1) infinite}
+@keyframes rfPlane{0%{transform:translate(0,0)}45%,100%{transform:translate(3400%,-1900%)}}
+@keyframes rfBlink{0%,100%{opacity:.9}50%{opacity:.2}}
+#stage.st-roof51 .rf-flame{border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:radial-gradient(ellipse at 50% 70%,#FFF6D8 0 22%,#FFB23E 48%,rgba(255,120,40,.4) 70%,transparent);transform-origin:50% 100%;animation:rfFlame .9s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-flame.b{animation-duration:1.15s;animation-delay:-.4s}
+@keyframes rfFlame{0%{transform:scale(.9,.86) rotate(-4deg);opacity:.8}50%{transform:scale(1.04,1.1) rotate(3deg);opacity:1}100%{transform:scale(.95,.94) rotate(-2deg);opacity:.88}}
+#stage.st-roof51 .rf-sway{transform-origin:50% 100%;animation:rfSway 6.5s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-sway.s1{animation-duration:8s;animation-delay:-3s}
+#stage.st-roof51 .rf-sway.s2{animation-duration:5.6s;animation-delay:-1.5s}
+@keyframes rfSway{from{transform:rotate(-3deg)}to{transform:rotate(3.5deg)}}
+#stage.st-roof51 .parts i.mote{animation-name:rfMote;animation-timing-function:ease-in-out}
+#stage.st-roof51 .parts i.mote b{border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,150,.9),rgba(255,122,74,.35) 60%,transparent)}
+@keyframes rfMote{0%{transform:translate3d(0,0,0);opacity:0}20%{opacity:.55}80%{opacity:.4}100%{transform:translate3d(var(--drift),-38vh,0);opacity:0}}
+html:not(.fx) #stage.st-roof51 *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){#stage.st-roof51 *{animation-play-state:paused!important}}
+/* ---------- chrome ---------- */
+html[data-theme="roof51"] .entrybar,html[data-theme="roof51"] .ledger-bar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(14,11,13,.86)}
+html[data-theme="roof51"] .console{border-bottom:0}
+html[data-theme="roof51"] .console::after{top:auto;height:3px;background:var(--rf-strip);box-shadow:0 2px 14px rgba(255,106,61,.55)}
+html[data-theme="roof51"] .mark b{font-family:var(--display);font-weight:400;font-size:23px;letter-spacing:.06em;color:var(--rf-spire)}
+html[data-theme="roof51"] .mark span{font-family:var(--display);font-size:13px;letter-spacing:.14em;color:var(--rf-ember-lit)}
+html[data-theme="roof51"] .modal h3,html[data-theme="roof51"] .entryhead h3,html[data-theme="roof51"] .auth-card h2{font-family:var(--display);font-weight:400;font-size:1.3em;letter-spacing:.05em}
+html[data-theme="roof51"] .stat b{font-family:var(--display);font-weight:400;font-size:30px;color:var(--rf-spire)}
+html[data-theme="roof51"] .stat.flag b{color:var(--rf-amber)}
+html[data-theme="roof51"] .stat.good b{color:var(--go)}
+html[data-theme="roof51"] thead th{--sort-ink:var(--rf-ember)}
+html[data-theme="roof51"] .day[aria-current="true"]{color:var(--rf-spire);border-bottom-color:var(--rf-ember)}
+html[data-theme="roof51"] .day .cnt{background:var(--rf-ember);color:#1A0705}
+html[data-theme="roof51"] .day.today b::after{background:var(--rf-amber)}
+html[data-theme="roof51"] .chip[aria-pressed="true"]{background:var(--rf-ember);color:#1A0705;border-color:var(--rf-ember)}
+html[data-theme="roof51"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]){background:linear-gradient(180deg,#FF8A58,#E4502A);color:#1A0705;border-color:#FF9A70;box-shadow:0 0 0 1px rgba(0,0,0,.3),0 6px 20px -8px rgba(255,106,61,.75)}
+html[data-theme="roof51"] .btn:not(.ghost):not(.quiet):not(.danger):not([aria-expanded="false"]):hover{background:linear-gradient(180deg,#FFA078,#F05E34)}
+html[data-theme="roof51"] .btn.ghost{color:var(--text)}
+html[data-theme="roof51"] .icon-btn.accent{background:var(--rf-spire);color:#1A0705;border-color:var(--rf-spire);font-weight:700}
+html[data-theme="roof51"] .modal{border-color:rgba(244,220,198,.22);background:var(--rf-strip) top/100% 3px no-repeat,var(--surface)}
+html[data-theme="roof51"] .wk-tab.t-active{--ac:var(--rf-ember)}
+html[data-theme="roof51"] .wk-tab.t-active.on{background:linear-gradient(180deg,#2A1612,#1A0E0C);border-color:var(--rf-ember)}
+html[data-theme="roof51"] .wkclock{color:var(--rf-amber);opacity:.9}
+html[data-theme="roof51"] .auth-brand{background:linear-gradient(180deg,#1D1719,#0A090B 60%,#4A130B)}
+html[data-theme="roof51"] .auth-brand h1{font-family:var(--display);font-weight:400;letter-spacing:.05em;color:var(--rf-spire)}
 </style>
 </head>
 <body>
@@ -11816,6 +11916,8 @@ var THEMES = [
     font: "Instrument+Serif:ital@0;1", sw: ["#0E1222", "#F4C46A", "#D23A2E"] },
   { v: "blossom",   l: "Midtown Blossoms", sub: "White cherry blossoms over the East River at night \u00b7 scroll to pan", tone: "dark", group: "Midtown", stage: "blossom",
     font: "Gilda+Display", sw: ["#0F2A66", "#FBF8EF", "#6FC4FF"] },
+  { v: "roof51",    l: "Rooftop on 51st", sub: "Ember-lit rooftop bar, white spires between the towers \u00b7 scroll to pan", tone: "dark", group: "Midtown", stage: "roof51",
+    font: "Poiret+One", sw: ["#0A090B", "#FF6A3D", "#F1EEE4"] },
   /* Game Day: the Stadium Night scene in Buffalo royal blue and red. No team marks. */
   { v: "bills",     l: "Buffalo Gameday",  sub: "Royal blue & red under the lights", tone: "dark", group: "Game Day", stage: "stadium", kit: "football",
     font: "Teko:wght@400;500;600", sw: ["#00338D", "#C60C30", "#FFFFFF"] },
@@ -11948,7 +12050,308 @@ var STAGE_ART = {
 };
 STAGE_ART.gct = gctSceneArt();
 STAGE_ART.sixth = sixthSceneArt();
-STAGE_ART.blossom = blossomSceneArt();
+/* ---- Tall painted scenes (Midtown Blossoms, Rooftop on 51st) ----
+   These pictures have thousands of shapes. Kept as live SVG they have to be
+   re-drawn whenever anything above them moves, which is what made the first
+   version stutter. So the still picture is painted ONCE into a canvas (a plain
+   bitmap the graphics card just slides around) and only the handful of moving
+   pieces stay as real elements on top. The artwork is also built lazily, the
+   first time its theme is chosen, and the painted canvas is kept so switching
+   back is instant. */
+var SCENE_SVG = {}, SCENE_CANVAS = {};
+function defineScene(key, build) {
+  var html = null;
+  Object.defineProperty(STAGE_ART, key, { configurable: true, enumerable: true, get: function () {
+    if (html === null) { var r = build(); SCENE_SVG[key] = r.svg; html = r.html; }
+    return html;
+  } });
+}
+function sceneRaster(st, key, W, H) {
+  var slot = st.querySelector("canvas.sc-base");
+  if (!slot || !SCENE_SVG[key]) return;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var want = Math.max(window.innerWidth, window.innerHeight) * dpr;
+  var w = Math.round(Math.min(want, Math.sqrt(9e6 * W / H)));          /* at most ~9 megapixels */
+  var have = SCENE_CANVAS[key];
+  if (have && have.width >= w * 0.8) {                                    /* already painted: reuse it */
+    have.className = slot.className + " ready";
+    slot.parentNode.replaceChild(have, slot);
+    return;
+  }
+  var img = new Image(), url = "", triedData = false;
+  img.onload = function () {
+    try {
+      slot.width = w; slot.height = Math.round(w * H / W);
+      slot.getContext("2d").drawImage(img, 0, 0, slot.width, slot.height);
+      SCENE_CANVAS[key] = slot;
+      slot.classList.add("ready");
+    } catch (e) {}
+    if (url) URL.revokeObjectURL(url);
+  };
+  img.onerror = function () {
+    if (triedData) return;
+    triedData = true;
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(SCENE_SVG[key]);
+  };
+  try { url = URL.createObjectURL(new Blob([SCENE_SVG[key]], { type: "image/svg+xml" })); img.src = url; }
+  catch (e) { img.onerror(); }
+}
+defineScene("blossom", blossomSceneArt);
+defineScene("roof51", roofSceneArt);
+
+/* ---------- Rooftop on 51st: the stage ----------
+   A rooftop bar at night, under a tan canopy. Through the opening: a flower
+   wall strung with fairy lights on the left, limestone and glass towers, two
+   floodlit white gothic spires in the gap, a street canyon with neon far
+   below. In front, the dark parapet, the bar wall glowing ember-orange from a
+   light strip under the ledge, woven stools, and a couple taking in the view.
+   Tall picture, top to bottom: canopy, sky and towers, spires, street, ledge,
+   bar. Painted once (see sceneRaster); the lights that move sit on top. */
+function roofSceneArt() {
+  var seed = 5151;
+  function R() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+  function rr(a, b) { return a + R() * (b - a); }
+  function f1(n) { return (Math.round(n * 10) / 10).toString(); }
+  function pick(a) { return a[Math.floor(R() * a.length)]; }
+  var W = 1600, H = 2400, LEDGE = 1700, BAR = 1905;
+  var WARM = ["#FFE2A0", "#FFF0C8", "#FFD27A", "#FFE9B8", "#F7C870"];
+  var s = [];
+
+  /* eight-petal flower for the wall */
+  var pet = "";
+  for (var a = 0; a < 8; a++) {
+    var an = a * 45 * Math.PI / 180, c = Math.cos(an), sn = Math.sin(an);
+    var P = function (x, y) { return f1(x * c - y * sn) + " " + f1(x * sn + y * c); };
+    pet += "M0 0C" + P(-5, -6) + " " + P(-5, -17) + " " + P(0, -19) + "C" + P(5, -17) + " " + P(5, -6) + " 0 0Z";
+  }
+
+  s.push('<defs>' +
+    '<linearGradient id="rfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#030409"/><stop offset=".7" stop-color="#080A14"/><stop offset="1" stop-color="#17121C"/></linearGradient>' +
+    '<radialGradient id="rfCan" cx=".56" cy="1" r="1.05"><stop offset="0" stop-color="#8E806D"/><stop offset=".45" stop-color="#6E6356"/><stop offset="1" stop-color="#2B2622"/></radialGradient>' +
+    '<linearGradient id="rfStone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A39A8A"/><stop offset="1" stop-color="#7D7567"/></linearGradient>' +
+    '<linearGradient id="rfStone2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B0A796"/><stop offset="1" stop-color="#857D6E"/></linearGradient>' +
+    '<linearGradient id="rfPier" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4F4A42"/><stop offset=".5" stop-color="#A69E8E"/><stop offset="1" stop-color="#B9B1A0"/></linearGradient>' +
+    '<linearGradient id="rfSpire" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FBF9F2"/><stop offset=".55" stop-color="#E6E2D6"/><stop offset="1" stop-color="#B4B0A4"/></linearGradient>' +
+    '<radialGradient id="rfHalo"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".22"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="rfBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8048"/><stop offset=".22" stop-color="#E4502A"/><stop offset=".62" stop-color="#A32D17"/><stop offset="1" stop-color="#4A130B"/></linearGradient>' +
+    '<radialGradient id="rfHot" cx=".34" cy="0" r=".7"><stop offset="0" stop-color="#FFC08A" stop-opacity=".9"/><stop offset=".35" stop-color="#FF7A45" stop-opacity=".35"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="rfBarR" x1="0" y1="0" x2="1" y2="0"><stop offset=".55" stop-color="#160806" stop-opacity="0"/><stop offset="1" stop-color="#160806" stop-opacity=".9"/></linearGradient>' +
+    '<linearGradient id="rfLedge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17181C"/><stop offset=".2" stop-color="#0C0D10"/><stop offset="1" stop-color="#050506"/></linearGradient>' +
+    '<linearGradient id="rfSweater" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B9B4AA"/><stop offset="1" stop-color="#6F6B64"/></linearGradient>' +
+    '<pattern id="rfWeave" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#1C0D0A"/><path d="M0 3 H12 M0 9 H12" stroke="#4A2016" stroke-width="2.4"/><path d="M3 0 V12 M9 0 V12" stroke="#32140E" stroke-width="2.4"/></pattern>' +
+    '<pattern id="rfWeave2" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#3A3531"/><path d="M0 3 H12 M0 9 H12" stroke="#6A635B" stroke-width="2.4"/><path d="M3 0 V12 M9 0 V12" stroke="#4E4843" stroke-width="2.4"/></pattern>' +
+    '<filter id="rfSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>' +
+    '<path id="rfF" d="' + pet + '"/>' +
+    '</defs>');
+
+  /* ---- sky ---- */
+  s.push('<rect width="' + W + '" height="' + (LEDGE + 20) + '" fill="url(#rfSky)"/>');
+
+  function grid(x0, y0, x1, y1, cw, ch, ww, wh, lit, slope, dark) {
+    var o = "";
+    for (var y = y0; y + wh <= y1; y += ch) {
+      var rowLit = lit * (R() < .12 ? 2.4 : 1);
+      for (var x = x0; x + ww <= x1; x += cw) {
+        var yy = y + (slope ? (1600 - x) * slope : 0);
+        if (R() < rowLit) o += '<rect x="' + f1(x) + '" y="' + f1(yy) + '" width="' + ww + '" height="' + wh + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.6, 1)) + '"/>';
+        else if (dark) o += '<rect x="' + f1(x) + '" y="' + f1(yy) + '" width="' + ww + '" height="' + wh + '" fill="' + dark + '"/>';
+      }
+    }
+    return o;
+  }
+
+  /* ---- far towers in the gap ---- */
+  s.push('<rect x="548" y="890" width="200" height="560" fill="#15110E"/>' + grid(556, 902, 742, 1440, 10, 13, 7, 8, .72, 0, ""));
+  s.push('<rect x="876" y="930" width="130" height="500" fill="#0B0C11"/>' + grid(884, 944, 1000, 1420, 12, 16, 8, 9, .2, 0, ""));
+  s.push('<rect x="748" y="1040" width="60" height="400" fill="#0E0F14"/>' + grid(752, 1050, 806, 1430, 9, 14, 6, 8, .3, 0, ""));
+
+  /* ---- the dark glass tower with its lit upper floors ---- */
+  var lt = '<rect x="330" y="548" width="196" height="470" fill="#07080C"/>';
+  [[590, 70], [690, 46], [770, 60], [860, 38], [930, 30]].forEach(function (r, k) {
+    for (var x = 340; x < 516; x += 46) {
+      if (R() < (k < 3 ? .88 : .5)) lt += '<rect x="' + x + '" y="' + r[0] + '" width="40" height="' + r[1] + '" fill="' + pick(["#FFE7A8", "#FFF1C8", "#F6D48C"]) + '" opacity="' + f1(rr(.7, 1)) + '"/>';
+    }
+    lt += '<path d="M330 ' + (r[0] + r[1] / 2) + ' H526" stroke="#07080C" stroke-width="3"/>';
+  });
+  s.push(lt);
+
+  /* ---- the glass box below it ---- */
+  var gb = '<path d="M300 990 H590 V962 H300 Z" fill="#2B3138"/><rect x="300" y="990" width="262" height="720" fill="#1D2228"/>';
+  for (var gx = 300; gx <= 562; gx += 44) gb += '<path d="M' + gx + ' 990 V1710" stroke="#39424B" stroke-width="2.5"/>';
+  for (var gy = 990; gy <= 1710; gy += 72) gb += '<path d="M300 ' + gy + ' H562" stroke="#39424B" stroke-width="2.5"/>';
+  for (var i = 0; i < 16; i++) {
+    var px = 300 + Math.floor(R() * 6) * 44, py = 990 + Math.floor(R() * 10) * 72;
+    gb += '<rect x="' + (px + 3) + '" y="' + (py + 3) + '" width="38" height="66" fill="' + pick(["#2C3742", "#27303A", "#3A3530", "#4A3E2C"]) + '" opacity="' + f1(rr(.5, .95)) + '"/>';
+  }
+  for (i = 0; i < 9; i++) gb += '<circle cx="' + f1(rr(410, 556)) + '" cy="' + f1(rr(1322, 1346)) + '" r="' + f1(rr(2.5, 4.5)) + '" fill="#FFD9A0"/>';
+  gb += '<rect x="402" y="1350" width="160" height="5" fill="#4A525C"/>';
+  s.push(gb);
+
+  /* ---- left limestone tower: tall piers and dark window strips ---- */
+  var ll = '<rect x="104" y="536" width="230" height="1180" fill="#2A2B30"/>';
+  for (var x = 104; x < 334; x += 27) {
+    ll += '<rect x="' + x + '" y="536" width="15" height="1180" fill="url(#rfPier)" opacity="' + f1(.55 + (x - 104) / 520) + '"/>';
+    for (var y = 560; y < 1700; y += 46) if (R() < .1) ll += '<rect x="' + (x + 16) + '" y="' + y + '" width="10" height="30" fill="' + pick(WARM) + '" opacity=".85"/>';
+  }
+  s.push(ll);
+
+  /* ---- the big limestone building on the right ---- */
+  var rm = '<path d="M996 560 H1600 V1640 H996 Z" fill="url(#rfStone)"/>' +
+           grid(1012, 560, 1596, 1150, 30, 50, 15, 28, .26, .05, "#22242B") +
+           '<path d="M996 560 V1640" stroke="#5E574D" stroke-width="5"/>';
+  /* the setback that steps forward lower down */
+  rm += '<path d="M1176 1150 H1600 V1640 H1176 Z" fill="url(#rfStone2)"/><path d="M1176 1150 H1600" stroke="#C9C0AE" stroke-width="4"/>' +
+        grid(1196, 1186, 1596, 1300, 44, 78, 22, 40, .8, .03, "#24262D") + grid(1196, 1350, 1596, 1640, 44, 78, 22, 40, .26, .03, "#24262D");
+  s.push(rm);
+
+  /* ---- the spires ---- */
+  function spire(ax, tip, w) {
+    var st = 1128, base = 1300, o = "";
+    o += '<path d="M' + (ax - w / 2) + ' ' + base + ' V' + st + ' L' + f1(ax - w * .36) + ' ' + (st - 34) + ' L' + ax + ' ' + tip + ' L' + f1(ax + w * .36) + ' ' + (st - 34) + ' L' + (ax + w / 2) + ' ' + st + ' V' + base + ' Z" fill="url(#rfSpire)"/>';
+    /* corner pinnacles */
+    [-1, 1].forEach(function (d) {
+      var px = ax + d * (w / 2 - 6);
+      o += '<path d="M' + (px - 7) + ' ' + (st + 4) + ' L' + px + ' ' + (st - 78) + ' L' + (px + 7) + ' ' + (st + 4) + ' Z" fill="' + (d < 0 ? "#F6F3EA" : "#C4C0B3") + '"/>';
+    });
+    /* bands, crockets and the little dormers on the cone */
+    for (var k = 1; k < 7; k++) {
+      var u = k / 7, yy = st - 34 + (tip - st + 34) * u, hw = w * .36 * (1 - u);
+      o += '<path d="M' + f1(ax - hw) + ' ' + f1(yy) + ' H' + f1(ax + hw) + '" stroke="#9E9A8E" stroke-width="1.6" opacity=".8"/>';
+      o += '<circle cx="' + f1(ax - hw - 1.5) + '" cy="' + f1(yy) + '" r="2.6" fill="#F6F3EA"/><circle cx="' + f1(ax + hw + 1.5) + '" cy="' + f1(yy) + '" r="2.6" fill="#C4C0B3"/>';
+      if (k < 4) o += '<path d="M' + f1(ax - 4) + ' ' + f1(yy + 26) + ' V' + f1(yy + 12) + ' Q' + ax + ' ' + f1(yy + 5) + ' ' + f1(ax + 4) + ' ' + f1(yy + 12) + ' V' + f1(yy + 26) + ' Z" fill="#4A4844"/>';
+    }
+    /* lancet openings in the tower, two tiers */
+    [[st + 14, 62], [st + 92, 66]].forEach(function (t) {
+      for (var j = -1; j <= 1; j++) {
+        var lx = ax + j * (w * .27);
+        o += '<path d="M' + f1(lx - 6) + ' ' + (t[0] + t[1]) + ' V' + (t[0] + 12) + ' Q' + f1(lx) + ' ' + (t[0] - 4) + ' ' + f1(lx + 6) + ' ' + (t[0] + 12) + ' V' + (t[0] + t[1]) + ' Z" fill="#45433F"/>';
+      }
+    });
+    o += '<path d="M' + (ax - w / 2) + ' ' + (st + 84) + ' H' + (ax + w / 2) + ' M' + (ax - w / 2) + ' ' + (st + 4) + ' H' + (ax + w / 2) + '" stroke="#A8A498" stroke-width="2.4"/>';
+    o += '<path d="M' + ax + ' ' + tip + ' v-20 M' + (ax - 5) + ' ' + (tip - 13) + ' h10" stroke="#F6F3EA" stroke-width="2.2"/>';
+    return o;
+  }
+  s.push('<ellipse cx="884" cy="1080" rx="250" ry="330" fill="url(#rfHalo)"/>' +
+    /* nave gable between the towers */
+    '<path d="M838 1300 V1262 L884 1196 L930 1262 V1300 Z" fill="#E4E0D4"/><circle cx="884" cy="1262" r="13" fill="#4A4844"/><path d="M884 1196 v-26" stroke="#F6F3EA" stroke-width="3"/>' +
+    '<path d="M842 1300 l8 -44 l8 44 Z M910 1300 l8 -44 l8 44 Z" fill="#F6F3EA"/>' +
+    spire(806, 852, 76) + spire(960, 866, 72) +
+    '<rect x="762" y="1296" width="246" height="130" fill="#CFCABC"/><path d="M762 1296 H1008" stroke="#F6F3EA" stroke-width="4"/>' +
+    [786, 826, 866, 906, 946, 986].map(function (ax) { return '<path d="M' + (ax - 8) + ' 1400 V1338 Q' + ax + ' 1318 ' + (ax + 8) + ' 1338 V1400 Z" fill="#55524C"/>'; }).join(""));
+
+  /* ---- street canyon ---- */
+  var sc = '<rect x="556" y="1420" width="192" height="300" fill="#05060A"/>';
+  sc += '<path d="M610 1720 L640 1470 H668 L706 1720 Z" fill="#0B0C12"/>';                               /* the street itself, running away */
+  sc += '<rect x="640" y="1462" width="8" height="74" rx="3" fill="#FF4FA3"/><rect x="636" y="1458" width="16" height="82" rx="6" fill="#FF4FA3" opacity=".22"/>';
+  sc += '<rect x="628" y="1600" width="46" height="60" rx="8" fill="#3B5BFF" opacity=".55"/><rect x="636" y="1612" width="30" height="34" rx="4" fill="#B45CFF"/><rect x="642" y="1620" width="16" height="12" fill="#FFD24F"/>';
+  sc += '<rect x="560" y="1684" width="62" height="34" fill="#FFD9A0"/><path d="M581 1684 V1718 M601 1684 V1718" stroke="#2A2118" stroke-width="2"/>';
+  for (i = 0; i < 26; i++) sc += '<circle cx="' + f1(rr(676, 742)) + '" cy="' + f1(rr(1596, 1700)) + '" r="' + f1(rr(1.3, 3)) + '" fill="' + pick(["#FFE9B8", "#FFD27A", "#BFE0A0"]) + '" opacity="' + f1(rr(.5, 1)) + '"/>';
+  for (i = 0; i < 14; i++) sc += '<rect x="' + f1(rr(560, 636)) + '" y="' + f1(rr(1440, 1680)) + '" width="' + f1(rr(4, 9)) + '" height="' + f1(rr(4, 8)) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.35, .8)) + '"/>';
+  s.push(sc);
+
+  /* ---- the low wing with the bright row of windows, garden on its roof ---- */
+  var lw = '<path d="M742 1422 L1214 1396 V1724 H742 Z" fill="#8B8374"/><path d="M742 1422 V1724 H770 V1420 Z" fill="#5C564C"/><path d="M742 1422 L1214 1396" stroke="#BDB4A2" stroke-width="4"/>';
+  for (x = 786; x < 1200; x += 32) {
+    var ty = 1446 - (x - 742) * .055;
+    lw += '<rect x="' + x + '" y="' + f1(ty) + '" width="16" height="40" fill="' + (R() < .86 ? pick(WARM) : "#24262D") + '"/>';
+    for (var r = 1; r < 5; r++) lw += '<rect x="' + x + '" y="' + f1(ty + r * 62) + '" width="16" height="30" fill="' + (R() < (r === 3 ? .5 : .16) ? pick(WARM) : "#24262D") + '"/>';
+  }
+  for (i = 0; i < 16; i++) lw += '<ellipse cx="' + f1(rr(786, 930)) + '" cy="' + f1(rr(1400, 1418)) + '" rx="' + f1(rr(10, 22)) + '" ry="' + f1(rr(7, 13)) + '" fill="' + pick(["#0B120D", "#111A12", "#0D160F"]) + '"/>';
+  s.push(lw);
+
+  /* ---- canopy overhead ---- */
+  s.push('<path d="M0 0 H1600 V470 L1385 655 L262 512 L196 430 L0 400 Z" fill="url(#rfCan)"/>' +
+    '<path d="M1385 655 L262 512 L196 430" fill="none" stroke="#C4B7A0" stroke-width="7" stroke-linejoin="round"/><path d="M1385 655 L1600 470" stroke="#A3977F" stroke-width="7"/>' +
+    '<path d="M1385 648 L262 505" stroke="#3A342E" stroke-width="3" opacity=".7"/>' +
+    '<path d="M640 0 L560 548 M1010 0 L1000 604 M1330 0 L1385 652" stroke="#3A342E" stroke-width="2" opacity=".35"/>');
+
+  /* ---- flower wall, left ---- */
+  var fw = "", fl = "";
+  for (i = 0; i < 230; i++) {
+    var ly = rr(-20, LEDGE + 40), lxmax = 150 + 70 * Math.sin(ly / 150) + 40 * Math.sin(ly / 47);
+    var lx = rr(-20, lxmax);
+    fw += '<ellipse cx="' + f1(lx) + '" cy="' + f1(ly) + '" rx="' + f1(rr(20, 46)) + '" ry="' + f1(rr(12, 26)) + '" transform="rotate(' + Math.round(rr(-60, 60)) + ' ' + f1(lx) + ' ' + f1(ly) + ')" fill="' + pick(["#070B08", "#0B120D", "#0F1911", "#0A0F0B", "#121E14"]) + '"/>';
+  }
+  for (i = 0; i < 30; i++) {
+    var fy = rr(40, LEDGE - 40), fx = rr(8, 96 + 60 * Math.sin(fy / 150));
+    fw += '<ellipse cx="' + f1(fx + rr(-14, 14)) + '" cy="' + f1(fy + rr(-10, 16)) + '" rx="' + f1(rr(38, 56)) + '" ry="' + f1(rr(26, 38)) + '" fill="' + pick(["#0B120D", "#0F1911", "#0A0F0B"]) + '"/>';
+    fl += '<g transform="translate(' + f1(fx) + ' ' + f1(fy) + ') scale(' + f1(rr(.9, 1.7)) + ') rotate(' + Math.round(rr(0, 45)) + ')" opacity="' + f1(rr(.62, .95)) + '"><use href="#rfF" fill="' + pick(["#E2502C", "#F0763A", "#C93A22", "#E8632F", "#B8301E"]) + '"/><circle r="4.4" fill="#3A1408"/></g>';
+  }
+  for (i = 0; i < 26; i++) fl += '<circle cx="' + f1(rr(10, 200)) + '" cy="' + f1(rr(60, LEDGE - 20)) + '" r="' + f1(rr(1.6, 2.8)) + '" fill="#FFE2A8" opacity=".55"/>';
+  s.push('<rect x="-10" y="0" width="80" height="' + (LEDGE + 30) + '" fill="#070B08"/><g>' + fw + '</g>' + fl);
+
+  /* ---- parapet ledge ---- */
+  s.push('<rect y="' + LEDGE + '" width="' + W + '" height="' + (BAR - LEDGE) + '" fill="url(#rfLedge)"/><path d="M0 ' + LEDGE + ' H' + W + '" stroke="#30333A" stroke-width="3"/>' +
+    '<path d="M452 1672 H556 V1806 H452 Z" fill="#050506"/><path d="M452 1672 H556" stroke="#2A2C31" stroke-width="3"/>' +
+    /* two votive candles on the ledge */
+    '<g fill="#2A1A12" stroke="#5A3A26" stroke-width="2"><rect x="716" y="1676" width="26" height="26" rx="5"/><rect x="934" y="1678" width="24" height="24" rx="5"/></g>' +
+    '<ellipse cx="729" cy="1702" rx="60" ry="9" fill="#FF9A4A" opacity=".16"/><ellipse cx="946" cy="1702" rx="54" ry="8" fill="#FF9A4A" opacity=".14"/>');
+
+  /* ---- bar wall under the ledge, lit from the strip ---- */
+  var bar = '<rect y="' + BAR + '" width="' + W + '" height="' + (H - BAR) + '" fill="url(#rfBar)"/>';
+  for (i = 0; i < 150; i++) bar += '<ellipse cx="' + f1(rr(0, W)) + '" cy="' + f1(rr(BAR + 10, H)) + '" rx="' + f1(rr(10, 60)) + '" ry="' + f1(rr(3, 12)) + '" fill="' + (R() < .55 ? "#5A160C" : "#FFB080") + '" opacity="' + f1(rr(.05, .16)) + '"/>';
+  for (i = 0; i < 26; i++) { var vy = rr(BAR + 20, H - 10); bar += '<path d="M' + f1(rr(-50, W)) + ' ' + f1(vy) + ' q' + f1(rr(60, 200)) + ' ' + f1(rr(-8, 8)) + ' ' + f1(rr(200, 420)) + ' 0" fill="none" stroke="#7A2212" stroke-width="' + f1(rr(1, 2.4)) + '" opacity="' + f1(rr(.15, .35)) + '"/>'; }
+  bar += '<rect y="' + BAR + '" width="' + W + '" height="320" fill="url(#rfHot)"/><rect y="' + BAR + '" width="' + W + '" height="' + (H - BAR) + '" fill="url(#rfBarR)"/>' +
+         '<rect x="0" y="' + (BAR - 3) + '" width="1050" height="9" fill="#FFD9BC"/><rect x="0" y="' + (BAR - 9) + '" width="1050" height="22" fill="#FF9A6A" opacity=".35"/>' +
+         '<path d="M468 ' + (BAR + 30) + ' v44 M820 ' + (BAR + 16) + ' v40" stroke="#FFC9A8" stroke-width="5" stroke-linecap="round" opacity=".7"/>' +
+         '<rect y="' + (H - 150) + '" width="' + W + '" height="150" fill="#12060A" opacity=".55"/>';
+  s.push(bar);
+
+  /* ---- stools ---- */
+  function stool(x, y, w, fill, rim) {
+    var h = 152;
+    return '<path d="M' + (x + 24) + ' ' + (y + h) + ' L' + (x - 6) + ' ' + H + ' M' + (x + w - 24) + ' ' + (y + h) + ' L' + (x + w + 6) + ' ' + H + '" stroke="#0A0605" stroke-width="9" stroke-linecap="round"/>' +
+           '<path d="M' + (x + 8) + ' ' + (y + h + 150) + ' H' + (x + w - 8) + '" stroke="#0A0605" stroke-width="7"/>' +
+           '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="34" fill="url(#' + fill + ')" stroke="#0A0605" stroke-width="9"/>' +
+           '<path d="M' + (x + 30) + ' ' + (y + 5) + ' H' + (x + w - 30) + '" stroke="' + rim + '" stroke-width="5" stroke-linecap="round" opacity=".75"/>';
+  }
+  s.push(stool(-60, 2078, 300, "rfWeave", "#FF8A55") + stool(356, 2066, 300, "rfWeave", "#FF8A55"));
+
+  /* ---- the couple, seen from behind ---- */
+  var cp = "";
+  /* her: jacket, then hair */
+  cp += '<path d="M1010 2140 C990 1960 1000 1800 1060 1740 C1110 1700 1210 1700 1262 1736 C1330 1790 1352 1960 1340 2140 Z" fill="#0B0B0F"/>';
+  cp += '<path d="M1150 2130 C1140 2220 1150 2300 1168 2350 L1150 2392 H1246 C1250 2360 1232 2340 1226 2300 C1222 2240 1232 2180 1240 2130 Z" fill="#08080B"/>';
+  cp += '<path d="M1058 1640 C1040 1540 1090 1470 1158 1468 C1232 1468 1276 1536 1262 1630 C1284 1680 1276 1730 1250 1770 C1220 1790 1110 1792 1078 1768 C1046 1730 1044 1684 1058 1640 Z" fill="#1A0F0C"/>';
+  for (i = 0; i < 18; i++) { var hx = rr(1080, 1250), hy = rr(1500, 1700); cp += '<path d="M' + f1(hx) + ' ' + f1(hy) + ' q' + f1(rr(-14, 14)) + ' ' + f1(rr(20, 40)) + ' ' + f1(rr(-8, 8)) + ' ' + f1(rr(50, 90)) + '" fill="none" stroke="' + (hx > 1180 ? "#6A3520" : "#3A1F16") + '" stroke-width="' + f1(rr(2, 4)) + '" stroke-linecap="round" opacity="' + f1(rr(.35, .8)) + '"/>'; }
+  /* him: head turned toward her, pale sweater */
+  cp += '<path d="M1508 1700 V1640 H1600 V1700 Z" fill="#8A6652"/>' +
+        '<ellipse cx="1566" cy="1578" rx="84" ry="104" fill="#9A7560"/>' +
+        '<path d="M1490 1560 C1484 1500 1520 1468 1574 1468 C1604 1468 1640 1480 1650 1500 V1690 H1600 C1612 1640 1606 1600 1586 1576 C1560 1548 1522 1540 1490 1560 Z" fill="#1F1A17"/>' +
+        '<ellipse cx="1584" cy="1596" rx="13" ry="22" fill="#86614E"/>' +
+        '<path d="M1420 1760 C1450 1690 1530 1668 1600 1672 V' + H + ' H1440 C1420 2200 1400 1900 1420 1760 Z" fill="url(#rfSweater)"/>' +
+        '<rect x="1452" y="2200" width="150" height="200" fill="#15161B"/>';
+  s.push(cp);
+  s.push(stool(1040, 2070, 320, "rfWeave2", "#C9C2B6"));
+  /* his arm round her, over the stool back */
+  s.push('<path d="M1560 1930 C1500 2060 1360 2110 1210 2104" fill="none" stroke="url(#rfSweater)" stroke-width="92" stroke-linecap="round"/>' +
+         '<path d="M1560 1930 C1500 2060 1360 2110 1210 2104" fill="none" stroke="#5A564F" stroke-width="92" stroke-linecap="round" opacity=".18"/>' +
+         '<ellipse cx="1176" cy="2110" rx="44" ry="34" fill="#A98068"/><path d="M1146 2096 q-14 16 -6 36 M1164 2088 q-12 20 -4 44" stroke="#7E5B49" stroke-width="3" fill="none"/>');
+
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + s.join("") + '</svg>';
+
+  /* ---- the lights that move ---- */
+  function at(x, y, w, h, extra) { return 'style="left:' + f1(x / W * 100) + '%;top:' + f1(y / H * 100) + '%;width:' + f1(w / W * 100) + '%;height:' + f1(h / H * 100) + '%' + (extra || "") + '"'; }
+  var live = "";
+  live += '<i class="rf-led" ' + at(0, BAR + 6, 1200, 400) + '></i>';
+  live += '<i class="rf-flood" ' + at(684, 800, 400, 560) + '></i>';
+  for (i = 0; i < 22; i++) { var d = rr(2.2, 5.5); live += '<i class="rf-fairy" ' + at(rr(10, 205), rr(60, LEDGE - 30), 9, 9, ';animation-duration:' + f1(d) + 's;animation-delay:-' + f1(rr(0, d)) + 's') + '></i>'; }
+  var spots = [[1012, 1596, 600, 1140], [556, 742, 902, 1430], [786, 1200, 1500, 1690], [1196, 1596, 1350, 1630], [340, 516, 590, 960]];
+  for (i = 0; i < 18; i++) { var sp = spots[i % spots.length], wd = rr(17, 43); live += '<i class="rf-win" ' + at(rr(sp[0], sp[1]), rr(sp[2], sp[3]), 14, 24, ';animation-duration:' + f1(wd) + 's;animation-delay:-' + f1(rr(0, wd)) + 's') + '></i>'; }
+  live += '<i class="rf-neon p" ' + at(630, 1450, 28, 98) + '></i><i class="rf-neon b" ' + at(618, 1590, 66, 80) + '></i>';
+  live += '<i class="rf-car" ' + at(646, 1480, 12, 6) + '></i><i class="rf-car c2" ' + at(660, 1480, 12, 6) + '></i><i class="rf-car c3" ' + at(650, 1480, 12, 6) + '></i>';
+  live += '<i class="rf-plane" ' + at(430, 760, 8, 8) + '></i>';
+  live += '<i class="rf-flame" ' + at(721, 1652, 16, 30) + '></i><i class="rf-flame b" ' + at(939, 1656, 14, 28) + '></i>';
+  for (i = 0; i < 3; i++) {
+    var o = '<path d="M40 150 Q' + f1(rr(20, 60)) + ' 90 ' + f1(rr(30, 50)) + ' 40" fill="none" stroke="#0F1911" stroke-width="5" stroke-linecap="round"/>';
+    for (var q = 0; q < 3; q++) o += '<g transform="translate(' + f1(rr(22, 58)) + ' ' + f1(30 + q * 38) + ') scale(' + f1(rr(1, 1.5)) + ')"><use href="#rfF" fill="' + pick(["#E2502C", "#F0763A", "#E8632F"]) + '"/><circle r="4.4" fill="#3A1408"/></g>';
+    live += '<svg class="rf-sway s' + i + '" viewBox="0 0 80 160" preserveAspectRatio="none" ' + at([176, 150, 190][i], [700, 1080, 1420][i], 80, 160) + '>' + o + '</svg>';
+  }
+  var base = '<canvas class="rf-base sc-base"></canvas><svg class="rf-defs" width="0" height="0"><defs><path id="rfF" d="' + pet + '"/></defs></svg>';
+  return { svg: svg, html: '<div class="rf">' + base + live + '</div>' };
+}
+
+
 
 /* ---------- Midtown Blossoms: the stage ----------
    Night on the Queens waterfront, looking across the East River at Midtown
@@ -12208,7 +12611,8 @@ function blossomSceneArt() {
     '<path d="M96 ' + (SY + 120) + ' C60 ' + (SY + 128) + ' 30 ' + (SY + 140) + ' 4 ' + (SY + 146) + ' M300 ' + (SY + 118) + ' C340 ' + (SY + 132) + ' 372 ' + (SY + 134) + ' 404 ' + (SY + 146) + ' M190 ' + (SY + 112) + ' C196 ' + (SY + 140) + ' 220 ' + (SY + 150) + ' 250 ' + (SY + 158) + '" fill="none" stroke="#6B4B40" stroke-width="12" stroke-linecap="round"/>');
   s.push('<g>' + back + '</g><g>' + front + '</g>');
 
-  var base = '<svg class="bl-base" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + s.join("") + '</svg>';
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + s.join("") + '</svg>';
+  var base = '<canvas class="bl-base sc-base"></canvas><svg class="bl-defs" width="0" height="0"><defs><path id="blP" d="' + pet + '"/></defs></svg>';
 
   /* ---- the small things that move, each its own element ---- */
   function at(x, y, w, h) { return 'style="left:' + f1(x / W * 100) + '%;top:' + f1(y / H * 100) + '%;width:' + f1(w / W * 100) + '%;height:' + f1(h / H * 100) + '%"'; }
@@ -12236,7 +12640,7 @@ function blossomSceneArt() {
   }
   for (i = 0; i < 6; i++) live += sprig(i);
 
-  return '<div class="bl">' + base + live + '</div>';
+  return { svg: svg, html: '<div class="bl">' + base + live + '</div>' };
 }
 
 
@@ -12775,6 +13179,17 @@ function stageParticles(kind, box) {
       p.it.style.animationDuration = d + "s";
       p.it.style.animationDelay = -rnd(0, d) + "s";
     }
+  } else if (kind === "roof51") {
+    /* warm specks of light drifting up from the bar */
+    for (i = 0; i < (small ? 8 : 16); i++) {
+      p = add("mote"); d = rnd(14, 28);
+      p.it.style.left = rnd(0, 100) + "%";
+      p.it.style.top = rnd(55, 100) + "%";
+      p.it.style.animationDuration = d + "s";
+      p.it.style.animationDelay = -rnd(0, d) + "s";
+      p.it.style.setProperty("--drift", rnd(-70, 70) + "px");
+      p.b.style.width = p.b.style.height = rnd(4, 11) + "px";
+    }
   } else if (kind === "blossom") {
     /* loose petals drifting down past the lens, a few big soft ones close up */
     for (i = 0; i < (small ? 14 : 30); i++) {
@@ -12882,7 +13297,9 @@ function setStage(t) {
     ["f3", "f2", "f1"].forEach(function (c) { st.appendChild(el("i", "nyx nyx-fog " + c)); });
   }
   if (t.variant === "rain") st.appendChild(el("i", "nyx nyx-flash"));
-  if (t.stage === "nyc" || t.stage === "blossom") nycPanSetup(st); else nycPan.st = null;
+  var tall = t.stage === "blossom" || t.stage === "roof51";
+  if (tall) sceneRaster(st, t.stage, 1600, 2400);
+  if (t.stage === "nyc" || tall) nycPanSetup(st); else nycPan.st = null;
 }
 
 /* ---------- NYC panorama pan (desktop) ----------
@@ -12894,11 +13311,11 @@ function setStage(t) {
 var nycPan = { st: null, arts: null, cur: null, raf: 0, last: 0, pos: null };
 function nycPanRange() {
   var H = window.innerHeight;
-  if (nycPan.st && nycPan.st.classList.contains("st-blossom")) {
-    /* the blossom scene is one tall picture: pan from its top to its bottom,
-       resting (when the page can't scroll) where the skyline sits under the canopy */
-    var pic = nycPan.arts && nycPan.arts.firstElementChild;
-    var mx = Math.max(0, (pic ? pic.offsetHeight : H) - H);
+  if (nycPan.st && /\bst-(blossom|roof51)\b/.test(nycPan.st.className)) {
+    /* the tall scenes are one picture each: pan from top to bottom, resting
+       (when the page can't scroll) on the skyline */
+    if (!nycPan.picH) { var pic = nycPan.arts && nycPan.arts.firstElementChild; nycPan.picH = pic ? pic.offsetHeight : H; }
+    var mx = Math.max(0, nycPan.picH - H);
     return { T: mx * 0.3, max: mx };
   }
   return { T: 0.18 * H, max: 0.18 * H + H * 400 / 900 };
@@ -12970,7 +13387,7 @@ function nycPanKick() {
   if (nycPan.st && !nycPan.raf) nycPan.raf = requestAnimationFrame(nycPanFrame);
 }
 function nycPanSetup(st) {
-  nycPan.st = st; nycPan.arts = st.querySelector(".arts"); nycPan.cur = null; nycPan.pos = null;
+  nycPan.st = st; nycPan.arts = st.querySelector(".arts"); nycPan.cur = null; nycPan.pos = null; nycPan.picH = 0;
   if (!nycPan.arts) { nycPan.st = null; return; }
   st.classList.toggle("pan", !!(window.matchMedia && window.matchMedia("(min-width:761px)").matches));
   nycPanKick();
@@ -12979,7 +13396,7 @@ window.addEventListener("scroll", nycPanKick, { passive: true });
 window.addEventListener("resize", function () {
   if (!nycPan.st) return;
   nycPan.st.classList.toggle("pan", !!(window.matchMedia && window.matchMedia("(min-width:761px)").matches));
-  nycPan.cur = null; nycPanKick();
+  nycPan.cur = null; nycPan.picH = 0; nycPanKick();
 }, { passive: true });
 /* ---- Fireworks over the harbor (NYC · Night Fireworks) ----
    Rockets climb from the waterline and burst as peonies, rings or golden
