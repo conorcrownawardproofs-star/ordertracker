@@ -4645,6 +4645,11 @@ html[data-theme="roof51"] #stage{background:#060508}
 @keyframes rfSteam{0%{transform:translate(0,20%) scale(.4);opacity:0}25%{opacity:.75}100%{transform:translate(40%,-190%) scale(2.2);opacity:0}}
 #stage.st-roof51 .rf-gloss{background:linear-gradient(180deg,transparent 35%,#08090B 100%),repeating-linear-gradient(90deg,transparent 0 37px,rgba(255,226,160,.08) 37px 43px,transparent 43px 96px,rgba(255,255,255,.05) 96px 99px,transparent 99px 151px);animation:rfLed 4.6s ease-in-out infinite alternate}
 #stage.st-roof51 .rf-flame.c{animation-duration:1.02s;animation-delay:-.7s}
+#stage.st-roof51 .rf-flag{background:linear-gradient(180deg,#8A1E24 0 38%,#E6C66A 38% 50%,#8A1E24 50%);clip-path:polygon(0 0,100% 12%,78% 50%,100% 88%,0 100%);transform-origin:0 50%;animation:rfFlag 2.8s ease-in-out infinite alternate}
+@keyframes rfFlag{0%{transform:skewY(-7deg) scaleX(.9)}50%{transform:skewY(4deg) scaleX(1)}100%{transform:skewY(9deg) scaleX(.86)}}
+#stage.st-roof51 .rf-glass{background:radial-gradient(ellipse 60% 70% at 50% 60%,rgba(255,196,120,.3),rgba(140,170,255,.1) 60%,transparent);animation:rfLed 7s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-pwr{border-radius:50%;background:#4DFF9A;box-shadow:0 0 5px 1px rgba(77,255,154,.7);animation:rfBlink 3.4s steps(1) infinite}
+#stage.st-roof51 .rf-steam.s{animation-duration:8s;animation-delay:-3s}
 #stage.st-roof51::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 44%,transparent 52%,rgba(0,0,0,.5) 100%)}
 #stage.st-roof51 .rf-sky{overflow:hidden}
 #stage.st-roof51 .rf-plane{position:absolute;display:block;left:0;top:78%;width:100%;height:4%;background:radial-gradient(circle at 4px 50%,#fff 0 2.5px,rgba(255,255,255,.35) 4px,transparent 6px);animation:rfPlane 70s linear infinite,rfBlink 1.3s steps(1) infinite}
@@ -12225,6 +12230,8 @@ function roofSceneArt() {
     '<linearGradient id="rfNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05060E" stop-opacity=".0"/><stop offset="1" stop-color="#05060E" stop-opacity=".5"/></linearGradient>' +
     '<linearGradient id="rfFade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0C0F" stop-opacity="0"/><stop offset=".55" stop-color="#0A0B0D" stop-opacity=".85"/><stop offset="1" stop-color="#070708" stop-opacity="1"/></linearGradient>' +
     '<radialGradient id="rfVP"><stop offset="0" stop-color="#FFE2B0" stop-opacity=".85"/><stop offset=".3" stop-color="#FFB86A" stop-opacity=".35"/><stop offset="1" stop-color="#FFB86A" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="rfGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FB8FF"/><stop offset=".5" stop-color="#F0B25A"/><stop offset="1" stop-color="#C2503A"/></linearGradient>' +
+    '<radialGradient id="rfPool"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".38"/><stop offset="1" stop-color="#FFD9A0" stop-opacity="0"/></radialGradient>' +
     '<filter id="rfSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>' +
     '<path id="rfF" d="' + pet + '"/>' +
     '</defs>');
@@ -12234,6 +12241,7 @@ function roofSceneArt() {
   var cl = "";
   for (var ci = 0; ci < 9; ci++) cl += '<ellipse cx="' + f1(rr(380, 900)) + '" cy="' + f1(rr(620, 1000)) + '" rx="' + f1(rr(120, 260)) + '" ry="' + f1(rr(16, 40)) + '" fill="' + pick(["#3A2440", "#2A2A4A", "#4A2A3A"]) + '" opacity="' + f1(rr(.25, .5)) + '"/>';
   s.push('<g filter="url(#rfSoft)">' + cl + '</g>');
+  s.push('<circle cx="712" cy="716" r="70" fill="url(#rfHalo)" opacity=".7"/><path d="M706 694 A22 22 0 1 1 706 738 A15 22 0 1 0 706 694 Z" fill="#F4EFE0"/>');
   for (ci = 0; ci < 14; ci++) s.push('<circle cx="' + f1(rr(540, 760)) + '" cy="' + f1(rr(560, 860)) + '" r="' + f1(rr(.8, 1.6)) + '" fill="#DDE6FF" opacity="' + f1(rr(.25, .6)) + '"/>');
 
   /* ---- perspective ----
@@ -12252,6 +12260,10 @@ function roofSceneArt() {
     lastLit = isLit && !fl;
     if (lastLit) o = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.6, 1)) + '"/>';
     else if (darkFill) o = '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h) + '" fill="' + darkFill + '"/>';
+    if (k >= 3 && k <= 5) {
+      if (lastLit && w >= 14 && R() < .32) o += '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h * rr(.25, .6)) + '" fill="#7A5A2E" opacity=".5"/>';   /* a blind part-way down */
+      o += '<rect x="' + f1(x - 2) + '" y="' + f1(y + h) + '" width="' + f1(w + 4) + '" height="2.4" fill="#D2C9B6" opacity=".34"/>';                                                    /* stone sill */
+    }
     WINS.push([x, y, w, h, fl ? 2 : isLit ? 1 : 0, k || 0]);
     return o;
   }
@@ -12270,12 +12282,14 @@ function roofSceneArt() {
     /* a soft bloom under the lit panes, so the windows glow instead of sitting flat */
     return '<g filter="url(#rfBloom)" opacity=".7">' + lit2 + '</g>' + o;
   }
-  var FEST = [];
+  var FEST = [], GARDEN = [];
 
   /* ---- far towers in the gap: square-on to us ---- */
   s.push('<rect x="548" y="890" width="88" height="576" fill="#15110E"/>' + grid(556, 902, 632, 1440, 10, 13, 7, 8, .72, 0, 0, "", 1));
   s.push('<rect x="876" y="930" width="130" height="500" fill="#12141C"/><path d="M876 930 H1006" stroke="#2A2D38" stroke-width="3"/>' + grid(884, 944, 1000, 1290, 12, 16, 8, 9, .2, 0, 0, "", 1));
   s.push('<rect x="748" y="1040" width="60" height="400" fill="#0E0F14"/>' + grid(752, 1050, 806, 1120, 9, 14, 6, 8, .3, 0, 0, "", 1));
+
+  s.push('<path d="M592 892 V872 M906 932 V914" stroke="#2A2D38" stroke-width="3"/>');
 
   /* ---- the dark glass tower with its lit upper floors (left-hand wall) ---- */
   var lt = '<path d="M330 440 H526 V1018 H330 Z" fill="#07080C"/>', ltG = "";
@@ -12299,6 +12313,13 @@ function roofSceneArt() {
   }
   for (var gx = GX0; gx <= GX1; gx += 44) gb += '<path d="M' + gx + ' ' + f1(pl(gx, 990, GX0)) + ' V1720" stroke="#39424B" stroke-width="2.5"/>';
   for (var gy = 990; gy <= 1720; gy += 72) gb += '<path d="M' + GX0 + ' ' + gy + ' L' + GX1 + ' ' + f1(pl(GX1, gy, GX0)) + '" stroke="#39424B" stroke-width="2.5"/>';
+  [[1, 2], [4, 5], [3, 8], [0, 6]].forEach(function (c2) {
+    var px2 = GX0 + c2[0] * 44, py2 = 990 + c2[1] * 72;
+    gb += '<path d="M' + (px2 + 3) + ' ' + f1(pl(px2 + 3, py2 + 3, GX0)) + ' L' + (px2 + 41) + ' ' + f1(pl(px2 + 41, py2 + 3, GX0)) + ' V' + f1(pl(px2 + 41, py2 + 69, GX0)) + ' L' + (px2 + 3) + ' ' + f1(pl(px2 + 3, py2 + 69, GX0)) + ' Z" fill="#FFD9A0" opacity="' + f1(rr(.3, .55)) + '"/>' +
+          '<path d="M' + (px2 + 3) + ' ' + f1(pl(px2 + 3, py2 + 46, GX0)) + ' L' + (px2 + 41) + ' ' + f1(pl(px2 + 41, py2 + 46, GX0)) + ' V' + f1(pl(px2 + 41, py2 + 69, GX0)) + ' L' + (px2 + 3) + ' ' + f1(pl(px2 + 3, py2 + 69, GX0)) + ' Z" fill="#2A2018" opacity=".55"/>';
+  });
+  gb += '<path d="M' + GX0 + ' 948 L590 ' + f1(pl(590, 948, GX0)) + '" stroke="#5A636E" stroke-width="2.5"/>';
+  for (var rx2 = GX0 + 10; rx2 < 590; rx2 += 28) gb += '<path d="M' + rx2 + ' ' + f1(pl(rx2, 948, GX0)) + ' V' + f1(pl(rx2, 962, GX0)) + '" stroke="#5A636E" stroke-width="2"/>';
   /* a terrace part-way up, with a rail and a few lamps on it */
   var ty0 = 1350;
   gb += '<path d="M402 ' + f1(pl(402, ty0, GX0)) + ' L' + GX1 + ' ' + f1(pl(GX1, ty0, GX0)) + '" stroke="#5A636E" stroke-width="5"/>';
@@ -12309,7 +12330,7 @@ function roofSceneArt() {
   var ll = '<rect x="104" y="380" width="230" height="1346" fill="#2A2B30"/>';
   for (var x = 104; x < 334; x += 27) {
     ll += '<rect x="' + x + '" y="380" width="15" height="1346" fill="url(#rfPier)" opacity="' + f1(.55 + (x - 104) / 520) + '"/>';
-    for (var y = 560; y < 1700; y += 46) { var on2 = R() < .1; var wy1 = pl(x + 16, y, 104); WINS.push([x + 16, wy1, 10, 30, on2 ? 1 : 0, 6]); if (on2) ll += '<rect x="' + (x + 16) + '" y="' + f1(wy1) + '" width="10" height="30" fill="' + pick(WARM) + '" opacity=".85"/>'; }
+    for (var y = 560; y < 1700 && x + 27 <= 334; y += 46) { var on2 = R() < .1; var wy1 = pl(x + 16, y, 104); WINS.push([x + 16, wy1, 10, 30, on2 ? 1 : 0, 6]); if (on2) ll += '<rect x="' + (x + 16) + '" y="' + f1(wy1) + '" width="10" height="30" fill="' + pick(WARM) + '" opacity=".85"/>'; }
   }
   /* spandrel bands across the piers, falling toward the horizon like every other level line on this wall */
   for (y = 600; y < 1700; y += 184) ll += '<path d="M104 ' + y + ' L334 ' + f1(pl(334, y, 104)) + '" stroke="#2A2B30" stroke-width="5" opacity=".55"/>';
@@ -12317,6 +12338,8 @@ function roofSceneArt() {
 
   /* ---- the big limestone building on the right (right-hand wall, near edge at the frame) ---- */
   var rm = '<path d="M996 480 H1600 V1724 H996 Z" fill="url(#rfStone)"/><rect x="996" y="480" width="604" height="1244" fill="url(#rfNight)"/>' +
+           [654, 904].map(function (yb) { return '<path d="M996 ' + f1(pr(996, yb, 1600)) + ' L1600 ' + yb + '" stroke="#B9B0A0" stroke-width="6" opacity=".4"/><path d="M996 ' + f1(pr(996, yb + 5, 1600)) + ' L1600 ' + (yb + 5) + '" stroke="#2A2620" stroke-width="2" opacity=".5"/>'; }).join("") +
+           [1095, 1185, 1275, 1365, 1455, 1545].map(function (xp) { return '<path d="M' + xp + ' 480 V1724" stroke="#3A352E" stroke-width="3" opacity=".22"/><path d="M' + (xp + 3) + ' 480 V1724" stroke="#C9C0AE" stroke-width="1.5" opacity=".12"/>'; }).join("") +
            grid(1012, 470, 1596, 1150, 30, 50, 15, 28, .26, "r", 1600, "#22242B", 3) +
            /* the part of this wall that carries on down beside the setback */
            grid(1012, 1170, 1166, 1420, 30, 50, 15, 28, .2, "r", 1600, "#22242B", 3) +
@@ -12326,6 +12349,10 @@ function roofSceneArt() {
   rm += '<path d="M' + SBX + ' ' + f1(sbTop) + ' L1600 1150 V1724 H' + SBX + ' Z" fill="url(#rfStone2)"/><path d="M' + SBX + ' ' + f1(sbTop) + ' L1600 1150" stroke="#C9C0AE" stroke-width="4"/>' +
         '<path d="M' + SBX + ' ' + f1(sbTop) + ' V1724" stroke="#4A453C" stroke-width="4"/>' +
         '<path d="M' + SBX + ' ' + f1(sbTop) + ' L1600 1150 V1724 H' + SBX + ' Z" fill="url(#rfNight)" opacity=".7"/>' +
+        '<path d="M' + SBX + ' ' + f1(pr(SBX, 1166, 1600)) + ' L1600 1166" stroke="#3A352E" stroke-width="3" opacity=".5"/><path d="M' + SBX + ' ' + f1(pr(SBX, 1322, 1600)) + ' L1600 1322" stroke="#C9C0AE" stroke-width="5" opacity=".3"/>' +
+        /* its roof terrace: planters along the parapet and a flagpole */
+        [1236, 1262, 1290, 1318, 1344, 1372, 1508, 1534, 1560].map(function (tx) { var ty = pr(tx, 1150, 1600); return '<ellipse cx="' + tx + '" cy="' + f1(ty - 7) + '" rx="' + f1(rr(11, 16)) + '" ry="' + f1(rr(8, 13)) + '" fill="' + pick(["#0B120D", "#111A12", "#0D160F"]) + '"/><rect x="' + (tx - 9) + '" y="' + f1(ty - 3) + '" width="18" height="5" fill="#3A352E"/>'; }).join("") +
+        '<path d="M1430 ' + f1(pr(1430, 1150, 1600)) + ' V1036" stroke="#B9B0A0" stroke-width="3.5"/><circle cx="1430" cy="1034" r="4" fill="#E6C66A"/>' +
         grid(1208, 1190, 1596, 1300, 44, 78, 22, 40, .8, "r", 1600, "#1B1D24", 4) + grid(1208, 1346, 1596, 1700, 44, 78, 22, 40, .26, "r", 1600, "#1B1D24", 4);
   s.push(rm);
 
@@ -12358,11 +12385,13 @@ function roofSceneArt() {
   }
   s.push('<ellipse cx="884" cy="1080" rx="250" ry="330" fill="url(#rfHalo)"/>' +
     /* nave gable between the towers */
-    '<path d="M838 1300 V1262 L884 1196 L930 1262 V1300 Z" fill="#E4E0D4"/><circle cx="884" cy="1262" r="13" fill="#4A4844"/><path d="M884 1196 v-26" stroke="#F6F3EA" stroke-width="3"/>' +
+    '<path d="M838 1300 V1262 L884 1196 L930 1262 V1300 Z" fill="#E4E0D4"/><circle cx="884" cy="1262" r="13" fill="#3A4A7A"/><circle cx="884" cy="1262" r="13" fill="url(#rfGlass)" opacity=".7"/><path d="M871 1262 H897 M884 1249 V1275 M875 1253 L893 1271 M893 1253 L875 1271" stroke="#EDEAE0" stroke-width="1.4"/><circle cx="884" cy="1262" r="13" fill="none" stroke="#F6F3EA" stroke-width="2.4"/><circle cx="884" cy="1262" r="4" fill="none" stroke="#EDEAE0" stroke-width="1.4"/><path d="M884 1196 v-26" stroke="#F6F3EA" stroke-width="3"/>' +
     '<path d="M842 1300 l8 -44 l8 44 Z M910 1300 l8 -44 l8 44 Z" fill="#F6F3EA"/>' +
     spire(806, 852, 76) + spire(960, 866, 72) +
     '<rect x="762" y="1296" width="246" height="130" fill="#CFCABC"/><path d="M762 1296 H1008" stroke="#F6F3EA" stroke-width="4"/>' +
-    [786, 826, 866, 906, 946, 986].map(function (ax) { return '<path d="M' + (ax - 8) + ' 1400 V1338 Q' + ax + ' 1318 ' + (ax + 8) + ' 1338 V1400 Z" fill="#55524C"/>'; }).join(""));
+    [786, 826, 866, 906, 946, 986].map(function (ax) { return '<path d="M' + (ax - 8) + ' 1400 V1338 Q' + ax + ' 1318 ' + (ax + 8) + ' 1338 V1400 Z" fill="#3A4468"/><path d="M' + (ax - 8) + ' 1400 V1338 Q' + ax + ' 1318 ' + (ax + 8) + ' 1338 V1400 Z" fill="url(#rfGlass)" opacity=".55"/><path d="M' + ax + ' 1324 V1400 M' + (ax - 8) + ' 1362 H' + (ax + 8) + '" stroke="#2A2A30" stroke-width="1.6"/>' +
+      '<path d="M' + (ax + 20) + ' 1300 V1426" stroke="#A8A498" stroke-width="3" opacity=".6"/><path d="M' + (ax + 14) + ' 1318 h12 l-2 8 h-8 Z" fill="#EDEAE0" opacity=".8"/>'; }).join("") +
+    '<path d="M762 1312 H1008" stroke="#A8A498" stroke-width="2" opacity=".7"/>');
 
   /* ---- the avenue: it runs straight away from us and meets the horizon at one point, VP.
      Nothing stands across the end of it: the buildings line its two sides, each one
@@ -12413,6 +12442,8 @@ function roofSceneArt() {
   }
   lw += '<g filter="url(#rfBloom)" opacity=".7">' + lwLit + '</g>' + lwAll;
   for (i = 0; i < 18; i++) { var sx2 = rr(786, 960); lw += '<ellipse cx="' + f1(sx2) + '" cy="' + f1(pr(sx2, wTop, WXR) - rr(2, 12)) + '" rx="' + f1(rr(10, 22)) + '" ry="' + f1(rr(7, 13)) + '" fill="' + pick(["#0B120D", "#111A12", "#0D160F"]) + '"/>'; }
+  lw += '<path d="M770 ' + f1(pr(770, wTop + 12, WXR)) + ' L' + WXR + ' ' + (wTop + 12) + '" stroke="#3A352E" stroke-width="2.5" opacity=".5" stroke-dasharray="6 5"/>';
+  [806, 872, 934].forEach(function (tx) { var ty = pr(tx, wTop, WXR); lw += '<path d="M' + tx + ' ' + f1(ty) + ' v-30" stroke="#17120C" stroke-width="4"/><ellipse cx="' + tx + '" cy="' + f1(ty - 42) + '" rx="22" ry="20" fill="#0B140E"/><ellipse cx="' + (tx - 9) + '" cy="' + f1(ty - 34) + '" rx="14" ry="12" fill="#101C13"/><ellipse cx="' + (tx + 10) + '" cy="' + f1(ty - 50) + '" rx="13" ry="11" fill="#0E1810"/>'; GARDEN.push([tx - 12, ty - 52], [tx + 8, ty - 40], [tx - 2, ty - 30]); });
   s.push(lw);
 
   /* ---- canopy overhead ---- */
@@ -12420,6 +12451,19 @@ function roofSceneArt() {
     '<path d="M1385 655 L262 512 L196 430" fill="none" stroke="#C4B7A0" stroke-width="7" stroke-linejoin="round"/><path d="M1385 655 L1600 470" stroke="#A3977F" stroke-width="7"/>' +
     '<path d="M1385 648 L262 505" stroke="#3A342E" stroke-width="3" opacity=".7"/>' +
     '<path d="M640 0 L560 548 M1010 0 L1000 604 M1330 0 L1385 652" stroke="#3A342E" stroke-width="2" opacity=".35"/>');
+
+  /* rattan pendant lamps hanging under the canopy, each with a pool of light on the fabric */
+  var PEND = [[470, 250], [900, 320], [1300, 270]], pd = "";
+  PEND.forEach(function (p2) {
+    var x = p2[0], y = p2[1];
+    pd += '<ellipse cx="' + x + '" cy="' + (y - 60) + '" rx="230" ry="150" fill="url(#rfPool)"/>' +
+          '<path d="M' + x + ' ' + (y - 150) + ' V' + (y - 62) + '" stroke="#14110E" stroke-width="3"/>' +
+          '<path d="M' + (x - 62) + ' ' + y + ' C' + (x - 62) + ' ' + (y - 46) + ' ' + (x - 30) + ' ' + (y - 68) + ' ' + x + ' ' + (y - 68) + ' C' + (x + 30) + ' ' + (y - 68) + ' ' + (x + 62) + ' ' + (y - 46) + ' ' + (x + 62) + ' ' + y + ' Z" fill="#5A4A36" stroke="#2A2118" stroke-width="3"/>';
+    for (var q2 = -48; q2 <= 48; q2 += 16) pd += '<path d="M' + (x + q2) + ' ' + y + ' Q' + (x + q2 * .7) + ' ' + (y - 40) + ' ' + (x + q2 * .2) + ' ' + (y - 66) + '" fill="none" stroke="#2A2118" stroke-width="2" opacity=".7"/>';
+    pd += '<path d="M' + (x - 58) + ' ' + (y - 22) + ' H' + (x + 58) + ' M' + (x - 46) + ' ' + (y - 44) + ' H' + (x + 46) + '" stroke="#2A2118" stroke-width="2" opacity=".6"/>' +
+          '<ellipse cx="' + x + '" cy="' + y + '" rx="62" ry="9" fill="#FFE2A8" opacity=".85"/><ellipse cx="' + x + '" cy="' + y + '" rx="62" ry="9" fill="none" stroke="#2A2118" stroke-width="3"/>';
+  });
+  s.push(pd);
 
   /* festoon lights strung along the canopy edge, sagging between hooks */
   var fe = "", hooks = 7;
@@ -12448,7 +12492,9 @@ function roofSceneArt() {
   }
   function leafEdge(y) { return 150 + 70 * Math.sin(y / 150) + 40 * Math.sin(y / 47); }
   for (i = 0; i < 26; i++) { var qy = rr(60, LEDGE - 20); fl += '<circle cx="' + f1(rr(8, Math.max(30, leafEdge(qy) - 46))) + '" cy="' + f1(qy) + '" r="' + f1(rr(1.6, 2.8)) + '" fill="#FFE2A8" opacity=".55"/>'; }
-  s.push('<rect x="-10" y="0" width="80" height="' + (LEDGE + 30) + '" fill="#070B08"/><g>' + fw + '</g>' + fl);
+  var veins = "";
+  for (i = 0; i < 70; i++) { var vy2 = rr(20, LEDGE - 10), vx2 = rr(6, Math.max(30, leafEdge(vy2) - 30)), va = rr(-1.2, 1.2); veins += '<path d="M' + f1(vx2) + ' ' + f1(vy2) + ' q' + f1(14 * Math.cos(va)) + ' ' + f1(14 * Math.sin(va) - 5) + ' ' + f1(30 * Math.cos(va)) + ' ' + f1(30 * Math.sin(va)) + '" fill="none" stroke="#22382A" stroke-width="2" stroke-linecap="round" opacity="' + f1(rr(.35, .7)) + '"/>'; }
+  s.push('<rect x="-10" y="0" width="80" height="' + (LEDGE + 30) + '" fill="#070B08"/><g>' + fw + '</g>' + veins + fl);
 
   /* ---- parapet counter: a dark glossy top running away from us, things left on it ---- */
   var ct = '<rect y="' + LEDGE + '" width="' + W + '" height="' + (BAR - LEDGE) + '" fill="url(#rfLedge)"/><path d="M0 ' + LEDGE + ' H' + W + '" stroke="#30333A" stroke-width="3"/>';
@@ -12478,6 +12524,14 @@ function roofSceneArt() {
         '<path d="M856 1801.2 L863 1799.3" stroke="#D4AF4A" stroke-width="11"/><path d="M857.5 1800.8 L861.5 1799.7" stroke="#8A1E14" stroke-width="5"/>' +
         '<path d="M904 1788.1 L915 1785.1" stroke="#B4B0A8" stroke-width="10" stroke-linecap="round"/><path d="M906 1787.6 l3 -.8 M911 1786.2 l2 -.5" stroke="#6E6A64" stroke-width="10" opacity=".5"/>' +
         '<path d="M901.5 1788.8 L904.5 1788" stroke="#FF6A2A" stroke-width="10.5"/>';
+  ct += '<path d="M940 1822 L946 1800 L974 1804 L968 1826 Z" fill="#9A2418"/><path d="M946 1800 L974 1804 L972.6 1809 L944.6 1805 Z" fill="#E9E2D2"/><path d="M950 1814 l14 2" stroke="#E6C66A" stroke-width="2"/>' +
+        '<ellipse cx="1321" cy="1820" rx="42" ry="7" fill="#2A2018" stroke="#5A4630" stroke-width="2"/>' +
+        '<path d="M1164 1819 L1210 1809 L1250 1818 L1204 1829 Z" fill="#D9D2C2" opacity=".32"/>' +
+        '<path d="M1196 1746 L1232 1706" stroke="#C9A24A" stroke-width="2"/><circle cx="1207" cy="1733" r="6" fill="#6E8A3A"/><circle cx="1209" cy="1731" r="2" fill="#B8301E"/>' +
+        '<path d="M1236 1716 q14 -14 6 -24 q-10 -8 -14 4" fill="none" stroke="#FF9A3A" stroke-width="4" stroke-linecap="round"/>' +
+        /* a small succulent in a clay pot at the far end */
+        '<ellipse cx="1540" cy="1822" rx="40" ry="6" fill="#000" opacity=".45"/><path d="M1516 1776 H1564 L1558 1818 H1522 Z" fill="#8A4A2E"/><path d="M1514 1772 H1566 V1782 H1514 Z" fill="#A65C3A"/>' +
+        [-1, -.6, -.2, .2, .6, 1].map(function (a2) { return '<path d="M1540 1774 Q' + f1(1540 + a2 * 26) + ' ' + f1(1752 - (1 - Math.abs(a2)) * 6) + ' ' + f1(1540 + a2 * 34) + ' ' + f1(1738 - (1 - Math.abs(a2)) * 22) + ' Q' + f1(1540 + a2 * 14) + ' 1760 1540 1774 Z" fill="' + (Math.abs(a2) > .5 ? "#2E4A36" : "#3E6248") + '" stroke="#1A2A1E" stroke-width="1.5"/>'; }).join("");
   /* a coupe and a rocks glass someone left, and a folded menu card */
   ct += '<g fill="none" stroke="#DCE3EE" stroke-width="2.4" stroke-linecap="round" opacity=".8"><path d="M1168 1716 Q1206 1766 1244 1716 M1206 1750 V1808 M1184 1810 H1228"/></g>' +
         '<path d="M1174 1722 Q1206 1758 1238 1722 Z" fill="#FF8A4A" opacity=".75"/><path d="M1168 1716 H1244" stroke="#F4F7FB" stroke-width="2" opacity=".9"/>' +
@@ -12576,6 +12630,7 @@ function roofSceneArt() {
   live += '<div class="rf-street" ' + at(SX, SYY, SW, SH) + '>' +
     '<i class="rf-neon p" ' + inS(606, 1462, 34, 106) + '></i><i class="rf-neon b" ' + inS(690, 1500, 60, 80) + '></i><i class="rf-neon g" ' + inS(566, 1560, 46, 60) + '></i>' +
     '<i class="rf-signal" ' + inS(645, 1447, 6, 6) + '></i>' +
+    '<i class="rf-steam s" ' + inS(622, 1596, 34, 60) + '></i>' +
     '<i class="rf-wash" ' + inS(588, 1470, 150, 250) + '></i><i class="rf-wash r" ' + inS(588, 1470, 150, 250) + '></i>' +
     '<i class="rf-sweep" ' + inS(716, 1430, 32, 90) + '></i><i class="rf-sweep l" ' + inS(556, 1430, 40, 90) + '></i>' +
     '<i class="rf-car" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car d2" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car d3" ' + inS(650, 1460, 16, 7) + '></i>' +
@@ -12585,6 +12640,12 @@ function roofSceneArt() {
   /* the cigar: its ember breathing, and three threads of smoke curling up */
   live += '<i class="rf-ember" ' + at(890, 1775, 26, 26) + '></i>' +
           '<i class="rf-smoke" ' + at(900, 1706, 22, 80) + '></i><i class="rf-smoke b" ' + at(902, 1706, 22, 80) + '></i><i class="rf-smoke c" ' + at(898, 1706, 22, 80) + '></i>';
+  /* small things: lamp glow, roof-garden lights, a pennant, stained glass, the speaker's light, street steam */
+  PEND.forEach(function (p2) { live += tm("rf-bulb", p2[0] - 70, p2[1] - 46, 140, 110, 5, 9); });
+  GARDEN.forEach(function (g2) { live += tm("rf-fairy", g2[0] - 4, g2[1] - 4, 8, 8, 2.2, 5.5); });
+  live += '<i class="rf-flag" ' + at(1432, 1040, 58, 34) + '></i>';
+  live += '<i class="rf-glass" ' + at(770, 1316, 232, 90) + '></i>';
+  live += '<i class="rf-pwr" ' + at(538, 1684, 6, 6) + '></i>';
   /* counter-top reflections shimmering */
   live += '<i class="rf-gloss" ' + at(260, LEDGE + 4, W - 260, 150) + '></i>';
   for (i = 0; i < 3; i++) {
