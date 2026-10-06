@@ -4580,7 +4580,8 @@ html[data-theme="roof51"] #stage{background:#060508}
 #stage.st-roof51 .arts{will-change:transform}
 #stage.st-roof51 .rf{top:0;left:0;width:max(100vw,100vh);margin-left:calc((100vw - max(100vw,100vh)) * .5);aspect-ratio:1600/2400}
 #stage.st-roof51:not(.pan) .rf{transform:translateY(-34%)}
-#stage.st-roof51 .rf>*{position:absolute;display:block}
+#stage.st-roof51 .rf>*,#stage.st-roof51 .rf-street>*{position:absolute;display:block}
+#stage.st-roof51 .rf-street{overflow:hidden}
 #stage.st-roof51 .rf-base{inset:0;width:100%;height:100%;opacity:0;transition:opacity .5s ease}
 #stage.st-roof51 .rf-base.ready{opacity:1}
 #stage.st-roof51 .rf-defs{width:0;height:0}
@@ -4596,10 +4597,42 @@ html[data-theme="roof51"] #stage{background:#060508}
 #stage.st-roof51 .rf-neon.b{background:radial-gradient(closest-side,rgba(120,120,255,.7),rgba(180,92,255,.35) 60%,transparent)}
 @keyframes rfNeon{from{opacity:.35}to{opacity:1}}
 @keyframes rfFlick{0%,100%{opacity:1}46%{opacity:1}47%{opacity:.25}49%{opacity:1}51%{opacity:.4}53%{opacity:1}80%{opacity:.75}}
-#stage.st-roof51 .rf-car{border-radius:50%;background:#FFF4D6;box-shadow:0 0 6px 2px rgba(255,240,200,.7);opacity:0;animation:rfCar 9s linear infinite}
-#stage.st-roof51 .rf-car.c2{background:#FF4A3A;box-shadow:0 0 6px 2px rgba(255,74,58,.7);animation-duration:12s;animation-delay:-5s;animation-direction:reverse}
-#stage.st-roof51 .rf-car.c3{animation-duration:14s;animation-delay:-9s}
-@keyframes rfCar{0%{transform:translate(0,0) scale(.35);opacity:0}10%{opacity:.9}90%{opacity:.9}100%{transform:translate(-60%,3600%) scale(1.5);opacity:0}}
+#stage.st-roof51 .rf-car{background:radial-gradient(circle at 22% 50%,#FFFDF2 0 16%,rgba(255,244,214,.55) 30%,transparent 46%),radial-gradient(circle at 78% 50%,#FFFDF2 0 16%,rgba(255,244,214,.55) 30%,transparent 46%);opacity:0;animation:rfCarDown 9s linear infinite}
+#stage.st-roof51 .rf-car::after{content:"";position:absolute;left:-10%;right:-10%;top:90%;height:560%;background:linear-gradient(180deg,rgba(255,244,214,.5),rgba(255,244,214,.12) 55%,transparent);border-radius:0 0 50% 50%}
+#stage.st-roof51 .rf-car.d2{animation-duration:13s;animation-delay:-4s}
+#stage.st-roof51 .rf-car.d3{animation-duration:11s;animation-delay:-8.5s}
+#stage.st-roof51 .rf-car.up{background:radial-gradient(circle at 22% 50%,#FF8A7A 0 14%,rgba(255,60,44,.7) 30%,transparent 48%),radial-gradient(circle at 78% 50%,#FF8A7A 0 14%,rgba(255,60,44,.7) 30%,transparent 48%);animation:rfCarUp 12s linear infinite;animation-delay:-3s}
+#stage.st-roof51 .rf-car.up::after{background:linear-gradient(180deg,rgba(255,60,44,.5),rgba(255,60,44,.1) 55%,transparent)}
+#stage.st-roof51 .rf-car.up.u2{animation-duration:15s;animation-delay:-10s}
+@keyframes rfCarDown{0%{transform:translate(0,0) scale(.28);opacity:0}8%{opacity:.95}88%{opacity:.95}100%{transform:translate(215%,3560%) scale(1.7);opacity:0}}
+@keyframes rfCarUp{0%{transform:translate(-160%,3560%) scale(1.7);opacity:0}10%{opacity:.95}90%{opacity:.9}100%{transform:translate(0,0) scale(.28);opacity:0}}
+/* headlights washing over the wet road and up the canyon walls as each car comes through */
+#stage.st-roof51 .rf-wash{background:radial-gradient(ellipse 50% 34% at 55% 50%,rgba(255,244,214,.34),transparent 70%);opacity:0;animation:rfWash 9s linear infinite}
+#stage.st-roof51 .rf-wash.r{background:radial-gradient(ellipse 50% 34% at 40% 50%,rgba(255,60,44,.3),transparent 70%);animation:rfWashUp 12s linear infinite;animation-delay:-3s}
+@keyframes rfWash{0%{transform:translateY(-45%) scale(.3);opacity:0}15%{opacity:.5}85%{opacity:1}100%{transform:translateY(45%) scale(1.25);opacity:0}}
+@keyframes rfWashUp{0%{transform:translateY(45%) scale(1.25);opacity:0}15%{opacity:1}85%{opacity:.4}100%{transform:translateY(-45%) scale(.3);opacity:0}}
+#stage.st-roof51 .rf-sweep{background:linear-gradient(180deg,transparent,rgba(255,240,205,.5),transparent);opacity:0;animation:rfSweep 9s linear infinite}
+#stage.st-roof51 .rf-sweep.l{background:linear-gradient(180deg,transparent,rgba(255,90,70,.4),transparent);animation:rfSweep 12s linear infinite reverse;animation-delay:-3s}
+@keyframes rfSweep{0%{transform:translateY(-20%);opacity:0}25%{opacity:.25}80%{opacity:.9}100%{transform:translateY(230%);opacity:0}}
+#stage.st-roof51 .rf-signal{border-radius:50%;background:#FF3B30;box-shadow:0 0 6px 2px currentColor;color:#FF3B30;animation:rfSignal 26s steps(1) infinite}
+@keyframes rfSignal{0%{background:#FF3B30;color:#FF3B30}46%{background:#34E07A;color:#34E07A}90%{background:#FFC43A;color:#FFC43A}}
+#stage.st-roof51 .rf-neon.g{background:radial-gradient(closest-side,rgba(57,224,138,.6),transparent);animation-duration:4.4s}
+#stage.st-roof51 .rf-bulb{border-radius:50%;background:radial-gradient(closest-side,#FFF8E2 0 16%,rgba(255,214,140,.75) 34%,rgba(255,190,100,.2) 62%,transparent);animation:rfBulb ease-in-out infinite alternate}
+@keyframes rfBulb{from{opacity:.5;transform:scale(.85)}to{opacity:1;transform:scale(1.15)}}
+#stage.st-roof51 .rf-win.c{background:#D6E8FF}
+#stage.st-roof51 .rf-glint{background:linear-gradient(90deg,transparent 46%,#FFF 49% 51%,transparent 54%),linear-gradient(0deg,transparent 46%,#FFF 49% 51%,transparent 54%),radial-gradient(closest-side,#FFF8DC 0 14%,rgba(255,236,180,.5) 30%,transparent 60%);opacity:0;animation:rfGlint ease-in-out infinite}
+@keyframes rfGlint{0%,72%{opacity:0;transform:scale(.2) rotate(0deg)}82%{opacity:1;transform:scale(1) rotate(20deg)}92%,100%{opacity:0;transform:scale(.2) rotate(40deg)}}
+#stage.st-roof51 .rf-beacon{border-radius:50%;background:radial-gradient(closest-side,#FFD0C8 0 20%,#FF2A1A 45%,rgba(255,42,26,.35) 70%,transparent);animation:rfBeacon 2.6s ease-in-out infinite}
+#stage.st-roof51 .rf-beacon.b{animation-delay:-1.1s}
+#stage.st-roof51 .rf-beacon.c{animation-delay:-.5s;animation-duration:3.1s}
+@keyframes rfBeacon{0%,100%{opacity:.12;transform:scale(.7)}45%,55%{opacity:1;transform:scale(1.5)}}
+#stage.st-roof51 .rf-haze{background:radial-gradient(closest-side,rgba(255,120,150,.2),rgba(120,90,220,.1) 55%,transparent);animation:rfLed 11s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-steam{border-radius:50%;background:radial-gradient(closest-side,rgba(235,235,245,.34),transparent);filter:blur(5px);transform-origin:50% 100%;opacity:0;animation:rfSteam 10s ease-out infinite}
+#stage.st-roof51 .rf-steam.b{animation-duration:13s;animation-delay:-6s}
+@keyframes rfSteam{0%{transform:translate(0,20%) scale(.4);opacity:0}25%{opacity:.75}100%{transform:translate(40%,-190%) scale(2.2);opacity:0}}
+#stage.st-roof51 .rf-gloss{background:linear-gradient(180deg,transparent 35%,#08090B 100%),repeating-linear-gradient(90deg,transparent 0 37px,rgba(255,226,160,.08) 37px 43px,transparent 43px 96px,rgba(255,255,255,.05) 96px 99px,transparent 99px 151px);animation:rfLed 4.6s ease-in-out infinite alternate}
+#stage.st-roof51 .rf-flame.c{animation-duration:1.02s;animation-delay:-.7s}
+#stage.st-roof51::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 120% 100% at 50% 44%,transparent 52%,rgba(0,0,0,.5) 100%)}
 #stage.st-roof51 .rf-plane{border-radius:50%;background:#fff;animation:rfPlane 80s linear infinite,rfBlink 1.3s steps(1) infinite}
 @keyframes rfPlane{0%{transform:translate(0,0)}45%,100%{transform:translate(3400%,-1900%)}}
 @keyframes rfBlink{0%,100%{opacity:.9}50%{opacity:.2}}
@@ -12127,38 +12160,48 @@ function roofSceneArt() {
 
   s.push('<defs>' +
     '<linearGradient id="rfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#030409"/><stop offset=".7" stop-color="#080A14"/><stop offset="1" stop-color="#17121C"/></linearGradient>' +
-    '<radialGradient id="rfCan" cx=".56" cy="1" r="1.05"><stop offset="0" stop-color="#8E806D"/><stop offset=".45" stop-color="#6E6356"/><stop offset="1" stop-color="#2B2622"/></radialGradient>' +
-    '<linearGradient id="rfStone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A39A8A"/><stop offset="1" stop-color="#7D7567"/></linearGradient>' +
-    '<linearGradient id="rfStone2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B0A796"/><stop offset="1" stop-color="#857D6E"/></linearGradient>' +
-    '<linearGradient id="rfPier" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4F4A42"/><stop offset=".5" stop-color="#A69E8E"/><stop offset="1" stop-color="#B9B1A0"/></linearGradient>' +
+    '<radialGradient id="rfCan" cx=".56" cy="1" r="1.05"><stop offset="0" stop-color="#8A7A64"/><stop offset=".4" stop-color="#5E5448"/><stop offset="1" stop-color="#1E1A17"/></radialGradient>' +
+    '<linearGradient id="rfStone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A8274"/><stop offset="1" stop-color="#4E493F"/></linearGradient>' +
+    '<linearGradient id="rfStone2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#978E7E"/><stop offset="1" stop-color="#5A5449"/></linearGradient>' +
+    '<linearGradient id="rfPier" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3A3630"/><stop offset=".5" stop-color="#857E70"/><stop offset="1" stop-color="#9C9484"/></linearGradient>' +
     '<linearGradient id="rfSpire" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FBF9F2"/><stop offset=".55" stop-color="#E6E2D6"/><stop offset="1" stop-color="#B4B0A4"/></linearGradient>' +
     '<radialGradient id="rfHalo"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".22"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>' +
     '<linearGradient id="rfBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8048"/><stop offset=".22" stop-color="#E4502A"/><stop offset=".62" stop-color="#A32D17"/><stop offset="1" stop-color="#4A130B"/></linearGradient>' +
     '<radialGradient id="rfHot" cx=".34" cy="0" r=".7"><stop offset="0" stop-color="#FFC08A" stop-opacity=".9"/><stop offset=".35" stop-color="#FF7A45" stop-opacity=".35"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>' +
-    '<linearGradient id="rfBarR" x1="0" y1="0" x2="1" y2="0"><stop offset=".55" stop-color="#160806" stop-opacity="0"/><stop offset="1" stop-color="#160806" stop-opacity=".9"/></linearGradient>' +
+    '<linearGradient id="rfBarR" x1="0" y1="0" x2="1" y2="0"><stop offset=".9" stop-color="#160806" stop-opacity="0"/><stop offset="1" stop-color="#160806" stop-opacity=".25"/></linearGradient>' +
     '<linearGradient id="rfLedge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17181C"/><stop offset=".2" stop-color="#0C0D10"/><stop offset="1" stop-color="#050506"/></linearGradient>' +
     '<linearGradient id="rfSweater" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B9B4AA"/><stop offset="1" stop-color="#6F6B64"/></linearGradient>' +
     '<pattern id="rfWeave" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#1C0D0A"/><path d="M0 3 H12 M0 9 H12" stroke="#4A2016" stroke-width="2.4"/><path d="M3 0 V12 M9 0 V12" stroke="#32140E" stroke-width="2.4"/></pattern>' +
     '<pattern id="rfWeave2" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#3A3531"/><path d="M0 3 H12 M0 9 H12" stroke="#6A635B" stroke-width="2.4"/><path d="M3 0 V12 M9 0 V12" stroke="#4E4843" stroke-width="2.4"/></pattern>' +
+    '<filter id="rfBloom" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>' +
+    '<radialGradient id="rfHot2" cx=".82" cy="0" r=".55"><stop offset="0" stop-color="#FFC08A" stop-opacity=".7"/><stop offset=".4" stop-color="#FF7A45" stop-opacity=".25"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="rfSkyGlow" cx=".5" cy="1" r=".9"><stop offset="0" stop-color="#7A3A5E" stop-opacity=".55"/><stop offset=".5" stop-color="#3A2A5A" stop-opacity=".25"/><stop offset="1" stop-color="#3A2A5A" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="rfNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#05060E" stop-opacity=".0"/><stop offset="1" stop-color="#05060E" stop-opacity=".5"/></linearGradient>' +
     '<filter id="rfSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>' +
     '<path id="rfF" d="' + pet + '"/>' +
     '</defs>');
 
   /* ---- sky ---- */
-  s.push('<rect width="' + W + '" height="' + (LEDGE + 20) + '" fill="url(#rfSky)"/>');
+  s.push('<rect width="' + W + '" height="' + (LEDGE + 20) + '" fill="url(#rfSky)"/><rect x="300" y="700" width="800" height="760" fill="url(#rfSkyGlow)"/>');
+  var cl = "";
+  for (var ci = 0; ci < 9; ci++) cl += '<ellipse cx="' + f1(rr(380, 900)) + '" cy="' + f1(rr(620, 1000)) + '" rx="' + f1(rr(120, 260)) + '" ry="' + f1(rr(16, 40)) + '" fill="' + pick(["#3A2440", "#2A2A4A", "#4A2A3A"]) + '" opacity="' + f1(rr(.25, .5)) + '"/>';
+  s.push('<g filter="url(#rfSoft)">' + cl + '</g>');
+  for (ci = 0; ci < 14; ci++) s.push('<circle cx="' + f1(rr(540, 760)) + '" cy="' + f1(rr(560, 860)) + '" r="' + f1(rr(.8, 1.6)) + '" fill="#DDE6FF" opacity="' + f1(rr(.25, .6)) + '"/>');
 
   function grid(x0, y0, x1, y1, cw, ch, ww, wh, lit, slope, dark) {
-    var o = "";
+    var o = "", lit2 = "";
     for (var y = y0; y + wh <= y1; y += ch) {
       var rowLit = lit * (R() < .12 ? 2.4 : 1);
       for (var x = x0; x + ww <= x1; x += cw) {
         var yy = y + (slope ? (1600 - x) * slope : 0);
-        if (R() < rowLit) o += '<rect x="' + f1(x) + '" y="' + f1(yy) + '" width="' + ww + '" height="' + wh + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.6, 1)) + '"/>';
+        if (R() < rowLit) { var lr = '<rect x="' + f1(x) + '" y="' + f1(yy) + '" width="' + ww + '" height="' + wh + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.6, 1)) + '"/>'; o += lr; lit2 += lr; }
         else if (dark) o += '<rect x="' + f1(x) + '" y="' + f1(yy) + '" width="' + ww + '" height="' + wh + '" fill="' + dark + '"/>';
       }
     }
-    return o;
+    /* a soft bloom under the lit panes, so the windows glow instead of sitting flat */
+    return '<g filter="url(#rfBloom)" opacity=".7">' + lit2 + '</g>' + o;
   }
+  var FEST = [];
 
   /* ---- far towers in the gap ---- */
   s.push('<rect x="548" y="890" width="200" height="560" fill="#15110E"/>' + grid(556, 902, 742, 1440, 10, 13, 7, 8, .72, 0, ""));
@@ -12201,7 +12244,8 @@ function roofSceneArt() {
            '<path d="M996 560 V1640" stroke="#5E574D" stroke-width="5"/>';
   /* the setback that steps forward lower down */
   rm += '<path d="M1176 1150 H1600 V1640 H1176 Z" fill="url(#rfStone2)"/><path d="M1176 1150 H1600" stroke="#C9C0AE" stroke-width="4"/>' +
-        grid(1196, 1186, 1596, 1300, 44, 78, 22, 40, .8, .03, "#24262D") + grid(1196, 1350, 1596, 1640, 44, 78, 22, 40, .26, .03, "#24262D");
+        grid(1196, 1186, 1596, 1300, 44, 78, 22, 40, .8, .03, "#1B1D24") + grid(1196, 1350, 1596, 1640, 44, 78, 22, 40, .26, .03, "#1B1D24") +
+        '<rect x="996" y="560" width="604" height="1080" fill="url(#rfNight)"/>';
   s.push(rm);
 
   /* ---- the spires ---- */
@@ -12239,14 +12283,28 @@ function roofSceneArt() {
     '<rect x="762" y="1296" width="246" height="130" fill="#CFCABC"/><path d="M762 1296 H1008" stroke="#F6F3EA" stroke-width="4"/>' +
     [786, 826, 866, 906, 946, 986].map(function (ax) { return '<path d="M' + (ax - 8) + ' 1400 V1338 Q' + ax + ' 1318 ' + (ax + 8) + ' 1338 V1400 Z" fill="#55524C"/>'; }).join(""));
 
-  /* ---- street canyon ---- */
-  var sc = '<rect x="556" y="1420" width="192" height="300" fill="#05060A"/>';
-  sc += '<path d="M610 1720 L640 1470 H668 L706 1720 Z" fill="#0B0C12"/>';                               /* the street itself, running away */
-  sc += '<rect x="640" y="1462" width="8" height="74" rx="3" fill="#FF4FA3"/><rect x="636" y="1458" width="16" height="82" rx="6" fill="#FF4FA3" opacity=".22"/>';
-  sc += '<rect x="628" y="1600" width="46" height="60" rx="8" fill="#3B5BFF" opacity=".55"/><rect x="636" y="1612" width="30" height="34" rx="4" fill="#B45CFF"/><rect x="642" y="1620" width="16" height="12" fill="#FFD24F"/>';
-  sc += '<rect x="560" y="1684" width="62" height="34" fill="#FFD9A0"/><path d="M581 1684 V1718 M601 1684 V1718" stroke="#2A2118" stroke-width="2"/>';
-  for (i = 0; i < 26; i++) sc += '<circle cx="' + f1(rr(676, 742)) + '" cy="' + f1(rr(1596, 1700)) + '" r="' + f1(rr(1.3, 3)) + '" fill="' + pick(["#FFE9B8", "#FFD27A", "#BFE0A0"]) + '" opacity="' + f1(rr(.5, 1)) + '"/>';
-  for (i = 0; i < 14; i++) sc += '<rect x="' + f1(rr(560, 636)) + '" y="' + f1(rr(1440, 1680)) + '" width="' + f1(rr(4, 9)) + '" height="' + f1(rr(4, 8)) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.35, .8)) + '"/>';
+  /* ---- street canyon: seen from above, the avenue runs away between the buildings ---- */
+  var sc = '<rect x="556" y="1420" width="192" height="300" fill="#04050A"/>';
+  /* what closes the far end of the street: stacked distant frontages */
+  for (i = 0; i < 40; i++) sc += '<rect x="' + f1(rr(600, 720)) + '" y="' + f1(rr(1424, 1466)) + '" width="' + f1(rr(3, 7)) + '" height="' + f1(rr(3, 6)) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.3, .8)) + '"/>';
+  /* side walls of the canyon, storefronts glowing at their feet */
+  sc += '<path d="M556 1420 H600 L640 1470 L588 1720 H556 Z" fill="#0B0D13"/><path d="M748 1420 H716 L676 1470 L734 1720 H748 Z" fill="#0A0B10"/>';
+  for (i = 0; i < 9; i++) { var wy = 1500 + i * 24, wl = 590 - i * 5.4; sc += '<rect x="' + f1(wl - 22) + '" y="' + wy + '" width="' + f1(10 + i) + '" height="' + f1(7 + i * .6) + '" fill="' + (R() < .55 ? pick(WARM) : "#1A1C24") + '" opacity=".8"/>'; }
+  sc += '<path d="M604 1640 L590 1716 H560 V1640 Z" fill="#FFD9A0" opacity=".85"/><path d="M574 1640 V1716 M590 1640 L584 1716" stroke="#2A2118" stroke-width="2"/>' +
+        '<path d="M716 1600 L730 1700 H748 V1600 Z" fill="#9AD0FF" opacity=".55"/>';
+  /* sidewalks and the wet roadway, converging */
+  sc += '<path d="M640 1470 H676 L734 1720 H588 Z" fill="#101219"/><path d="M646 1470 H670 L716 1720 H604 Z" fill="#07080D"/>';
+  /* lane dashes, a crosswalk near us */
+  for (i = 0; i < 9; i++) { var u = i / 9, ly2 = 1480 + u * u * 230, lw2 = 1 + u * 3; sc += '<rect x="' + f1(658 - lw2 / 2 + u * 2) + '" y="' + f1(ly2) + '" width="' + f1(lw2) + '" height="' + f1(6 + u * 16) + '" fill="#D8D2C2" opacity=".5"/>'; }
+  for (i = 0; i < 7; i++) sc += '<path d="M' + (612 + i * 14) + ' 1668 l-3 20 h9 l3 -20 Z" fill="#D8D2C2" opacity=".42"/>';
+  /* neon and signs, and their colour lying on the wet road */
+  sc += '<rect x="620" y="1462" width="7" height="70" rx="3" fill="#FF4FA3"/><rect x="616" y="1458" width="15" height="78" rx="6" fill="#FF4FA3" opacity=".22"/>' +
+        '<rect x="706" y="1520" width="26" height="40" rx="5" fill="#3B5BFF" opacity=".7"/><rect x="711" y="1528" width="16" height="22" rx="3" fill="#B45CFF"/><rect x="714" y="1533" width="10" height="8" fill="#FFD24F"/>' +
+        '<rect x="574" y="1574" width="30" height="16" rx="3" fill="#39E08A" opacity=".8"/>' +
+        '<path d="M636 1540 L622 1716 H640 L648 1540 Z" fill="#FF4FA3" opacity=".16"/><path d="M688 1560 L706 1716 H690 L680 1560 Z" fill="#6A78FF" opacity=".16"/><path d="M612 1600 L604 1716 H622 Z" fill="#39E08A" opacity=".1"/>';
+  for (i = 0; i < 26; i++) sc += '<circle cx="' + f1(rr(680, 742)) + '" cy="' + f1(rr(1600, 1700)) + '" r="' + f1(rr(1.2, 2.6)) + '" fill="' + pick(["#FFE9B8", "#FFD27A", "#BFE0A0"]) + '" opacity="' + f1(rr(.4, .9)) + '"/>';
+  /* parked cars along the kerb */
+  for (i = 0; i < 5; i++) { var pu = .25 + i * .16, py2 = 1470 + pu * 250; sc += '<rect x="' + f1(676 + pu * 44 - (6 + pu * 12)) + '" y="' + f1(py2) + '" width="' + f1(6 + pu * 12) + '" height="' + f1(8 + pu * 14) + '" rx="2" fill="' + pick(["#14161C", "#1C1F28", "#2A1A16"]) + '"/>'; }
   s.push(sc);
 
   /* ---- the low wing with the bright row of windows, garden on its roof ---- */
@@ -12265,6 +12323,19 @@ function roofSceneArt() {
     '<path d="M1385 648 L262 505" stroke="#3A342E" stroke-width="3" opacity=".7"/>' +
     '<path d="M640 0 L560 548 M1010 0 L1000 604 M1330 0 L1385 652" stroke="#3A342E" stroke-width="2" opacity=".35"/>');
 
+  /* festoon lights strung along the canopy edge, sagging between hooks */
+  var fe = "", hooks = 7;
+  for (var hk = 0; hk < hooks; hk++) {
+    var ax = 262 + (1385 - 262) * hk / hooks, bx = 262 + (1385 - 262) * (hk + 1) / hooks, ay = 512 + (ax - 262) * .1273 + 8, by2 = 512 + (bx - 262) * .1273 + 8;
+    fe += '<path d="M' + f1(ax) + ' ' + f1(ay) + ' Q' + f1((ax + bx) / 2) + ' ' + f1((ay + by2) / 2 + 46) + ' ' + f1(bx) + ' ' + f1(by2) + '" fill="none" stroke="#14110E" stroke-width="2.5"/>';
+    for (var bq = 1; bq <= 3; bq++) {
+      var v = bq / 4, qx = (1 - v) * (1 - v) * ax + 2 * (1 - v) * v * (ax + bx) / 2 + v * v * bx, qy = (1 - v) * (1 - v) * ay + 2 * (1 - v) * v * ((ay + by2) / 2 + 46) + v * v * by2;
+      FEST.push([qx, qy + 12]);
+      fe += '<path d="M' + f1(qx) + ' ' + f1(qy) + ' v5" stroke="#14110E" stroke-width="3"/><ellipse cx="' + f1(qx) + '" cy="' + f1(qy + 12) + '" rx="5" ry="7" fill="#FFE2A8"/><circle cx="' + f1(qx) + '" cy="' + f1(qy + 12) + '" r="16" fill="#FFC870" opacity=".16"/>';
+    }
+  }
+  s.push('<path d="M1385 655 L262 512 L262 470 L1385 600 Z" fill="#FFC870" opacity=".07"/>' + fe);
+
   /* ---- flower wall, left ---- */
   var fw = "", fl = "";
   for (i = 0; i < 230; i++) {
@@ -12280,68 +12351,100 @@ function roofSceneArt() {
   for (i = 0; i < 26; i++) fl += '<circle cx="' + f1(rr(10, 200)) + '" cy="' + f1(rr(60, LEDGE - 20)) + '" r="' + f1(rr(1.6, 2.8)) + '" fill="#FFE2A8" opacity=".55"/>';
   s.push('<rect x="-10" y="0" width="80" height="' + (LEDGE + 30) + '" fill="#070B08"/><g>' + fw + '</g>' + fl);
 
-  /* ---- parapet ledge ---- */
-  s.push('<rect y="' + LEDGE + '" width="' + W + '" height="' + (BAR - LEDGE) + '" fill="url(#rfLedge)"/><path d="M0 ' + LEDGE + ' H' + W + '" stroke="#30333A" stroke-width="3"/>' +
-    '<path d="M452 1672 H556 V1806 H452 Z" fill="#050506"/><path d="M452 1672 H556" stroke="#2A2C31" stroke-width="3"/>' +
-    /* two votive candles on the ledge */
-    '<g fill="#2A1A12" stroke="#5A3A26" stroke-width="2"><rect x="716" y="1676" width="26" height="26" rx="5"/><rect x="934" y="1678" width="24" height="24" rx="5"/></g>' +
-    '<ellipse cx="729" cy="1702" rx="60" ry="9" fill="#FF9A4A" opacity=".16"/><ellipse cx="946" cy="1702" rx="54" ry="8" fill="#FF9A4A" opacity=".14"/>');
+  /* ---- parapet counter: a dark glossy top running away from us, things left on it ---- */
+  var ct = '<rect y="' + LEDGE + '" width="' + W + '" height="' + (BAR - LEDGE) + '" fill="url(#rfLedge)"/><path d="M0 ' + LEDGE + ' H' + W + '" stroke="#30333A" stroke-width="3"/>';
+  /* the city mirrored faintly in the polished top: streaks that shorten toward the far edge */
+  for (i = 0; i < 90; i++) {
+    var gx2 = rr(260, W), warm = R() < .8, pinkish = gx2 > 560 && gx2 < 760 && R() < .6;
+    ct += '<rect x="' + f1(gx2) + '" y="' + f1(LEDGE + rr(4, 30)) + '" width="' + f1(rr(3, 10)) + '" height="' + f1(rr(16, 80)) + '" fill="' + (pinkish ? pick(["#FF5FAE", "#7C7CFF"]) : warm ? pick(WARM) : "#F6F3EA") + '" opacity="' + f1(rr(.03, .1)) + '"/>';
+  }
+  ct += '<rect x="700" y="' + (LEDGE + 4) + '" width="330" height="150" fill="#FFFFFF" opacity=".035"/>';
+  /* near lip of the counter catching the strip light from below */
+  ct += '<rect y="' + (BAR - 16) + '" width="' + W + '" height="14" fill="#1E1210"/><path d="M0 ' + (BAR - 16) + ' H' + W + '" stroke="#4A2A20" stroke-width="2.5"/>';
+  /* speaker box */
+  ct += '<path d="M452 1668 H556 V1812 H452 Z" fill="#050506"/><path d="M452 1668 H556" stroke="#2A2C31" stroke-width="3"/><ellipse cx="504" cy="1814" rx="64" ry="8" fill="#000" opacity=".5"/><circle cx="504" cy="1752" r="26" fill="none" stroke="#17181C" stroke-width="4"/>';
+  /* votives */
+  [[722, 1790], [1010, 1800], [1420, 1794]].forEach(function (v) {
+    ct += '<ellipse cx="' + v[0] + '" cy="' + (v[1] + 4) + '" rx="72" ry="13" fill="#FF9A4A" opacity=".2"/>' +
+          '<rect x="' + (v[0] - 14) + '" y="' + (v[1] - 28) + '" width="28" height="30" rx="5" fill="#3A1E12" stroke="#8A5632" stroke-width="2"/>' +
+          '<rect x="' + (v[0] - 10) + '" y="' + (v[1] - 22) + '" width="20" height="20" rx="3" fill="#FFB24A" opacity=".5"/>';
+  });
+  /* a coupe and a rocks glass someone left, and a folded menu card */
+  ct += '<g fill="none" stroke="#DCE3EE" stroke-width="2.4" stroke-linecap="round" opacity=".8"><path d="M1168 1716 Q1206 1766 1244 1716 M1206 1750 V1808 M1184 1810 H1228"/></g>' +
+        '<path d="M1174 1722 Q1206 1758 1238 1722 Z" fill="#FF8A4A" opacity=".75"/><path d="M1168 1716 H1244" stroke="#F4F7FB" stroke-width="2" opacity=".9"/>' +
+        '<ellipse cx="1206" cy="1814" rx="46" ry="7" fill="#000" opacity=".45"/>' +
+        '<path d="M1292 1752 L1298 1816 H1344 L1350 1752 Z" fill="#C8742A" opacity=".55"/><path d="M1288 1740 L1296 1818 H1346 L1354 1740" fill="none" stroke="#DCE3EE" stroke-width="2.4" opacity=".8"/>' +
+        '<rect x="1304" y="1756" width="20" height="18" fill="#EAF2FF" opacity=".45"/><ellipse cx="1321" cy="1822" rx="44" ry="6" fill="#000" opacity=".45"/>' +
+        '<path d="M300 1820 L322 1742 L372 1750 L352 1826 Z" fill="#E9E2D2"/><path d="M322 1742 L372 1750 L392 1822 L352 1826" fill="#B9B1A0"/><path d="M318 1770 l30 5 M314 1786 l30 5 M310 1802 l22 4" stroke="#6A6257" stroke-width="2.4"/>';
+  s.push(ct);
 
-  /* ---- bar wall under the ledge, lit from the strip ---- */
+  /* ---- bar wall under the counter, lit from the strip ---- */
+  var FLOOR = 2326;
   var bar = '<rect y="' + BAR + '" width="' + W + '" height="' + (H - BAR) + '" fill="url(#rfBar)"/>';
-  for (i = 0; i < 150; i++) bar += '<ellipse cx="' + f1(rr(0, W)) + '" cy="' + f1(rr(BAR + 10, H)) + '" rx="' + f1(rr(10, 60)) + '" ry="' + f1(rr(3, 12)) + '" fill="' + (R() < .55 ? "#5A160C" : "#FFB080") + '" opacity="' + f1(rr(.05, .16)) + '"/>';
-  for (i = 0; i < 26; i++) { var vy = rr(BAR + 20, H - 10); bar += '<path d="M' + f1(rr(-50, W)) + ' ' + f1(vy) + ' q' + f1(rr(60, 200)) + ' ' + f1(rr(-8, 8)) + ' ' + f1(rr(200, 420)) + ' 0" fill="none" stroke="#7A2212" stroke-width="' + f1(rr(1, 2.4)) + '" opacity="' + f1(rr(.15, .35)) + '"/>'; }
-  bar += '<rect y="' + BAR + '" width="' + W + '" height="320" fill="url(#rfHot)"/><rect y="' + BAR + '" width="' + W + '" height="' + (H - BAR) + '" fill="url(#rfBarR)"/>' +
-         '<rect x="0" y="' + (BAR - 3) + '" width="1050" height="9" fill="#FFD9BC"/><rect x="0" y="' + (BAR - 9) + '" width="1050" height="22" fill="#FF9A6A" opacity=".35"/>' +
-         '<path d="M468 ' + (BAR + 30) + ' v44 M820 ' + (BAR + 16) + ' v40" stroke="#FFC9A8" stroke-width="5" stroke-linecap="round" opacity=".7"/>' +
-         '<rect y="' + (H - 150) + '" width="' + W + '" height="150" fill="#12060A" opacity=".55"/>';
+  for (i = 0; i < 170; i++) bar += '<ellipse cx="' + f1(rr(0, W)) + '" cy="' + f1(rr(BAR + 10, FLOOR)) + '" rx="' + f1(rr(10, 60)) + '" ry="' + f1(rr(3, 12)) + '" fill="' + (R() < .55 ? "#5A160C" : "#FFB080") + '" opacity="' + f1(rr(.05, .16)) + '"/>';
+  for (i = 0; i < 30; i++) { var vy = rr(BAR + 20, FLOOR - 10); bar += '<path d="M' + f1(rr(-50, W)) + ' ' + f1(vy) + ' q' + f1(rr(60, 200)) + ' ' + f1(rr(-8, 8)) + ' ' + f1(rr(200, 420)) + ' 0" fill="none" stroke="#7A2212" stroke-width="' + f1(rr(1, 2.4)) + '" opacity="' + f1(rr(.15, .35)) + '"/>'; }
+  /* stone joints */
+  for (x = 200; x < W; x += 400) bar += '<path d="M' + x + ' ' + (BAR + 8) + ' V' + FLOOR + '" stroke="#6A1C10" stroke-width="2.5" opacity=".5"/>';
+  bar += '<rect y="' + BAR + '" width="' + W + '" height="330" fill="url(#rfHot)"/><rect y="' + BAR + '" width="' + W + '" height="330" fill="url(#rfHot2)"/>' +
+         '<rect x="0" y="' + (BAR - 3) + '" width="' + W + '" height="9" fill="#FFD9BC"/><rect x="0" y="' + (BAR - 9) + '" width="' + W + '" height="24" fill="#FF9A6A" opacity=".35"/>';
+  for (x = 110; x < W; x += 345) bar += '<path d="M' + x + ' ' + (BAR + 14) + ' v40" stroke="#FFC9A8" stroke-width="5" stroke-linecap="round" opacity=".65"/>';
+  /* brass foot rail on brackets */
+  for (x = 60; x < W; x += 300) bar += '<path d="M' + x + ' ' + (FLOOR - 78) + ' v40" stroke="#2A0E08" stroke-width="10" stroke-linecap="round"/>';
+  bar += '<path d="M0 ' + (FLOOR - 80) + ' H' + W + '" stroke="#1E0A06" stroke-width="16"/><path d="M0 ' + (FLOOR - 85) + ' H' + W + '" stroke="#FFB07A" stroke-width="3" opacity=".7"/>';
+  /* floor: dark boards carrying a smear of the glow */
+  bar += '<rect y="' + FLOOR + '" width="' + W + '" height="' + (H - FLOOR) + '" fill="#120708"/><rect y="' + FLOOR + '" width="' + W + '" height="26" fill="#C8401E" opacity=".4"/><rect y="' + (FLOOR + 26) + '" width="' + W + '" height="30" fill="#C8401E" opacity=".14"/>';
+  for (x = -40; x < W; x += 170) bar += '<path d="M' + x + ' ' + FLOOR + ' L' + (x - 60) + ' ' + H + '" stroke="#000" stroke-width="2" opacity=".5"/>';
   s.push(bar);
 
-  /* ---- stools ---- */
-  function stool(x, y, w, fill, rim) {
-    var h = 152;
-    return '<path d="M' + (x + 24) + ' ' + (y + h) + ' L' + (x - 6) + ' ' + H + ' M' + (x + w - 24) + ' ' + (y + h) + ' L' + (x + w + 6) + ' ' + H + '" stroke="#0A0605" stroke-width="9" stroke-linecap="round"/>' +
-           '<path d="M' + (x + 8) + ' ' + (y + h + 150) + ' H' + (x + w - 8) + '" stroke="#0A0605" stroke-width="7"/>' +
-           '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="34" fill="url(#' + fill + ')" stroke="#0A0605" stroke-width="9"/>' +
-           '<path d="M' + (x + 30) + ' ' + (y + 5) + ' H' + (x + w - 30) + '" stroke="' + rim + '" stroke-width="5" stroke-linecap="round" opacity=".75"/>';
+  /* ---- four stools, all the same, feet on the floor ---- */
+  function stool(x) {
+    var y = 2052, w = 292, h = 150, foot = H - 22;
+    return '<ellipse cx="' + (x + w / 2) + '" cy="' + (foot + 4) + '" rx="' + (w * .6) + '" ry="12" fill="#000" opacity=".5"/>' +
+           '<path d="M' + (x + 30) + ' ' + (y + h + 24) + ' L' + (x + 2) + ' ' + foot + ' M' + (x + w - 30) + ' ' + (y + h + 24) + ' L' + (x + w - 2) + ' ' + foot + '" stroke="#0A0605" stroke-width="9" stroke-linecap="round"/>' +
+           '<path d="M' + (x + 62) + ' ' + (y + h + 24) + ' L' + (x + 50) + ' ' + (foot - 26) + ' M' + (x + w - 62) + ' ' + (y + h + 24) + ' L' + (x + w - 50) + ' ' + (foot - 26) + '" stroke="#070403" stroke-width="7" stroke-linecap="round"/>' +
+           '<path d="M' + (x + 14) + ' ' + (foot - 96) + ' H' + (x + w - 14) + '" stroke="#0A0605" stroke-width="7"/><path d="M' + (x + 14) + ' ' + (foot - 100) + ' H' + (x + w - 14) + '" stroke="#FF8A55" stroke-width="2" opacity=".45"/>' +
+           '<path d="M' + (x + 18) + ' ' + (y + h + 4) + ' H' + (x + w - 18) + ' L' + (x + w - 30) + ' ' + (y + h + 30) + ' H' + (x + 30) + ' Z" fill="#120806" stroke="#0A0605" stroke-width="6" stroke-linejoin="round"/>' +
+           '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="34" fill="url(#rfWeave)" stroke="#0A0605" stroke-width="9"/>' +
+           '<path d="M' + (x + 30) + ' ' + (y + 5) + ' H' + (x + w - 30) + '" stroke="#FF8A55" stroke-width="5" stroke-linecap="round" opacity=".75"/>';
   }
-  s.push(stool(-60, 2078, 300, "rfWeave", "#FF8A55") + stool(356, 2066, 300, "rfWeave", "#FF8A55"));
-
-  /* ---- the couple, seen from behind ---- */
-  var cp = "";
-  /* her: jacket, then hair */
-  cp += '<path d="M1010 2140 C990 1960 1000 1800 1060 1740 C1110 1700 1210 1700 1262 1736 C1330 1790 1352 1960 1340 2140 Z" fill="#0B0B0F"/>';
-  cp += '<path d="M1150 2130 C1140 2220 1150 2300 1168 2350 L1150 2392 H1246 C1250 2360 1232 2340 1226 2300 C1222 2240 1232 2180 1240 2130 Z" fill="#08080B"/>';
-  cp += '<path d="M1058 1640 C1040 1540 1090 1470 1158 1468 C1232 1468 1276 1536 1262 1630 C1284 1680 1276 1730 1250 1770 C1220 1790 1110 1792 1078 1768 C1046 1730 1044 1684 1058 1640 Z" fill="#1A0F0C"/>';
-  for (i = 0; i < 18; i++) { var hx = rr(1080, 1250), hy = rr(1500, 1700); cp += '<path d="M' + f1(hx) + ' ' + f1(hy) + ' q' + f1(rr(-14, 14)) + ' ' + f1(rr(20, 40)) + ' ' + f1(rr(-8, 8)) + ' ' + f1(rr(50, 90)) + '" fill="none" stroke="' + (hx > 1180 ? "#6A3520" : "#3A1F16") + '" stroke-width="' + f1(rr(2, 4)) + '" stroke-linecap="round" opacity="' + f1(rr(.35, .8)) + '"/>'; }
-  /* him: head turned toward her, pale sweater */
-  cp += '<path d="M1508 1700 V1640 H1600 V1700 Z" fill="#8A6652"/>' +
-        '<ellipse cx="1566" cy="1578" rx="84" ry="104" fill="#9A7560"/>' +
-        '<path d="M1490 1560 C1484 1500 1520 1468 1574 1468 C1604 1468 1640 1480 1650 1500 V1690 H1600 C1612 1640 1606 1600 1586 1576 C1560 1548 1522 1540 1490 1560 Z" fill="#1F1A17"/>' +
-        '<ellipse cx="1584" cy="1596" rx="13" ry="22" fill="#86614E"/>' +
-        '<path d="M1420 1760 C1450 1690 1530 1668 1600 1672 V' + H + ' H1440 C1420 2200 1400 1900 1420 1760 Z" fill="url(#rfSweater)"/>' +
-        '<rect x="1452" y="2200" width="150" height="200" fill="#15161B"/>';
-  s.push(cp);
-  s.push(stool(1040, 2070, 320, "rfWeave2", "#C9C2B6"));
-  /* his arm round her, over the stool back */
-  s.push('<path d="M1560 1930 C1500 2060 1360 2110 1210 2104" fill="none" stroke="url(#rfSweater)" stroke-width="92" stroke-linecap="round"/>' +
-         '<path d="M1560 1930 C1500 2060 1360 2110 1210 2104" fill="none" stroke="#5A564F" stroke-width="92" stroke-linecap="round" opacity=".18"/>' +
-         '<ellipse cx="1176" cy="2110" rx="44" ry="34" fill="#A98068"/><path d="M1146 2096 q-14 16 -6 36 M1164 2088 q-12 20 -4 44" stroke="#7E5B49" stroke-width="3" fill="none"/>');
+  s.push(stool(54) + stool(454) + stool(854) + stool(1254));
 
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' + s.join("") + '</svg>';
 
   /* ---- the lights that move ---- */
   function at(x, y, w, h, extra) { return 'style="left:' + f1(x / W * 100) + '%;top:' + f1(y / H * 100) + '%;width:' + f1(w / W * 100) + '%;height:' + f1(h / H * 100) + '%' + (extra || "") + '"'; }
+  function tm(cls, x, y, w, h, lo, hi) { var d = rr(lo, hi); return '<i class="' + cls + '" ' + at(x, y, w, h, ';animation-duration:' + f1(d) + 's;animation-delay:-' + f1(rr(0, d)) + 's') + '></i>'; }
   var live = "";
-  live += '<i class="rf-led" ' + at(0, BAR + 6, 1200, 400) + '></i>';
+  live += '<i class="rf-led" ' + at(0, BAR + 6, W, 400) + '></i>';
   live += '<i class="rf-flood" ' + at(684, 800, 400, 560) + '></i>';
-  for (i = 0; i < 22; i++) { var d = rr(2.2, 5.5); live += '<i class="rf-fairy" ' + at(rr(10, 205), rr(60, LEDGE - 30), 9, 9, ';animation-duration:' + f1(d) + 's;animation-delay:-' + f1(rr(0, d)) + 's') + '></i>'; }
-  var spots = [[1012, 1596, 600, 1140], [556, 742, 902, 1430], [786, 1200, 1500, 1690], [1196, 1596, 1350, 1630], [340, 516, 590, 960]];
-  for (i = 0; i < 18; i++) { var sp = spots[i % spots.length], wd = rr(17, 43); live += '<i class="rf-win" ' + at(rr(sp[0], sp[1]), rr(sp[2], sp[3]), 14, 24, ';animation-duration:' + f1(wd) + 's;animation-delay:-' + f1(rr(0, wd)) + 's') + '></i>'; }
-  live += '<i class="rf-neon p" ' + at(630, 1450, 28, 98) + '></i><i class="rf-neon b" ' + at(618, 1590, 66, 80) + '></i>';
-  live += '<i class="rf-car" ' + at(646, 1480, 12, 6) + '></i><i class="rf-car c2" ' + at(660, 1480, 12, 6) + '></i><i class="rf-car c3" ' + at(650, 1480, 12, 6) + '></i>';
+  /* city glow breathing low in the gap, and steam off two roofs */
+  live += '<i class="rf-haze" ' + at(520, 1180, 520, 300) + '></i>';
+  live += '<i class="rf-steam" ' + at(1090, 1300, 70, 110) + '></i><i class="rf-steam b" ' + at(420, 880, 60, 100) + '></i>';
+  for (i = 0; i < 22; i++) live += tm("rf-fairy", rr(10, 205), rr(60, LEDGE - 30), 9, 9, 2.2, 5.5);
+  /* festoon bulbs along the canopy edge */
+  FEST.forEach(function (b) { live += tm("rf-bulb", b[0] - 13, b[1] - 13, 26, 26, 3, 8); });
+  /* windows switching on and off, in every building */
+  var spots = [[1012, 1596, 600, 1140], [556, 742, 902, 1410], [786, 1200, 1500, 1690], [1196, 1596, 1350, 1630], [340, 516, 590, 960], [884, 1000, 944, 1290], [1012, 1596, 600, 1140], [110, 330, 560, 1690]];
+  for (i = 0; i < 36; i++) { var sp = spots[i % spots.length]; live += tm("rf-win" + (i % 4 === 0 ? " c" : ""), rr(sp[0], sp[1]), rr(sp[2], sp[3]), sp[0] === 556 ? 7 : 14, sp[0] === 556 ? 8 : 24, 13, 43); }
+  /* glints: a window catching the light for an instant */
+  for (i = 0; i < 20; i++) { var gp = spots[i % 5]; live += tm("rf-glint", rr(gp[0], gp[1]), rr(gp[2], gp[3]), 22, 22, 5, 14); }
+  /* red beacons on the tower tops */
+  live += '<i class="rf-beacon" ' + at(642, 876, 12, 12) + '></i><i class="rf-beacon b" ' + at(936, 918, 12, 12) + '></i><i class="rf-beacon c" ' + at(424, 536, 12, 12) + '></i>';
+  /* the street: neon, a signal, cars both ways with their light on the wet road and the walls */
+  /* everything in the street sits in one box clipped to the gap between the buildings, so nothing spills onto the counter */
+  var SX = 556, SYY = 1420, SW = 192, SH = 280;
+  function inS(x, y, w, h) { return 'style="left:' + f1((x - SX) / SW * 100) + '%;top:' + f1((y - SYY) / SH * 100) + '%;width:' + f1(w / SW * 100) + '%;height:' + f1(h / SH * 100) + '%"'; }
+  live += '<div class="rf-street" ' + at(SX, SYY, SW, SH) + '>' +
+    '<i class="rf-neon p" ' + inS(608, 1440, 34, 110) + '></i><i class="rf-neon b" ' + inS(690, 1500, 60, 80) + '></i><i class="rf-neon g" ' + inS(566, 1560, 46, 60) + '></i>' +
+    '<i class="rf-signal" ' + inS(655, 1452, 7, 7) + '></i>' +
+    '<i class="rf-wash" ' + inS(588, 1470, 150, 250) + '></i><i class="rf-wash r" ' + inS(588, 1470, 150, 250) + '></i>' +
+    '<i class="rf-sweep" ' + inS(716, 1430, 32, 90) + '></i><i class="rf-sweep l" ' + inS(556, 1430, 40, 90) + '></i>' +
+    '<i class="rf-car" ' + inS(664, 1462, 16, 7) + '></i><i class="rf-car d2" ' + inS(664, 1462, 16, 7) + '></i><i class="rf-car d3" ' + inS(664, 1462, 16, 7) + '></i>' +
+    '<i class="rf-car up" ' + inS(636, 1462, 16, 7) + '></i><i class="rf-car up u2" ' + inS(636, 1462, 16, 7) + '></i></div>';
   live += '<i class="rf-plane" ' + at(430, 760, 8, 8) + '></i>';
-  live += '<i class="rf-flame" ' + at(721, 1652, 16, 30) + '></i><i class="rf-flame b" ' + at(939, 1656, 14, 28) + '></i>';
+  live += '<i class="rf-flame" ' + at(714, 1736, 16, 30) + '></i><i class="rf-flame b" ' + at(1003, 1748, 14, 28) + '></i><i class="rf-flame c" ' + at(1412, 1740, 16, 30) + '></i>';
+  /* counter-top reflections shimmering */
+  live += '<i class="rf-gloss" ' + at(260, LEDGE + 4, W - 260, 150) + '></i>';
   for (i = 0; i < 3; i++) {
     var o = '<path d="M40 150 Q' + f1(rr(20, 60)) + ' 90 ' + f1(rr(30, 50)) + ' 40" fill="none" stroke="#0F1911" stroke-width="5" stroke-linecap="round"/>';
     for (var q = 0; q < 3; q++) o += '<g transform="translate(' + f1(rr(22, 58)) + ' ' + f1(30 + q * 38) + ') scale(' + f1(rr(1, 1.5)) + ')"><use href="#rfF" fill="' + pick(["#E2502C", "#F0763A", "#E8632F"]) + '"/><circle r="4.4" fill="#3A1408"/></g>';
