@@ -4517,6 +4517,8 @@ html[data-theme="sixth"] .auth-brand .plate{border-left-color:var(--s6-amber);ba
         <hr>
         <button type="button" role="menuitem" id="btnCopySync">Copy sync pack</button>
         <button type="button" role="menuitem" id="btnPasteSync">Paste sync pack</button>
+        <hr>
+        <button type="button" role="menuitem" id="btnDriveProofs">Google Drive proofs</button>
       </div>
     </details>
     <input type="file" id="fileRestore" accept="application/json" hidden>
@@ -7311,7 +7313,7 @@ function readRow(o, cols) {
         td = el("td", "rowacts");
         var grid = el("div", "acts");
         var held = isHoldFlag(o);
-        var nPdf = (o.proofs && o.proofs.length) || 0;
+        var nPdf = ((o.proofs && o.proofs.length) || 0) + driveProofsFor(o).length;
         [
           ["email", "data-email", "Email", "Email proof for this order", ""],
           ["pdf", "data-pdfs", "PDF", nPdf ? nPdf + " proof PDF" + (nPdf === 1 ? "" : "s") : "Attach a proof PDF", nPdf ? " has" : ""],
@@ -7923,6 +7925,19 @@ function openProofPop(id) {
   box.appendChild(el("h3", null, "Proof PDFs"));
   box.appendChild(el("p", "sub", "#" + o.seq + (o.orderId ? " · " + o.orderId : "") + (o.customer ? " · " + o.customer : "")));
   var list = el("div");
+  var dps = driveProofsFor(o);
+  dps.forEach(function (f) {
+    var drow = el("div", "proof-item");
+    var dmeta = el("div", "nm");
+    dmeta.appendChild(el("b", null, f.name || "proof.pdf"));
+    dmeta.appendChild(document.createElement("br"));
+    dmeta.appendChild(el("span", "sz", "Google Drive" + (f.folder ? " · " + f.folder : "")));
+    var dopen = el("button", "btn quiet xs", "Open");
+    dopen.type = "button";
+    dopen.addEventListener("click", function () { driveOpen(f); });
+    drow.appendChild(dmeta); drow.appendChild(dopen);
+    list.appendChild(drow);
+  });
   (o.proofs || []).forEach(function (p) {
     var row = el("div", "proof-item");
     var meta = el("div", "nm");
@@ -7939,7 +7954,11 @@ function openProofPop(id) {
     row.appendChild(meta); row.appendChild(open); row.appendChild(rm);
     list.appendChild(row);
   });
-  if (!(o.proofs && o.proofs.length)) list.appendChild(el("p", "sub", "No proof PDFs on this order yet."));
+  if (!(o.proofs && o.proofs.length) && !dps.length) {
+    list.appendChild(el("p", "sub", (driveUrl() && o.proof === "TRUE" && driveKey(o))
+      ? "No proof for " + driveKey(o) + " in Drive yet."
+      : "No proof PDFs on this order yet."));
+  }
   var drop = el("div", "proof-drop", "Drop PDFs here, or click to choose files");
   function takeFiles(files) {
     Array.prototype.forEach.call(files || [], function (f) { attachProofPdf(id, f); });
@@ -8034,6 +8053,87 @@ function attachProofPdf(orderId, file) {
   rec.idbKey = rec.id;
   rec.stored = "local";
   idbPutProof(rec.id, file).then(done).catch(function () { toast("Could not save that PDF."); });
+}
+/* ------------------------------------------------ Google Drive proofs
+   A small Apps Script (proof-index.gs) scans the proofs folder and returns
+   { orders: { "16248803": [ {id, n, name, folder}, ... ] } }. Filenames are
+   8-digit order # + 2-digit proof # (1624880301.pdf). A proof only shows when
+   the order's Proof is Yes. Paste the script's web-app URL here to bake it in,
+   or use Tools > Google Drive proofs on each device. */
+var DRIVE_PROOF_URL = "";
+var driveIdx = { map: {}, at: 0, err: "" };
+function driveUrl() {
+  try { return localStorage.getItem("caot_drive_url") || DRIVE_PROOF_URL || ""; }
+  catch (e) { return DRIVE_PROOF_URL || ""; }
+}
+function driveLoadCache() {
+  try {
+    var c = JSON.parse(localStorage.getItem("caot_drive_idx") || "null");
+    if (c && c.map) driveIdx = { map: c.map, at: c.at || 0, err: "" };
+  } catch (e) {}
+}
+function driveRefresh(quiet) {
+  var u = driveUrl();
+  if (!u) return Promise.resolve(false);
+  return fetch(u, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+    if (!d || d.error || !d.orders) throw new Error(d && d.error ? "Drive script said: " + d.error : "Unexpected reply from the Drive script.");
+    driveIdx = { map: d.orders, at: Date.now(), err: "" };
+    try { localStorage.setItem("caot_drive_idx", JSON.stringify({ map: d.orders, at: driveIdx.at })); } catch (e) {}
+    scheduleRender();
+    return true;
+  }).catch(function (err) {
+    driveIdx.err = (err && err.message) || "Could not reach the Drive script.";
+    if (!quiet) toast(driveIdx.err);
+    return false;
+  });
+}
+function driveKey(o) {
+  var m = String(o.orderId || "").replace(/\D/g, "").match(/^\d{8}/);
+  return m ? m[0] : "";
+}
+function driveProofsFor(o) {
+  if (!o || o.proof !== "TRUE") return [];
+  var k = driveKey(o);
+  return (k && driveIdx.map[k]) || [];
+}
+function driveOpen(f) {
+  window.open("https://drive.google.com/file/d/" + encodeURIComponent(f.id) + "/view", "_blank");
+}
+function openDriveSetup() {
+  var host = $("modalHost");
+  host.innerHTML = "";
+  var overlay = el("div", "scrim");
+  var box = el("div", "modal proof-modal");
+  box.appendChild(el("h3", null, "Google Drive proofs"));
+  box.appendChild(el("p", "sub", "Paste the web-app link from the proof-index script. Proofs named like 1624880301.pdf attach to order 16248803 whenever its Proof is Yes."));
+  var inp = el("input");
+  inp.type = "url"; inp.className = "mono"; inp.placeholder = "https://script.google.com/macros/s/…/exec?t=…";
+  inp.value = driveUrl(); inp.autocomplete = "off"; inp.spellcheck = false; inp.style.width = "100%";
+  var status = el("p", "sub");
+  function stat() {
+    var n = Object.keys(driveIdx.map).length;
+    status.textContent = driveIdx.err ? driveIdx.err
+      : (driveIdx.at ? n + " orders found in Drive · updated " + new Date(driveIdx.at).toLocaleTimeString() : "Not connected yet.");
+  }
+  stat();
+  var actions = el("div", "photo-actions");
+  var save = el("button", "btn", "Save & sync"); save.type = "button";
+  save.addEventListener("click", function () {
+    try { localStorage.setItem("caot_drive_url", inp.value.trim()); } catch (e) {}
+    status.textContent = "Syncing…";
+    driveRefresh(true).then(function () { stat(); });
+  });
+  var clear = el("button", "btn ghost", "Disconnect"); clear.type = "button";
+  clear.addEventListener("click", function () {
+    try { localStorage.removeItem("caot_drive_url"); localStorage.removeItem("caot_drive_idx"); } catch (e) {}
+    driveIdx = { map: {}, at: 0, err: "" }; inp.value = driveUrl(); scheduleRender(); stat();
+  });
+  var close = el("button", "btn ghost", "Close"); close.type = "button";
+  close.addEventListener("click", function () { host.innerHTML = ""; });
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) host.innerHTML = ""; });
+  actions.appendChild(save); actions.appendChild(clear); actions.appendChild(close);
+  box.appendChild(inp); box.appendChild(status); box.appendChild(actions);
+  overlay.appendChild(box); host.appendChild(overlay);
 }
 /* --------------------------------------------------------- entry panel */
 function segValue(id) {
@@ -12699,7 +12799,12 @@ function wire() {
     var note = e.target.closest("[data-note]");
     if (note) { openNotePop(note.getAttribute("data-note"), note); return; }
     var pdfs = e.target.closest("[data-pdfs]");
-    if (pdfs) { openProofPop(pdfs.getAttribute("data-pdfs"), pdfs); return; }
+    if (pdfs) {
+      var po = byId(pdfs.getAttribute("data-pdfs"));
+      var dp = po ? driveProofsFor(po) : [];
+      if (dp.length === 1 && !(po.proofs && po.proofs.length)) { driveOpen(dp[0]); return; }
+      openProofPop(pdfs.getAttribute("data-pdfs"), pdfs); return;
+    }
     var slogAdd = e.target.closest("[data-slog-add]");
     if (slogAdd) {
       var sid = slogAdd.getAttribute("data-slog-add");
@@ -12797,6 +12902,11 @@ function wire() {
   $("btnRecoverLocal").addEventListener("click", function () { recoverLocalLedgers(false); });
   $("btnCopySync").addEventListener("click", copySyncPack);
   $("btnPasteSync").addEventListener("click", pasteSyncPack);
+  $("btnDriveProofs").addEventListener("click", function () { $("toolMenu").open = false; openDriveSetup(); });
+  driveLoadCache();
+  driveRefresh(true);
+  setInterval(function () { driveRefresh(true); }, 300000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) driveRefresh(true); });
   $("btnRestore").addEventListener("click", function () { $("fileRestore").click(); });
   $("fileRestore").addEventListener("change", function () {
     if (this.files && this.files[0]) restoreJson(this.files[0]);
