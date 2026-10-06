@@ -12241,6 +12241,8 @@ function roofSceneArt() {
     '<radialGradient id="rfVP"><stop offset="0" stop-color="#FFE2B0" stop-opacity=".85"/><stop offset=".3" stop-color="#FFB86A" stop-opacity=".35"/><stop offset="1" stop-color="#FFB86A" stop-opacity="0"/></radialGradient>' +
     '<linearGradient id="rfGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FB8FF"/><stop offset=".5" stop-color="#F0B25A"/><stop offset="1" stop-color="#C2503A"/></linearGradient>' +
     '<radialGradient id="rfPool"><stop offset="0" stop-color="#FFD9A0" stop-opacity=".38"/><stop offset="1" stop-color="#FFD9A0" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="rfWallL" gradientUnits="userSpaceOnUse" x1="0" y1="1460" x2="0" y2="1724"><stop offset="0" stop-color="#15110E"/><stop offset=".35" stop-color="#100E0E"/><stop offset="1" stop-color="#0B0C10"/></linearGradient>' +
+    '<linearGradient id="rfWallR" gradientUnits="userSpaceOnUse" x1="0" y1="1460" x2="0" y2="1724"><stop offset="0" stop-color="#12141C"/><stop offset=".35" stop-color="#0E1016"/><stop offset="1" stop-color="#0A0B10"/></linearGradient>' +
     '<filter id="rfSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>' +
     '<path id="rfF" d="' + pet + '"/>' +
     '</defs>');
@@ -12294,7 +12296,7 @@ function roofSceneArt() {
   var FEST = [], GARDEN = [];
 
   /* ---- far towers in the gap: square-on to us ---- */
-  s.push('<rect x="548" y="890" width="88" height="576" fill="#15110E"/>' + grid(556, 902, 632, 1440, 10, 13, 7, 8, .72, 0, 0, "", 1));
+  s.push('<rect x="548" y="890" width="88" height="576" fill="#15110E"/>' + grid(556, 902, 632, 1466, 10, 13, 7, 8, .72, 0, 0, "", 1));
   s.push('<rect x="876" y="930" width="130" height="500" fill="#12141C"/><path d="M876 930 H1006" stroke="#2A2D38" stroke-width="3"/>' + grid(884, 944, 1000, 1290, 12, 16, 8, 9, .2, 0, 0, "", 1));
   s.push('<rect x="748" y="1040" width="60" height="400" fill="#0E0F14"/>' + grid(752, 1050, 806, 1120, 9, 14, 6, 8, .3, 0, 0, "", 1));
 
@@ -12414,13 +12416,24 @@ function roofSceneArt() {
       if (R() < .42) sc += '<rect x="' + f1(bx3) + '" y="' + f1(by3) + '" width="' + f1(cw * .6) + '" height="' + f1(cw * .8) + '" fill="' + pick(WARM) + '" opacity="' + f1(rr(.45, .95)) + '"/>';
   });
   /* the glow where the avenue's lights pile up at the vanishing point */
-  sc += '<circle cx="' + VX + '" cy="' + (VY - 8) + '" r="46" fill="url(#rfVP)"/>';
   /* everything below eye level: ground, the foot of each wall, kerbs, the wet road */
-  sc += '<rect x="556" y="' + (VY - 4) + '" width="192" height="266" fill="#04050A"/>' +
-        '<path d="M556 ' + (VY - 4) + ' L655 ' + VY + ' L588 1724 H556 Z" fill="#0B0D13"/><path d="M748 ' + (VY - 4) + ' L661 ' + VY + ' L734 1724 H748 Z" fill="#0A0B10"/>' +
-        '<path d="M655 ' + VY + ' H661 L734 1724 H588 Z" fill="#12141C"/><path d="M656.6 ' + VY + ' H659.4 L716 1724 H604 Z" fill="#07080D"/>';
-  for (i = 0; i < 9; i++) { var wy = 1500 + i * 24; sc += '<rect x="' + f1(562 + i * .4) + '" y="' + wy + '" width="' + f1(8 + i * .9) + '" height="' + f1(7 + i * .6) + '" fill="' + (R() < .55 ? pick(WARM) : "#1A1C24") + '" opacity=".8"/>'; }
-  sc += '<path d="M560 1676 H594 L590 1716 H560 Z" fill="#FFD9A0" opacity=".6"/><path d="M572 1676 V1716 M584 1676 V1716" stroke="#2A2118" stroke-width="2"/>' +
+  /* The lower storeys of the same buildings carry straight on down to the pavement, in their own
+     colours, so there is no dark slab across the horizon; then the pavement and road, and only
+     then the glow, so it sits over the meeting point instead of being cut off by it. */
+  sc += '<path d="M562 ' + (VY - 2) + ' H655 L588 1724 H562 Z" fill="url(#rfWallL)"/><path d="M748 ' + (VY - 2) + ' H661 L734 1724 H748 Z" fill="url(#rfWallR)"/>' +
+        '<path d="M655 ' + VY + ' H661 L734 1724 H588 Z" fill="#12141C"/><path d="M656.6 ' + VY + ' H659.4 L716 1724 H604 Z" fill="#07080D"/>' +
+        '<ellipse cx="' + VX + '" cy="' + (VY + 2) + '" rx="60" ry="34" fill="url(#rfVP)"/><ellipse cx="' + VX + '" cy="' + (VY + 30) + '" rx="16" ry="40" fill="url(#rfVP)" opacity=".5"/>';
+  /* the buildings' windows carry on below eye level too, thinning out toward the street, so the
+     lit tower does not stop dead at the horizon */
+  var lowL = "", lowR = "";
+  for (var wy = 1466; wy < 1660; wy += 13) {
+    var fade = 1 - (wy - 1466) / 200;
+    for (var wx = 566; wx < 652; wx += 10) if (R() < .7 * fade) lowL += '<rect x="' + wx + '" y="' + wy + '" width="7" height="8" fill="' + pick(WARM) + '" opacity="' + f1(rr(.35, .9) * (.35 + .65 * fade)) + '"/>';
+    for (wx = 665; wx < 746; wx += 9) if (R() < .4 * fade) lowR += '<rect x="' + wx + '" y="' + wy + '" width="5" height="7" fill="' + pick(WARM) + '" opacity="' + f1(rr(.3, .8) * (.35 + .65 * fade)) + '"/>';
+  }
+  sc += '<clipPath id="rfClipL"><path d="M564 ' + (VY - 2) + ' H653 L586 1724 H564 Z"/></clipPath><clipPath id="rfClipR"><path d="M748 ' + (VY - 2) + ' H663 L736 1724 H748 Z"/></clipPath>' +
+        '<g clip-path="url(#rfClipL)">' + lowL + '</g><g clip-path="url(#rfClipR)">' + lowR + '</g>';
+  sc += '<path d="M564 1676 H594 L590 1716 H564 Z" fill="#FFD9A0" opacity=".6"/><path d="M572 1676 V1716 M584 1676 V1716" stroke="#2A2118" stroke-width="2"/>' +
         '<path d="M726 1660 L734 1716 H748 V1660 Z" fill="#9AD0FF" opacity=".3"/>';
   /* lane dashes shrinking to the point, a crosswalk near us */
   for (i = 1; i < 11; i++) { var u = i / 10, t = u * u; sc += '<rect x="' + f1(VX + 2 * t - (.5 + 1.6 * t)) + '" y="' + f1(VY + 4 + t * 236) + '" width="' + f1(1 + 3.2 * t) + '" height="' + f1(3 + 17 * t) + '" fill="#D8D2C2" opacity=".5"/>'; }
@@ -12675,7 +12688,7 @@ function roofSceneArt() {
     SIGL.map(function (L) { var rr2 = L[2] * 2.1; return '<i class="rf-tl ' + ["r", "y", "g"][L[3]] + '" ' + inS(L[0] - rr2, L[1] - rr2, rr2 * 2, rr2 * 2).replace(/"$/, ';animation-delay:-' + f1(20 - L[4] * 1.4) + 's"') + '></i>'; }).join("") +
     '<i class="rf-steam s" ' + inS(622, 1596, 34, 60) + '></i>' +
     '<i class="rf-wash" ' + inS(588, 1470, 150, 250) + '></i><i class="rf-wash r" ' + inS(588, 1470, 150, 250) + '></i>' +
-    '<i class="rf-sweep" ' + inS(716, 1430, 32, 90) + '></i><i class="rf-sweep l" ' + inS(556, 1430, 40, 90) + '></i>' +
+    '<i class="rf-sweep" ' + inS(716, 1430, 32, 90) + '></i><i class="rf-sweep l" ' + inS(566, 1470, 34, 80) + '></i>' +
     '<i class="rf-car" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car d2" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car d3" ' + inS(650, 1460, 16, 7) + '></i>' +
     '<i class="rf-car up" ' + inS(650, 1460, 16, 7) + '></i><i class="rf-car up u2" ' + inS(650, 1460, 16, 7) + '></i></div>';
   live += '<div class="rf-sky" ' + at(530, 640, 462, 200) + '><i class="rf-plane"></i></div>';
